@@ -31,7 +31,7 @@ cp -a /path/to/chainlink-agent-skills/cre-skills ~/.claude/skills/
 
 ```bash
 mkdir -p .claude/skills
-cp -a <<<<</path/to/chainlink-agent-skills/cre-skills .claude/skills/>>>>>
+cp -a ###/path/to/chainlink-agent-skills/cre-skills### .claude/skills/
 ```
 
 Replace `/path/to/chainlink-agent-skills` with your extracted or cloned repo path.
