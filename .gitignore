@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build / dist
+dist/
+build/
+*.tsbuildinfo
+
+# Env and secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temp
+tmp/
+temp/
+*.tmp
