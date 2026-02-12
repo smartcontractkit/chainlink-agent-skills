@@ -1,0 +1,46 @@
+name: Release CRE Skills
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-cre-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate SKILL.md exists
+        run: |
+          if [ ! -f "cre-skills/SKILL.md" ]; then
+            echo "Error: cre-skills/SKILL.md not found"
+            exit 1
+          fi
+
+      - name: Extract version from SKILL.md
+        run: |
+          VERSION=$(grep -A 10 "^---" cre-skills/SKILL.md | grep "version:" | head -1 | sed 's/.*version: "\(.*\)"/\1/')
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not find version in cre-skills/SKILL.md"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+
+      - name: Create skill package
+        run: |
+          ZIP_NAME="cre-skills-v${VERSION}.zip"
+          zip -r "$ZIP_NAME" cre-skills/
+          echo "ZIP_FILE=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.ZIP_FILE }}
+          tag_name: cre-skills/v${{ env.VERSION }}
+          body: |
+            Automated release of CRE Skills v${{ env.VERSION }}
+            Generated from branch: ${{ github.ref }}
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
