@@ -27,7 +27,7 @@ mkdir -p ~/.claude/skills
 cp -a /path/to/chainlink-agent-skills/cre-skills ~/.claude/skills/
 ```
 
-**Project-level** — Copy into the project's `.claude/skills`:
+**Project/ Repo level** — Copy into the project or repo's `.claude/skills`:
 
 ```bash
 mkdir -p .claude/skills
