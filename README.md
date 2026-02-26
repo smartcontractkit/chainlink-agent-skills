@@ -20,6 +20,8 @@ Skills follow the [Agent Skills format](https://agentskills.io/specification): Y
 
 ### Add skills to your agent
 
+**Note:** Cursor Composer-1.5 works really well with agent skills. This installation guide is for Cursor Composer, and Claude models. Installation instructions for Codex CLI and Gemini are different. Please look up their official CLI reference to find out how to install agent skills for those models.
+
 **User-level** — Copy into `~/.claude/skills`:
 
 ```bash
@@ -43,3 +45,7 @@ IDEs that support skills (eg Cursor) will automatically pick skills up when the 
 When your agent supports Agent Skills, it will discover and activate these skills based on the task. **However** we recommend that you explicitly invoke the skill in your agent chat sessions as follows:
 
 ` Use the /cre-skills skill and .....[insert detailed prompt]....`
+
+## Best Used With
+
+Cursor Composer-1.5, Claude Opus 4.6, Codex 5.2+, Gemini 3.
