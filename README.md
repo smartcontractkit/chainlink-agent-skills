@@ -16,7 +16,7 @@ Skills follow the [Agent Skills format](https://agentskills.io/specification): Y
 
 ## Install
 
-## [Easiest]
+## [Easiest] Using Vercel's Skills Installer
 
 Use [vercel's CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme). Project-level installation is the default. 
 
