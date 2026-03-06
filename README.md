@@ -8,13 +8,27 @@ Skills follow the [Agent Skills format](https://agentskills.io/specification): Y
 
 ## Available Skills
 
+
 | Skill                     | Description                                                               |
 | ------------------------- | ------------------------------------------------------------------------- |
 | [cre-skills](cre-skills/) | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations |
 
+
 ## Install
 
-### Get the skills
+## [Easiest] Using Vercel's Skills Installer
+
+Use [vercel's CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme). Project-level installation is the default. 
+
+But if you want to install globally (at the user level) then add the `-g` flag.
+
+Note the use of `--skill` to specify which specific skill to install. 
+
+```
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills -g
+```
+
+## [Manual] Get the skills
 
 [Download the repo as ZIP](https://github.com/chainlink/chainlink-agent-skills/archive/refs/heads/main.zip) and extract it, or clone with `git clone https://github.com/chainlink/chainlink-agent-skills.git`. Then copy the skill folder(s) you need into your agent's skills directory.
 
@@ -44,7 +58,7 @@ IDEs that support skills (eg Cursor) will automatically pick skills up when the 
 
 When your agent supports Agent Skills, it will discover and activate these skills based on the task. **However** we recommend that you explicitly invoke the skill in your agent chat sessions as follows:
 
-` Use the /cre-skills skill and .....[insert detailed prompt]....`
+ `Use the /cre-skills skill and .....[insert detailed prompt]....`
 
 ## Best Used With
 
