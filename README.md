@@ -30,7 +30,7 @@ npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skil
 
 ## [Manual] Get the skills
 
-[Download the repo as ZIP](https://github.com/chainlink/chainlink-agent-skills/archive/refs/heads/main.zip) and extract it, or clone with `git clone https://github.com/chainlink/chainlink-agent-skills.git`. Then copy the skill folder(s) you need into your agent's skills directory.
+[Download the repo as ZIP](https://github.com/smartcontractkit/chainlink-agent-skills/archive/refs/heads/main.zip) and extract it, or clone with `git clone https://github.com/smartcontractkit/chainlink-agent-skills.git`. Then copy the skill folder(s) you need into your agent's skills directory.
 
 ### Add skills to your agent
 
