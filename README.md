@@ -14,9 +14,7 @@ Skills follow the [Agent Skills format](https://agentskills.io/specification): Y
 | [cre-skills](cre-skills/) | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations |
 
 
-## Install
-
-## [Easiest] Using Vercel's Skills Installer
+## Install Using Vercel's Skills Installer
 
 Use [vercel's CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme). Project-level installation is the default. 
 
@@ -26,58 +24,6 @@ Note the use of `--skill` to specify which specific skill to install.
 
 ```
 npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills -g
-```
-
-## [Manual] Get the skills
-
-[Download the repo as ZIP](https://github.com/smartcontractkit/chainlink-agent-skills/archive/refs/heads/main.zip) and extract it, or clone with `git clone https://github.com/smartcontractkit/chainlink-agent-skills.git`. Then copy the skill folder(s) you need into your agent's skills directory.
-
-### Add skills to your agent
-
-**Note:** Cursor Composer-1.5 works really well with agent skills. This installation guide is for Cursor Composer, and Claude models. Installation instructions for Codex CLI and Gemini are different. Please look up their official CLI reference to find out how to install agent skills for those models.
-
-**User-level** — Copy/clone into `~/.claude/skills`:
-
-Create the directory if it doesn't exist:
-
-```bash
-mkdir -p ~/.claude/skills
-```
-
-Copy the skill folder(s) you need into your agent's skills directory:
-
-```bash
-cp -a /path/to/chainlink-agent-skills/cre-skills ~/.claude/skills/
-```
-
-Or clone the repo into your agent's skills directory:
-
-```bash
-git clone https://github.com/smartcontractkit/chainlink-agent-skills.git ~/.claude/skills/
-```
-
-IDEs that support skills (eg Cursor) will automatically pick skills up when the skill is in `~/.claude/skills`.
-
-**Project/ Repo level** — Copy into the project or repo's `.claude/skills`:
-
-Create the directory if it doesn't exist:
-```bash
-mkdir -p .claude/skills
-```
-
-Copy the skill folder(s) you need into your agent's skills directory:
-
-```bash
-cp -a /path/to/chainlink-agent-skills/cre-skills .claude/skills/
-```
-
-Replace `/path/to/chainlink-agent-skills` with your extracted or cloned repo path.
-
-
-Or clone the repo into your agent's skills directory:
-
-```bash
-git clone https://github.com/smartcontractkit/chainlink-agent-skills.git .claude/skills/
 ```
 
 ## Use
