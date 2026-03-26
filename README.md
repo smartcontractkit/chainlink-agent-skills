@@ -36,23 +36,49 @@ npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skil
 
 **Note:** Cursor Composer-1.5 works really well with agent skills. This installation guide is for Cursor Composer, and Claude models. Installation instructions for Codex CLI and Gemini are different. Please look up their official CLI reference to find out how to install agent skills for those models.
 
-**User-level** — Copy into `~/.claude/skills`:
+**User-level** — Copy/clone into `~/.claude/skills`:
+
+Create the directory if it doesn't exist:
 
 ```bash
 mkdir -p ~/.claude/skills
+```
+
+Copy the skill folder(s) you need into your agent's skills directory:
+
+```bash
 cp -a /path/to/chainlink-agent-skills/cre-skills ~/.claude/skills/
 ```
 
-**Project/ Repo level** — Copy into the project or repo's `.claude/skills`:
+Or clone the repo into your agent's skills directory:
 
 ```bash
+git clone https://github.com/smartcontractkit/chainlink-agent-skills.git ~/.claude/skills/
+```
+
+IDEs that support skills (eg Cursor) will automatically pick skills up when the skill is in `~/.claude/skills`.
+
+**Project/ Repo level** — Copy into the project or repo's `.claude/skills`:
+
+Create the directory if it doesn't exist:
+```bash
 mkdir -p .claude/skills
-cp -a ###/path/to/chainlink-agent-skills/cre-skills### .claude/skills/
+```
+
+Copy the skill folder(s) you need into your agent's skills directory:
+
+```bash
+cp -a /path/to/chainlink-agent-skills/cre-skills .claude/skills/
 ```
 
 Replace `/path/to/chainlink-agent-skills` with your extracted or cloned repo path.
 
-IDEs that support skills (eg Cursor) will automatically pick skills up when the skill is in `~/.claude/skills`.
+
+Or clone the repo into your agent's skills directory:
+
+```bash
+git clone https://github.com/smartcontractkit/chainlink-agent-skills.git .claude/skills/
+```
 
 ## Use
 
