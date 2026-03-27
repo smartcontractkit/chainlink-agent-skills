@@ -1,85 +1,91 @@
 ---
 name: chainlink-ccip-skill
-description: "TODO: Complete and informative explanation of what the skill does and when to use it. Include when to use this skill: specific scenarios, file types, or tasks that trigger it."
+description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in v1, and prefer secure, conservative contract patterns."
 ---
 
 # Chainlink CCIP Skill
 
 ## Overview
 
-[TODO: 1-2 sentences explaining what this skill enables]
+Route CCIP requests to the simplest valid path while keeping side effects tightly controlled.
 
-## Structuring This Skill
+## Progressive Disclosure
 
-[TODO: Choose the structure that best fits this skill's purpose. Common patterns:
+1. Keep this file as the default guide.
+2. Read [references/product-definition.md](references/product-definition.md) only when you need to confirm scope or safety constraints.
+3. Read [references/user-stories.md](references/user-stories.md) only when the request is ambiguous or you need routing examples.
+4. Do not load reference files speculatively.
 
-**1. Workflow-Based** (best for sequential processes)
-- Works well when there are clear step-by-step procedures
-- Example: DOCX skill with "Workflow Decision Tree" -> "Reading" -> "Creating" -> "Editing"
-- Structure: ## Overview -> ## Workflow Decision Tree -> ## Step 1 -> ## Step 2...
+## Routing
 
-**2. Task-Based** (best for tool collections)
-- Works well when the skill offers different operations/capabilities
-- Example: PDF skill with "Quick Start" -> "Merge PDFs" -> "Split PDFs" -> "Extract Text"
-- Structure: ## Overview -> ## Quick Start -> ## Task Category 1 -> ## Task Category 2...
+1. Use a tool-first path for sending without custom contracts, bridging funds, status lookup, connectivity checks, and route or token discovery.
+2. Use a contract-first path for sender and receiver contract work and CCT setup flows.
+3. Ask one focused question if the route, network, token, amount, or target contracts are missing.
+4. Proceed without approval only for read-only work such as explanation, discovery, status checks, and code generation.
+5. Trigger the approval protocol before any action that could create, transfer, deploy, register, enable, or configure on-chain state.
+6. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
 
-**3. Reference/Guidelines** (best for standards or specifications)
-- Works well for brand guidelines, coding standards, or requirements
-- Example: Brand styling with "Brand Guidelines" -> "Colors" -> "Typography" -> "Features"
-- Structure: ## Overview -> ## Guidelines -> ## Specifications -> ## Usage...
+## Safety Guardrails
 
-**4. Capabilities-Based** (best for integrated systems)
-- Works well when the skill provides multiple interrelated features
-- Example: Product Management with "Core Capabilities" -> numbered capability list
-- Structure: ## Overview -> ## Core Capabilities -> ### 1. Feature -> ### 2. Feature...
+1. Never execute any on-chain action without explicit user approval.
+2. Never assume the intended route, lane, network, token, amount, or destination.
+3. Refuse all mainnet write actions in v1.
+4. Allow read-only mainnet lookups in v1.
+5. Prefer the least risky valid path. If the user can accomplish the goal through CCIP tools, do not default to custom contracts.
+6. For contract work, prefer secure, conservative patterns with explicit access control, validation, least-privilege configuration, and minimal moving parts.
+7. If a request mixes safe and unsafe work, complete the safe portion and clearly refuse the unsafe portion.
+8. If the user asks to bypass these guardrails, refuse and explain the constraint directly.
 
-Patterns can be mixed and matched as needed. Most skills combine patterns (e.g., start with task-based, add workflow for complex operations).
+## Approval Protocol
 
-Delete this entire "Structuring This Skill" section when done - it's just guidance.]
+Before any on-chain action, present a short preflight summary that includes:
 
-## [TODO: Replace with the first main section based on chosen structure]
+1. action type
+2. network type
+3. source chain
+4. destination chain
+5. route or lane details if known
+6. token and amount if applicable
+7. whether the action sends data, tokens, or both
+8. contract addresses involved if applicable
+9. tool or method to be used
+10. expected effect
 
-[TODO: Add content here. See examples in existing skills:
-- Code samples for technical skills
-- Decision trees for complex workflows
-- Concrete examples with realistic user requests
-- References to scripts/templates/references as needed]
+End the preflight with a direct approval question.
 
-## Resources (optional)
+Use this structure:
 
-Create only the resource directories this skill actually needs. Delete this section if no resources are required.
+```text
+Proposed on-chain action:
+- Action: ...
+- Network: ...
+- Source chain: ...
+- Destination chain: ...
+- Route/lane: ...
+- Token/amount: ...
+- Payload: ...
+- Contracts: ...
+- Method: ...
+- Expected effect: ...
 
-### scripts/
-Executable code (Python/Bash/etc.) that can be run directly to perform specific operations.
+Do you want me to execute this?
+```
 
-**Examples from other skills:**
-- PDF skill: `fill_fillable_fields.py`, `extract_form_field_info.py` - utilities for PDF manipulation
-- DOCX skill: `document.py`, `utilities.py` - Python modules for document processing
+## Second Confirmation Rule
 
-**Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
+Require a second explicit confirmation immediately before execution for any testnet action that:
 
-**Note:** Scripts may be executed without loading into context, but can still be read by Codex for patching or environment adjustments.
+1. sends a CCIP message
+2. transfers or bridges tokens
+3. deploys contracts
+4. creates a token
+5. enables or configures a CCT lane
 
-### references/
-Documentation and reference material intended to be loaded into context to inform Codex's process and thinking.
+Do not treat the user's original intent as the second confirmation. Ask again right before the side-effecting step.
 
-**Examples from other skills:**
-- Product management: `communication.md`, `context_building.md` - detailed workflow guides
-- BigQuery: API reference documentation and query examples
-- Finance: Schema documentation, company policies
+## Working Rules
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that Codex should reference while working.
-
-### assets/
-Files not intended to be loaded into context, but rather used within the output Codex produces.
-
-**Examples from other skills:**
-- Brand styling: PowerPoint template files (.pptx), logo files
-- Frontend builder: HTML/React boilerplate project directories
-- Typography: Font files (.ttf, .woff2)
-
-**Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
-
----
-
-**Not every skill requires all three types of resources.**
+1. Keep questions narrow and unblock the next safe step.
+2. Explain the chosen path briefly.
+3. Generate code only when code is actually needed.
+4. Keep unsupported or out-of-scope features out of the answer rather than speculating about them.
