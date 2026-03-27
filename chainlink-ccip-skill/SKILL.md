@@ -18,10 +18,11 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 3. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live CCIP facts, current tool behavior, route or token availability, or message-status surfaces.
 4. Read [references/ccip-tools.md](references/ccip-tools.md) only when the user wants a tool-first workflow through CCIP CLI, API, or SDK.
 5. Read [references/ccip-contracts.md](references/ccip-contracts.md) only when the user wants sender or receiver contracts, token-transfer contracts, programmable token-transfer contracts, or contract setup help.
-6. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
-7. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
-8. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
-9. Do not load reference files speculatively.
+6. Read [references/ccip-cct.md](references/ccip-cct.md) only when the user wants to create a token, register it as a CCT, configure pools, set rate limits, or add networks for CCT operation.
+7. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
+8. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
+9. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
+10. Do not load reference files speculatively.
 
 ## Routing
 
