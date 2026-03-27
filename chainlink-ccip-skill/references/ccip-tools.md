@@ -29,8 +29,8 @@ If the route or network is missing, ask for it. Do not assume a lane.
 ## Default Path
 
 1. Prefer the CCIP CLI for side-effecting on-chain actions such as fee estimation, sending, token support checks, and manual execution.
-2. Prefer the CCIP API for monitoring, querying, searching, and message-status workflows.
-3. Use the CCIP SDK only when the user asks for a programmatic integration or code sample.
+2. Use the CCIP SDK only when the user asks for a programmatic integration or code sample.
+3. Route read-only monitoring, querying, searching, lane-latency checks, and message-status workflows to [ccip-monitoring.md](ccip-monitoring.md).
 4. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
 
 Reference points:
@@ -50,7 +50,7 @@ Reference points:
 4. Ask for explicit approval.
 5. Ask for a second confirmation immediately before execution.
 6. Execute the transfer only after both confirmations.
-7. Track the message and share the follow-up status path.
+7. If the user wants follow-up tracking, route that request to [ccip-monitoring.md](ccip-monitoring.md).
 
 ### For data-only message sends
 
@@ -60,16 +60,15 @@ Reference points:
 4. Ask for explicit approval.
 5. Ask for a second confirmation immediately before execution.
 6. Execute the send only after both confirmations.
-7. Track the message and share the follow-up status path.
+7. If the user wants follow-up tracking, route that request to [ccip-monitoring.md](ccip-monitoring.md).
 
 ## Freshness Rules
 
-1. Read [official-sources.md](official-sources.md) before answering route, token, or live status questions.
+1. Read [official-sources.md](official-sources.md) before answering route or token questions.
 2. Use the CCIP Directory for route and token availability.
 3. Use CLI docs for side-effecting command behavior.
-4. Use API docs for monitoring, querying, and message lookup behavior.
-5. Use SDK docs for programmatic integration behavior.
-6. Do not hardcode live routes, lane counts, router assumptions, or token support.
+4. Use SDK docs for programmatic integration behavior.
+5. Do not hardcode live routes, lane counts, router assumptions, or token support.
 
 ## Refusal Rules
 
@@ -101,7 +100,7 @@ These prompts should not trigger this story pack:
 4. If the user wants a fee quote only, provide the non-executing path and do not ask for transaction approval.
 5. If the user wants execution on mainnet, refuse the write action.
 6. If execution proceeds on testnet, require both the preflight approval and the second confirmation.
-7. After execution, provide a tracking path for status lookup.
+7. After execution, direct read-only follow-up tracking to [ccip-monitoring.md](ccip-monitoring.md).
 
 ## Eval Checks
 
@@ -113,7 +112,7 @@ The workflow passes if it:
 4. estimates fees before execution
 5. enforces approval and second-confirmation guardrails
 6. refuses mainnet writes
-7. provides a clear post-send tracking path
+7. hands off read-only follow-up tracking to the monitoring workflow
 
 ## A/B Prompt Pack
 
