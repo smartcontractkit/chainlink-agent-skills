@@ -14,7 +14,8 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 1. Keep this file as the default guide.
 2. Read [references/product-definition.md](references/product-definition.md) only when you need to confirm scope or safety constraints.
 3. Read [references/user-stories.md](references/user-stories.md) only when the request is ambiguous or you need routing examples.
-4. Do not load reference files speculatively.
+4. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live CCIP facts, current tool behavior, route or token availability, or message-status surfaces.
+5. Do not load reference files speculatively.
 
 ## Routing
 
