@@ -4,7 +4,7 @@ Use the same prompt with and without the skill installed.
 
 ## Tool-First Sends and Bridging
 
-1. "Bridge 1 test USDC from Ethereum Sepolia to Base Sepolia using CCIP. Tell me the fee first and do not write contracts."
+1. "Bridge 0.01 test USDC from Ethereum Sepolia to Base Sepolia using CCIP. Tell me the fee first and do not write contracts."
 2. "Send a CCIP message with payload `hello world` to this receiver on testnet, but ask me before executing anything."
 3. "Check whether this route supports USDC and, if it does, prepare the transfer flow without deploying contracts."
 4. "I want to use CCIP tools, not Solidity, to move funds across chains. Walk me through the safest path."

@@ -21,6 +21,7 @@ This directory is for:
 - `results-template.md`: markdown template for logging outcomes
 - `feedback-log.md`: maintainer log of failures and follow-up changes
 - `autoresearch-playbook.md`: small-loop improvement process for maintainers
+- `usage-runbook.md`: install, validation, smoke-test, and private local testing guide
 
 ## Suggested Workflow
 
