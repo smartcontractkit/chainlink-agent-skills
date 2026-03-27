@@ -20,7 +20,8 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 5. Read [references/ccip-contracts.md](references/ccip-contracts.md) only when the user wants sender or receiver contracts, token-transfer contracts, programmable token-transfer contracts, or contract setup help.
 6. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
 7. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
-8. Do not load reference files speculatively.
+8. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
+9. Do not load reference files speculatively.
 
 ## Routing
 
