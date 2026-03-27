@@ -33,6 +33,9 @@ Do not use as the primary source for:
 
 URL:
 - `https://docs.chain.link/ccip/tools`
+- `https://docs.chain.link/ccip/tools/api/`
+- `https://docs.chain.link/ccip/tools/sdk/`
+- `https://docs.chain.link/ccip/tools/cli/`
 
 Use for:
 - current CLI documentation
@@ -40,6 +43,10 @@ Use for:
 - current SDK documentation
 - supported-chain information exposed by the tools reference
 - starter projects and tool-oriented examples
+
+Packages:
+- CLI: `@chainlink/ccip-cli`
+- SDK: `@chainlink/ccip-sdk`
 
 Do not use as the primary source for:
 - contract interfaces
@@ -79,7 +86,9 @@ Do not use as the primary source for:
 ## Practical Selection Rules
 
 1. For conceptual or contract questions, start with CCIP Docs.
-2. For CLI, API, or SDK questions, start with CCIP Tools.
-3. For route connectivity or token-availability questions, start with CCIP Directory.
-4. For message-status or explorer-style questions, start with CCIP Explorer.
-5. If the request spans multiple categories, use the smallest number of official sources that fully resolves the question.
+2. For side-effecting tool workflows, start with the CCIP CLI docs.
+3. For monitoring, querying, and message lookup workflows, start with the CCIP API docs.
+4. For programmatic integrations, start with the CCIP SDK docs.
+5. For route connectivity or token-availability questions, start with CCIP Directory.
+6. For explorer-style message-status questions, use CCIP Explorer.
+7. If the request spans multiple categories, use the smallest number of official sources that fully resolves the question.
