@@ -73,7 +73,7 @@ Reference points:
 
 ## Refusal Rules
 
-1. Refuse all mainnet write actions in v1.
+1. Refuse all mainnet write actions in this version.
 2. Refuse to execute if the route, network, recipient, or transfer details are still ambiguous.
 3. Refuse to skip the fee-estimation and approval steps for side-effecting actions.
 4. If the user asks for unsupported behavior, explain the limit and offer the closest safe alternative.

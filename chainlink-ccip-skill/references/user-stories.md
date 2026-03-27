@@ -2,7 +2,7 @@
 
 ## Status
 
-This document freezes the initial v1 story inventory for `chainlink-ccip-skill`.
+This document freezes the current story inventory for `chainlink-ccip-skill`.
 
 ## Story 1: Send a CCIP Message or Bridge Funds Without Writing Contracts
 
@@ -93,7 +93,7 @@ Contract-first with guarded execution steps.
 1. Break the workflow into explicit steps
 2. Explain prerequisites and partial completion states
 3. Ask for approval before every on-chain action
-4. Refuse mainnet execution in v1
+4. Refuse mainnet execution in this version
 
 ## Cross-Story Testing Requirement
 

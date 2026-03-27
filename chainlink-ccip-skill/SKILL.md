@@ -1,6 +1,8 @@
 ---
 name: chainlink-ccip-skill
-description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in v1, and prefer secure, conservative contract patterns."
+description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in this version, and prefer secure, conservative contract patterns."
+metadata:
+  version: "0.0.1"
 ---
 
 # Chainlink CCIP Skill
@@ -15,7 +17,8 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 2. Read [references/user-stories.md](references/user-stories.md) only when the request is ambiguous or you need routing examples.
 3. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live CCIP facts, current tool behavior, route or token availability, or message-status surfaces.
 4. Read [references/ccip-tools.md](references/ccip-tools.md) only when the user wants a tool-first workflow through CCIP CLI, API, or SDK.
-5. Do not load reference files speculatively.
+5. Read [references/ccip-contracts.md](references/ccip-contracts.md) only when the user wants sender or receiver contracts, token-transfer contracts, programmable token-transfer contracts, or contract setup help.
+6. Do not load reference files speculatively.
 
 ## Routing
 
@@ -30,8 +33,8 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 
 1. Never execute any on-chain action without explicit user approval.
 2. Never assume the intended route, lane, network, token, amount, or destination.
-3. Refuse all mainnet write actions in v1.
-4. Allow read-only mainnet lookups in v1.
+3. Refuse all mainnet write actions in this version.
+4. Allow read-only mainnet lookups in this version.
 5. Prefer the least risky valid path. If the user can accomplish the goal through CCIP tools, do not default to custom contracts.
 6. For contract work, prefer secure, conservative patterns with explicit access control, validation, least-privilege configuration, and minimal moving parts.
 7. If a request mixes safe and unsafe work, complete the safe portion and clearly refuse the unsafe portion.
