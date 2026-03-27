@@ -10,6 +10,7 @@ This directory is for:
 2. functional checks
 3. scoring and comparison
 4. teammate-friendly A/B testing
+5. maintainer improvement loops
 
 ## Files
 
@@ -18,6 +19,8 @@ This directory is for:
 - `eval-rubric.md`: shared scoring rubric and must-pass conditions
 - `ab-prompts.md`: reusable prompts for with-skill vs without-skill comparisons
 - `results-template.md`: markdown template for logging outcomes
+- `feedback-log.md`: maintainer log of failures and follow-up changes
+- `autoresearch-playbook.md`: small-loop improvement process for maintainers
 
 ## Suggested Workflow
 
@@ -26,6 +29,7 @@ This directory is for:
 3. Score both runs with `eval-rubric.md`.
 4. Record the comparison in `results-template.md`.
 5. If the skill underperforms, capture the failure mode before editing the skill.
+6. For maintainer follow-up, log the issue in `feedback-log.md` and use `autoresearch-playbook.md`.
 
 ## Coverage Areas
 
