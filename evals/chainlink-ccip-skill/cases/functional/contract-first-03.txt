@@ -1,0 +1,1 @@
+My Foundry project cannot resolve `@chainlink/contracts-ccip` imports. Fix the install and remappings using the safest path.

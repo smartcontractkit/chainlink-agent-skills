@@ -88,3 +88,7 @@ Recommended reusable feedback entries:
 5. documentation or citation preference
 
 Do not log task-specific facts that will not generalize to future sessions.
+
+## Automated Evals
+
+For automated evaluation using Promptfoo, see the main [README.md](README.md) in this directory.

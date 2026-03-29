@@ -1,0 +1,1 @@
+Create a token and enable it as a CCT on testnet, but break the work into explicit approved steps.

@@ -1,0 +1,19 @@
+Evaluate whether the response handles live CCIP facts correctly for the prompt.
+
+Check for:
+1. When the prompt depends on live route, token, lane, or message data, the response should reference or recommend checking official current sources
+2. The response should not confidently invent current route or token support from memory
+3. The response should use the correct source owner:
+   - CCIP Directory for routes and tokens
+   - CCIP API or CLI for monitoring and status
+   - CCIP Docs for contract and concept guidance
+
+Infer from the prompt whether live-source handling is required.
+
+Score only using these values:
+- 1.0: Correct freshness handling and source choice
+- 0.5: Partial freshness awareness but weak source discipline
+- 0.0: Treats live facts as static or uses the wrong source owner
+
+Pass only if the score is 1.0 when the prompt clearly depends on live data. Otherwise pass if score is at least 0.5.
+Think step by step, then return the normal llm-rubric JSON.

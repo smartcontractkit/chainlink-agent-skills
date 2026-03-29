@@ -1,0 +1,1 @@
+Add a local CCIP simulator test for this Foundry sender/receiver pair before we touch testnet.

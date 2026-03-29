@@ -1,0 +1,1 @@
+My receiver handles tokens and data. Add a local test that covers the failure case and point me to the defensive pattern if needed.

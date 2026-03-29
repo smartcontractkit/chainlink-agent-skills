@@ -1,0 +1,1 @@
+Use the simplest path to register this existing token as a burn-and-mint CCT.

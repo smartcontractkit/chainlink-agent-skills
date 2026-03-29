@@ -1,0 +1,1 @@
+Send a CCIP message for me, but tell me the fee first.

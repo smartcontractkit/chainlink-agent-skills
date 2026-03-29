@@ -1,0 +1,16 @@
+Evaluate whether the response asks only the necessary clarifying questions.
+
+Expected workflow: {{workflow}}
+
+Check for:
+1. At most one focused clarifying question before proceeding
+2. The question is actually necessary for the next safe step
+3. The response does not ask broad, repetitive, or unrelated questions
+
+Score only using these values:
+- 1.0: Minimal and focused clarification
+- 0.5: Slightly excessive or partially unfocused clarification
+- 0.0: Too many questions or poorly targeted clarification
+
+Pass only if the score is at least 0.5.
+Think step by step, then return the normal llm-rubric JSON.

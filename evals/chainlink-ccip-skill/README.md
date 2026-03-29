@@ -1,40 +1,77 @@
 # Chainlink CCIP Skill Evals
 
-This directory contains the committed eval harness for `chainlink-ccip-skill`.
+This directory contains the Promptfoo eval suite for `chainlink-ccip-skill`.
 
 The shipped skill lives in `chainlink-ccip-skill/`.
 
-This directory is for:
+This directory supports both:
 
-1. trigger checks
-2. functional checks
-3. scoring and comparison
-4. teammate-friendly A/B testing
-5. maintainer improvement loops
+1. automated Promptfoo evaluation
+2. lightweight manual testing via the runbook
 
-## Files
+## Quick Start
 
-- `trigger-tests.md`: positive and negative trigger cases
-- `functional-tests.md`: behavior checks by workflow
-- `eval-rubric.md`: shared scoring rubric and must-pass conditions
-- `ab-prompts.md`: reusable prompts for with-skill vs without-skill comparisons
-- `results-template.md`: markdown template for logging outcomes
-- `feedback-log.md`: maintainer log of failures and follow-up changes
-- `autoresearch-playbook.md`: small-loop improvement process for maintainers
-- `usage-runbook.md`: install, validation, smoke-test, and private local testing guide
+```bash
+npm install -g promptfoo
+cd evals/chainlink-ccip-skill
+promptfoo eval
+promptfoo view
+```
 
-## Suggested Workflow
+The skill itself is agent-agnostic. However, Promptfoo still needs an execution provider. That provider is configurable through environment variables.
 
-1. Run the selected prompt without the skill.
-2. Run the same prompt with the skill installed.
-3. Score both runs with `eval-rubric.md`.
-4. Record the comparison in `results-template.md`.
-5. If the skill underperforms, capture the failure mode before editing the skill.
-6. For maintainer follow-up, log the issue in `feedback-log.md` and use `autoresearch-playbook.md`.
+Defaults:
 
-## Coverage Areas
+- baseline provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
+- with-skill provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
+- grader provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
 
-The eval harness currently covers:
+Examples:
+
+Anthropic:
+
+```bash
+export ANTHROPIC_API_KEY=sk-...
+promptfoo eval
+```
+
+OpenAI:
+
+```bash
+export PROMPTFOO_BASELINE_PROVIDER='openai:gpt-5-mini'
+export PROMPTFOO_WITH_SKILL_PROVIDER='openai:gpt-5-mini'
+export PROMPTFOO_GRADER_PROVIDER='openai:gpt-5-mini'
+export OPENAI_API_KEY=sk-...
+promptfoo eval
+```
+
+Google:
+
+```bash
+export PROMPTFOO_BASELINE_PROVIDER='google:gemini-2.5-pro'
+export PROMPTFOO_WITH_SKILL_PROVIDER='google:gemini-2.5-pro'
+export PROMPTFOO_GRADER_PROVIDER='google:gemini-2.5-pro'
+export GOOGLE_API_KEY=...
+promptfoo eval
+```
+
+Run a subset:
+
+```bash
+promptfoo eval --filter-pattern "tool-first"
+```
+
+## What Gets Evaluated
+
+The suite covers:
+
+1. trigger behavior
+2. functional workflow behavior
+3. must-pass safety checks
+4. output completeness and usefulness
+5. freshness and source selection
+
+Workflow coverage:
 
 1. tool-first sends and bridging
 2. contract-first sender and receiver generation
@@ -42,3 +79,44 @@ The eval harness currently covers:
 4. monitoring and status workflows
 5. route and token discovery
 6. CCT workflows
+
+## Files
+
+- `promptfooconfig.yaml`: root Promptfoo configuration
+- `cases/`: prompt case files
+- `rubrics/`: LLM-as-judge rubric files
+- `autoresearch-playbook.md`: maintainer improvement loop
+- `feedback-log.md`: maintainer failure log used with the playbook
+- `usage-runbook.md`: local install and manual test guide
+
+## Reading Results
+
+After `promptfoo eval`, run:
+
+```bash
+promptfoo view
+```
+
+Use the web viewer to compare:
+
+1. baseline vs with-skill outputs
+2. pass/fail assertions
+3. rubric scores
+4. failure reasons
+
+## Cost Estimate
+
+A curated subset of about 30 cases across 2 providers at roughly 10K tokens per case is about `$1.50-$3.00` with Sonnet.
+
+The current full suite is larger than that subset, so expect a higher cost for a full run.
+
+## Manual Testing
+
+For manual A/B testing and local install instructions, see [usage-runbook.md](usage-runbook.md).
+
+## Improvement Loop
+
+For maintainer follow-up after failures:
+
+1. record the issue in `feedback-log.md`
+2. follow the small-loop process in [autoresearch-playbook.md](autoresearch-playbook.md)

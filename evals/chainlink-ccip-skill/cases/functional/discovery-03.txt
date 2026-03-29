@@ -1,0 +1,1 @@
+Can I move USDC on this CCIP route, or is the route available but the token unsupported?

@@ -1,0 +1,1 @@
+Check whether this route supports USDC and, if it does, prepare the transfer flow without deploying contracts.

@@ -1,0 +1,1 @@
+Set token pool rate limits for this CCT and explain each admin step before doing anything.

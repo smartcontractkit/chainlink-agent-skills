@@ -1,0 +1,1 @@
+I want to use CCIP tools, not Solidity, to move funds across chains. Walk me through the safest path.

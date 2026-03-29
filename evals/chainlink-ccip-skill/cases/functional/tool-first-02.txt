@@ -1,0 +1,1 @@
+Send a CCIP message with payload `hello world` to this receiver on testnet, but ask me before executing anything.
