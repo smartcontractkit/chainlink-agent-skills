@@ -1,6 +1,8 @@
 ---
 name: chainlink-ccip-skill
 description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in this version, and prefer secure, conservative contract patterns."
+license: MIT
+compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 metadata:
   version: "0.0.1"
 ---

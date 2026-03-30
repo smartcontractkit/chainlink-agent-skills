@@ -95,6 +95,25 @@ Contract-first with guarded execution steps.
 3. Ask for approval before every on-chain action
 4. Refuse mainnet execution in this version
 
+## Story 6: Add Chainlink Local Simulation and Testing
+
+### User intent
+
+- "Add Chainlink Local tests for this CCIP sender and receiver."
+- "Set up local CCIP simulation before we touch testnet."
+- "Use Chainlink Local in this Foundry or Hardhat repo."
+
+### Expected route
+
+Contract-first with local-testing workflow guidance.
+
+### Target behavior
+
+1. Prefer Chainlink Local before live-network testing
+2. Stay in the repository's existing framework unless the user asks to switch
+3. Distinguish clearly between local simulation and forked-environment testing
+4. Verify fork-network details against the CCIP Directory when fork tests are used
+
 ## Cross-Story Testing Requirement
 
 Every story must eventually include:

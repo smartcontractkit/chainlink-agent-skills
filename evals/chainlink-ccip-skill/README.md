@@ -24,7 +24,7 @@ Defaults:
 
 - baseline provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
 - with-skill provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
-- grader provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
+- grader provider: `openai:gpt-5-mini` unless overridden
 
 Examples:
 
