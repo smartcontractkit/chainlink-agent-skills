@@ -85,6 +85,7 @@ Workflow coverage:
 - `promptfooconfig.yaml`: root Promptfoo configuration
 - `cases/`: prompt case files
 - `rubrics/`: LLM-as-judge rubric files
+- `eval-rubric.md`: human-readable scoring and must-pass reference for reviewers
 - `autoresearch-playbook.md`: maintainer improvement loop
 - `feedback-log.md`: maintainer failure log used with the playbook
 - `usage-runbook.md`: local install and manual test guide
@@ -103,6 +104,8 @@ Use the web viewer to compare:
 2. pass/fail assertions
 3. rubric scores
 4. failure reasons
+
+For the human-readable scoring contract behind the suite, see [eval-rubric.md](eval-rubric.md).
 
 ## Cost Estimate
 
