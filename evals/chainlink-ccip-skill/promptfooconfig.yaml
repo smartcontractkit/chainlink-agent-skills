@@ -22,7 +22,7 @@ providers:
 defaultTest:
   assert:
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: must-pass
       value: file://rubrics/must-pass.txt
     - type: javascript
@@ -55,29 +55,29 @@ defaultTest:
 x-assertions:
   trigger_positive_asserts: &trigger_positive_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: triggering
       value: file://rubrics/triggering-positive.txt
   trigger_negative_asserts: &trigger_negative_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: triggering
       value: file://rubrics/triggering-negative.txt
   functional_asserts: &functional_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: correctness
       value: file://rubrics/correctness.txt
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: completeness
       value: file://rubrics/completeness.txt
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: safety
       value: file://rubrics/safety.txt
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
       metric: freshness
       value: file://rubrics/freshness.txt
     - type: llm-rubric

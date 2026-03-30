@@ -50,7 +50,7 @@ Check that:
 
 ## Smoke Test
 
-Pick prompts from `ab-prompts.md` and score the results with `eval-rubric.md`.
+Pick prompts from `cases/functional/` and score the results with `eval-rubric.md`.
 
 Recommended first smoke tests:
 

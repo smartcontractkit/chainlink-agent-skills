@@ -39,7 +39,7 @@ Turn raw feedback into small, testable improvements without making multiple unre
 
 ### Trigger or routing problems
 
-1. Check `trigger-tests.md`.
+1. Check `cases/trigger-positive/` and `cases/trigger-negative/`.
 2. Check whether the wrong reference file is too broad.
 3. Tighten the owning reference before adding new routing text in `SKILL.md`.
 
