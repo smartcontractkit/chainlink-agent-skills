@@ -11,7 +11,7 @@ Skills follow the [Agent Skills format](https://agentskills.io/specification): Y
 
 | Skill                     | Description                                                               |
 | ------------------------- | ------------------------------------------------------------------------- |
-| [cre-skills](cre-skills/) | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations |
+| [chainlink-cre-skill](chainlink-cre-skill/) | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations |
 | [chainlink-ccip-skill](chainlink-ccip-skill/) | CCIP sends, contracts, local testing, monitoring, discovery, and CCT workflows |
 
 
@@ -24,7 +24,7 @@ But if you want to install globally (at the user level) then add the `-g` flag.
 Note the use of `--skill` to specify which specific skill to install. 
 
 ```
-npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills -g
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill chainlink-cre-skill -g
 npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill chainlink-ccip-skill -g
 ```
 
@@ -32,7 +32,7 @@ npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skil
 
 When your agent supports Agent Skills, it will discover and activate these skills based on the task. **However** we recommend that you explicitly invoke the skill in your agent chat sessions as follows:
 
-`Use the /cre-skills skill and .....[insert detailed prompt]....`
+`Use the /chainlink-cre-skill skill and .....[insert detailed prompt]....`
 
 `Use the /chainlink-ccip-skill skill and .....[insert detailed prompt]....`
 

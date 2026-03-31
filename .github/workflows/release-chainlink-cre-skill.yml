@@ -1,10 +1,10 @@
-name: Release CRE Skills
+name: Release Chainlink CRE Skill
 
 on:
   workflow_dispatch:
 
 jobs:
-  release-cre-skills:
+  release-chainlink-cre-skill:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -12,16 +12,16 @@ jobs:
 
       - name: Validate SKILL.md exists
         run: |
-          if [ ! -f "cre-skills/SKILL.md" ]; then
-            echo "Error: cre-skills/SKILL.md not found"
+          if [ ! -f "chainlink-cre-skill/SKILL.md" ]; then
+            echo "Error: chainlink-cre-skill/SKILL.md not found"
             exit 1
           fi
 
       - name: Extract version from SKILL.md
         run: |
-          VERSION=$(grep -A 10 "^---" cre-skills/SKILL.md | grep "version:" | head -1 | sed 's/.*version: "\(.*\)"/\1/')
+          VERSION=$(grep -A 10 "^---" chainlink-cre-skill/SKILL.md | grep "version:" | head -1 | sed 's/.*version: "\(.*\)"/\1/')
           if [ -z "$VERSION" ]; then
-            echo "Error: Could not find version in cre-skills/SKILL.md"
+            echo "Error: Could not find version in chainlink-cre-skill/SKILL.md"
             exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -29,17 +29,17 @@ jobs:
 
       - name: Create skill package
         run: |
-          ZIP_NAME="cre-skills-v${VERSION}.zip"
-          zip -r "$ZIP_NAME" cre-skills/
+          ZIP_NAME="chainlink-cre-skill-v${VERSION}.zip"
+          zip -r "$ZIP_NAME" chainlink-cre-skill/
           echo "ZIP_FILE=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.ZIP_FILE }}
-          tag_name: cre-skills/v${{ env.VERSION }}
+          tag_name: chainlink-cre-skill/v${{ env.VERSION }}
           body: |
-            Automated release of CRE Skills v${{ env.VERSION }}
+            Automated release of Chainlink CRE Skill v${{ env.VERSION }}
             Generated from branch: ${{ github.ref }}
           prerelease: false
         env:
