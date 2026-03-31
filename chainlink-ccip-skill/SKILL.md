@@ -5,6 +5,7 @@ license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 metadata:
   version: "0.0.1"
+  mcp-server: "@chainlink/mcp-server"
 ---
 
 # Chainlink CCIP Skill
@@ -18,22 +19,24 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 1. Keep this file as the default guide.
 2. Read [references/user-stories.md](references/user-stories.md) only when the request is ambiguous or you need routing examples.
 3. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live CCIP facts, current tool behavior, route or token availability, or message-status surfaces.
-4. Read [references/ccip-tools.md](references/ccip-tools.md) only when the user wants a tool-first workflow through CCIP CLI, API, or SDK.
-5. Read [references/ccip-contracts.md](references/ccip-contracts.md) only when the user wants sender or receiver contracts, token-transfer contracts, programmable token-transfer contracts, or contract setup help.
-6. Read [references/ccip-cct.md](references/ccip-cct.md) only when the user wants to create a token, register it as a CCT, configure pools, set rate limits, or add networks for CCT operation.
-7. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
-8. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
-9. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
-10. Do not load reference files speculatively.
+4. Read [references/ccip-mcp.md](references/ccip-mcp.md) only when the `ccip_sdk` MCP tool is available and the request can be fulfilled by it for monitoring, discovery, or SDK method calls.
+5. Read [references/ccip-tools.md](references/ccip-tools.md) only when the user wants a tool-first workflow through CCIP CLI, API, or SDK.
+6. Read [references/ccip-contracts.md](references/ccip-contracts.md) only when the user wants sender or receiver contracts, token-transfer contracts, programmable token-transfer contracts, or contract setup help.
+7. Read [references/ccip-cct.md](references/ccip-cct.md) only when the user wants to create a token, register it as a CCT, configure pools, set rate limits, or add networks for CCT operation.
+8. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
+9. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
+10. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
+11. Do not load reference files speculatively.
 
 ## Routing
 
 1. Use a tool-first path for sending without custom contracts, bridging funds, status lookup, connectivity checks, and route or token discovery.
-2. Use a contract-first path for sender and receiver contract work and CCT setup flows.
-3. Ask one focused question if the route, network, token, amount, or target contracts are missing.
-4. Proceed without approval only for read-only work such as explanation, discovery, status checks, and code generation.
-5. Trigger the approval protocol before any action that could create, transfer, deploy, register, enable, or configure on-chain state.
-6. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
+2. When the `ccip_sdk` MCP tool is available, prefer it over direct CLI or SDK invocation for monitoring, discovery, and programmatic SDK method calls. Fall back to CLI or SDK when the tool is not available.
+3. Use a contract-first path for sender and receiver contract work and CCT setup flows.
+4. Ask one focused question if the route, network, token, amount, or target contracts are missing.
+5. Proceed without approval only for read-only work such as explanation, discovery, status checks, and code generation.
+6. Trigger the approval protocol before any action that could create, transfer, deploy, register, enable, or configure on-chain state.
+7. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
 
 ## Safety Guardrails
 

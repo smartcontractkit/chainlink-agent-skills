@@ -16,10 +16,11 @@ Do not use this workflow for contract generation or direct send/bridge execution
 
 ## Default Path
 
-1. Prefer the CCIP API for monitoring, querying, and message lookup workflows.
-2. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
-3. Use explorer-style lookup only when the user explicitly wants an explorer view or the API/CLI path is less convenient.
-4. Do not switch to side-effecting remediation unless the user explicitly asks for it.
+1. When the `ccip_sdk` MCP tool is available, prefer it with `target='api'` for message retrieval, lane latency, and query workflows. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
+2. Prefer the CCIP API docs for monitoring and query workflows when MCP is not connected.
+3. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
+4. Use explorer-style lookup only when the user explicitly wants an explorer view or the API/CLI path is less convenient.
+5. Do not switch to side-effecting remediation unless the user explicitly asks for it.
 
 Reference points:
 
@@ -28,6 +29,16 @@ Reference points:
 - Explorer: `https://ccip.chain.link/`
 
 ## Core Monitoring Surfaces
+
+### ccip_sdk MCP Tool
+
+When the MCP server is connected, prefer the `ccip_sdk` tool with `target='api'` for:
+
+1. retrieving a message by ID or transaction hash
+2. lane latency queries (pass chain selectors as strings)
+3. programmatic monitoring integrations that benefit from structured MCP responses
+
+Use `listMethods=true` with `target='api'` to discover all available monitoring methods. Fall back to the CCIP API or CLI paths below when MCP is not connected.
 
 ### CCIP API
 
