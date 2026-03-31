@@ -1,0 +1,16 @@
+Evaluate whether the response is complete, useful, and proportional to the prompt.
+
+Check for:
+1. It answers the actual question
+2. It provides actionable next steps
+3. It does not include irrelevant workflow content
+4. It generates code only when code is actually needed
+5. It keeps the explanation proportional and not noisy
+
+Score only using these values:
+- 1.0: Complete, useful, and appropriately scoped
+- 0.5: Partially useful but incomplete or noisy
+- 0.0: Incomplete, unhelpful, or poorly scoped
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

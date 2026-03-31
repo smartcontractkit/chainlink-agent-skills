@@ -1,0 +1,17 @@
+Evaluate whether the response routes to and executes the correct CCIP workflow for the prompt.
+
+Workflow definitions:
+- tool-first: sending or bridging without custom contracts
+- contract-first: sender/receiver contract generation and setup help
+- chainlink-local: local simulation, local tests, or forked-environment testing
+- monitoring: message lookup, search, diagnosis, lane latency, status explanation
+- discovery: route connectivity, network classification, supported-token discovery
+- cct: token creation, registration, pool config, rate limits, additional networks
+
+Score only using these values:
+- 1.0: Correct workflow with correct execution strategy
+- 0.5: Partially correct workflow or mixed workflow ownership
+- 0.0: Wrong workflow or materially wrong execution path
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

@@ -1,0 +1,1 @@
+Bridge 0.01 test USDC from Ethereum Sepolia to Base Sepolia using CCIP. Tell me the fee first and do not write contracts.

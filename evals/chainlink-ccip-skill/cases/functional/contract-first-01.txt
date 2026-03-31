@@ -1,0 +1,1 @@
+Create a minimal CCIP sender and receiver in Solidity for arbitrary messaging on testnet, with secure defaults.

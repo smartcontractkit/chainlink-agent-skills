@@ -1,0 +1,1 @@
+I want a contract sender but an EOA receiver. If I send both data and tokens, what actually arrives and how should I design around that?

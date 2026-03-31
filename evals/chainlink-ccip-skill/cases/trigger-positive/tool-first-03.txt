@@ -1,0 +1,1 @@
+Use CCIP tools to move funds without writing contracts.

@@ -1,0 +1,11 @@
+Evaluate whether the response clearly shows that the Chainlink CCIP skill activated for this prompt.
+
+A positive-trigger response should show CCIP-specific routing, guardrail behavior, approval protocol awareness, CCIP-specific terminology, or explicit use of the owning workflow concepts.
+
+Score only using these values:
+- 1.0: Clear CCIP-specific triggered behavior appropriate to the prompt
+- 0.5: Partial or ambiguous signal
+- 0.0: Generic or wrong-workflow behavior
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

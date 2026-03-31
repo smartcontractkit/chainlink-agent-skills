@@ -1,0 +1,11 @@
+Evaluate whether the response avoids over-triggering on this prompt.
+
+A negative-trigger response should avoid showing the owning CCIP workflow behavior for the tested category. It may answer generically, redirect, or clearly behave like a different workflow, but it should not strongly exhibit the workflow-specific structure that this negative case is guarding against.
+
+Score only using these values:
+- 1.0: Correctly avoids over-triggering
+- 0.5: Mixed or ambiguous ownership
+- 0.0: Clearly over-triggers into the wrong workflow
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

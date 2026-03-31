@@ -1,0 +1,1 @@
+Register this token as a burn-and-mint CCT.

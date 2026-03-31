@@ -1,0 +1,1 @@
+My receiver handles both tokens and data. If the data path can revert, show me the defensive CCIP receiver pattern that avoids unsafe retry behavior.

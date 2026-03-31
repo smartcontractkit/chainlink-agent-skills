@@ -1,0 +1,1 @@
+Check lane latency for this route and tell me whether I should treat it as a route problem or just current performance.

@@ -1,0 +1,1 @@
+In this fork test, compare `ccipLocalSimulatorFork.getNetworkDetails(block.chainid)` with the CCIP Directory and fix any mismatch using explicit network config.

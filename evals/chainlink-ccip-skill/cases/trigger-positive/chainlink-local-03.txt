@@ -1,0 +1,1 @@
+Create a forked-environment CCIP test only if the local simulator is not enough.

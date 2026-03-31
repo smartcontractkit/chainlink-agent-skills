@@ -1,0 +1,1 @@
+I need a token-only CCIP sender/receiver pair. Prefer a boring, security-first implementation over abstraction.
