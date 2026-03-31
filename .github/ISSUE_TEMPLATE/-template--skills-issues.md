@@ -8,7 +8,7 @@ assignees: zeuslawyer
 ---
 
 ** Skill Name**
-e.g `cre-skills`
+e.g `chainlink-cre-skill`
 
 ** Description of expected result vs actual result **
 

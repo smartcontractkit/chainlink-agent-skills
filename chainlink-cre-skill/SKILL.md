@@ -1,5 +1,5 @@
 ---
-name: cre-skills
+name: chainlink-cre-skill
 description: Enable developers to learn and use Chainlink Runtime Environment (CRE) quickly by referencing filtered CRE docs. Trigger when user wants onboarding, CRE workflow generation (in TypeScript or Golang or other supported languages), workflow guidance, CRE CLI and/or SDK help, runtime operations advice, or capability selection
 license: MIT
 compatibility: Designed for Claude Code, Cursor Composer, and AI agents that implement https://agentskills.io/specification. Cursor Composer (1.5) is particularly recommended — its WebFetch returns full page content including code snippets.
@@ -9,7 +9,7 @@ metadata:
   version: "0.2"
 ---
 
-# CRE Skills
+# Chainlink CRE Skill
 
 Assist developers working with the Chainlink Runtime Environment (CRE) by looking up the latest documentation at runtime.
 
