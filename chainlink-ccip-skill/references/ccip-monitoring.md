@@ -70,7 +70,7 @@ Treat `manual-exec` as a separate side-effecting operation, not as a default mon
 
 1. Identify what the user has: tx hash, message ID, sender, route, or wallet.
 2. If the user has a tx hash or message ID and wants direct tracking, use the CLI or API retrieve-message path.
-3. If the user wants search or listing, prefer the API and use CLI search as a complementary path.
+3. If the user wants search or listing, prefer the API and use CLI search as an additional path.
 4. Explain the lifecycle state clearly instead of only returning raw data.
 
 ### Lane checks
