@@ -28,10 +28,11 @@ If the route or network is missing, ask for it. Do not assume a lane.
 
 ## Default Path
 
-1. Prefer the CCIP CLI for side-effecting on-chain actions such as fee estimation, sending, token support checks, and manual execution.
-2. Use the CCIP SDK only when the user asks for a programmatic integration or code sample.
-3. Route read-only monitoring, querying, searching, lane-latency checks, and message-status workflows to [ccip-monitoring.md](ccip-monitoring.md).
-4. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
+1. When the `ccip_sdk` MCP tool is available, prefer it for programmatic SDK and API operations such as fee estimation, message status, lane latency, and on-chain reads. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
+2. Prefer the CCIP CLI for side-effecting on-chain actions such as sending, token support checks, and manual execution when MCP is not connected or the action is not supported by the MCP tool.
+3. Use the CCIP SDK directly only when the user asks for a programmatic integration, code sample, or MCP is not available.
+4. Route read-only monitoring, querying, searching, lane-latency checks, and message-status workflows to [ccip-monitoring.md](ccip-monitoring.md).
+5. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
 
 Reference points:
 - CLI docs: `https://docs.chain.link/ccip/tools/cli/`
