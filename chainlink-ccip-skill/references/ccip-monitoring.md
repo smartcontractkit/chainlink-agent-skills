@@ -19,7 +19,7 @@ Do not use this workflow for contract generation or direct send/bridge execution
 1. When the `ccip_sdk` MCP tool is available, prefer it with `target='api'` for message retrieval, lane latency, and query workflows. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
 2. Prefer the CCIP API docs for monitoring and query workflows when MCP is not connected.
 3. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
-4. Use explorer-style lookup only when the user explicitly wants an explorer view or the API/CLI path is less convenient.
+4. If the MCP tool, API, or CLI path does not return a result or returns an error, fall back to the CCIP Explorer (`https://ccip.chain.link/`). The Explorer is the most reliable interactive surface for message status today.
 5. Do not switch to side-effecting remediation unless the user explicitly asks for it.
 
 Reference points:
@@ -65,6 +65,19 @@ Prefer the CLI for:
 Treat `manual-exec` as a separate side-effecting operation, not as a default monitoring action.
 
 ## Monitoring Workflow
+
+### Extracting a message ID from a transaction receipt
+
+After a CCIP send (via `cast send`, a contract call, or any on-chain submission), the CCIP message ID is emitted in the transaction logs. It is not returned directly by the send call.
+
+To extract it:
+
+1. Get the transaction receipt (e.g. `cast receipt <tx-hash>`).
+2. Look for the `CCIPSendRequested` event in the logs. For token transfers, also check the `TokensSent` event.
+3. The message ID is in the event topics (typically `topics[1]` for `CCIPSendRequested`, or a field in the log data depending on the CCIP version).
+4. If using `cast`, parse the relevant log entry from the receipt output. The message ID is a 32-byte hex value (`0x` followed by 64 hex characters).
+
+If log parsing is not practical, the transaction hash itself can be used with the CCIP Explorer, CLI `show`, or MCP/API lookup to find the associated message.
 
 ### Message lookup
 

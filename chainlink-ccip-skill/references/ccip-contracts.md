@@ -66,6 +66,10 @@ Important behaviors from the official references:
 4. `IRouterClient.isChainSupported` can be used to verify chain support.
 5. If tokens and data are sent to an EOA receiver, only the tokens arrive.
 
+## Testnet Tokens
+
+For testnet contract-first flows, the standard test token is **CCIP-BnM** (burn-and-mint). It is the token provided by the Chainlink faucet and used in official CCIP tutorials. When generating or testing token-transfer contracts on a testnet, use CCIP-BnM as the default token unless the user specifies otherwise.
+
 ## Contract Workflow
 
 ### Data-only contracts
@@ -119,6 +123,8 @@ If CCIP imports pull in OpenZeppelin contracts, install the exact versions requi
 @openzeppelin/contracts@4.8.3/=lib/openzeppelin-contracts-4.8.3/contracts/
 @openzeppelin/contracts@5.3.0/=lib/openzeppelin-contracts-5.3.0/contracts/
 ```
+
+`CCIPReceiver` itself imports `IERC165` from OpenZeppelin, and the version it expects may differ from the OZ version used elsewhere in the project. For example, `CCIPReceiver` may require `@openzeppelin/contracts@5.0.2` while other CCIP or Chainlink contracts require `4.8.3` or `5.3.0`. Check the actual import paths in the installed CCIP contracts (grep for `@openzeppelin` in `lib/chainlink-ccip/`) to determine which versions are needed, and add separate remappings for each.
 
 Additional remappings may be required in projects that also depend on Chainlink ACE or related packages:
 

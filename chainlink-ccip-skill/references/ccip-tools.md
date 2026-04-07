@@ -41,6 +41,10 @@ Reference points:
 - CLI package: `@chainlink/ccip-cli`
 - SDK package: `@chainlink/ccip-sdk`
 
+## Testnet Tokens
+
+For testnet flows, the standard test token is **CCIP-BnM** (burn-and-mint). It is the token provided by the Chainlink faucet and used in official CCIP tutorials. When the user is working on a testnet and has not specified a token, suggest CCIP-BnM as the default. LINK and WETH are also available on some testnet routes but CCIP-BnM is the most common starting point.
+
 ## Send and Bridge Workflow
 
 ### For token transfers
