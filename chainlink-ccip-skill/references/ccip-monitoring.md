@@ -16,10 +16,11 @@ Do not use this workflow for contract generation or direct send/bridge execution
 
 ## Default Path
 
-1. Prefer the CCIP API for monitoring, querying, and message lookup workflows.
-2. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
-3. Use explorer-style lookup only when the user explicitly wants an explorer view or the API/CLI path is less convenient.
-4. Do not switch to side-effecting remediation unless the user explicitly asks for it.
+1. When the `ccip_sdk` MCP tool is available, prefer it with `target='api'` for message retrieval, lane latency, and query workflows. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
+2. Prefer the CCIP API docs for monitoring and query workflows when MCP is not connected.
+3. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
+4. If the MCP tool, API, or CLI path does not return a result or returns an error, fall back to the CCIP Explorer (`https://ccip.chain.link/`). The Explorer is the most reliable interactive surface for message status today.
+5. Do not switch to side-effecting remediation unless the user explicitly asks for it.
 
 Reference points:
 
@@ -28,6 +29,16 @@ Reference points:
 - Explorer: `https://ccip.chain.link/`
 
 ## Core Monitoring Surfaces
+
+### ccip_sdk MCP Tool
+
+When the MCP server is connected, prefer the `ccip_sdk` tool with `target='api'` for:
+
+1. retrieving a message by ID or transaction hash
+2. lane latency queries (pass chain selectors as strings)
+3. programmatic monitoring integrations that benefit from structured MCP responses
+
+Use `listMethods=true` with `target='api'` to discover all available monitoring methods. Fall back to the CCIP API or CLI paths below when MCP is not connected.
 
 ### CCIP API
 
@@ -55,11 +66,24 @@ Treat `manual-exec` as a separate side-effecting operation, not as a default mon
 
 ## Monitoring Workflow
 
+### Extracting a message ID from a transaction receipt
+
+After a CCIP send (via `cast send`, a contract call, or any on-chain submission), the CCIP message ID is emitted in the transaction logs. It is not returned directly by the send call.
+
+To extract it:
+
+1. Get the transaction receipt (e.g. `cast receipt <tx-hash>`).
+2. Look for the `CCIPSendRequested` event in the logs. For token transfers, also check the `TokensSent` event.
+3. The message ID is in the event topics (typically `topics[1]` for `CCIPSendRequested`, or a field in the log data depending on the CCIP version).
+4. If using `cast`, parse the relevant log entry from the receipt output. The message ID is a 32-byte hex value (`0x` followed by 64 hex characters).
+
+If log parsing is not practical, the transaction hash itself can be used with the CCIP Explorer, CLI `show`, or MCP/API lookup to find the associated message.
+
 ### Message lookup
 
 1. Identify what the user has: tx hash, message ID, sender, route, or wallet.
 2. If the user has a tx hash or message ID and wants direct tracking, use the CLI or API retrieve-message path.
-3. If the user wants search or listing, prefer the API and use CLI search as a complementary path.
+3. If the user wants search or listing, prefer the API and use CLI search as an additional path.
 4. Explain the lifecycle state clearly instead of only returning raw data.
 
 ### Lane checks
