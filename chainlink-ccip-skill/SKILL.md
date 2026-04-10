@@ -4,7 +4,7 @@ description: "Handle Chainlink CCIP requests with a safety-first workflow. Use f
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 metadata:
-  version: "0.0.1"
+  version: "0.0.2"
   mcp-server: "@chainlink/mcp-server"
 ---
 

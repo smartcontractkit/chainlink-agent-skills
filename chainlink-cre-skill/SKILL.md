@@ -6,7 +6,7 @@ compatibility: Designed for Claude Code, Cursor Composer, and AI agents that imp
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.2"
+  version: "0.0.2"
 ---
 
 # Chainlink CRE Skill
