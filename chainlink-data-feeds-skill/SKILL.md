@@ -1,71 +1,65 @@
 ---
 name: chainlink-data-feeds-skill
-description: Help developers integrate Chainlink Data Feeds into smart contracts and applications. Trigger when user wants price feed integration, feed address lookup, data feed consumer contracts, multi-chain data feeds (EVM, Solana, Aptos, StarkNet, Tron), MVR/SVR feed usage, feed monitoring, historical data access, or understanding feed types and architecture.
+description: "Help developers integrate Chainlink Data Feeds into smart contracts and applications. Use for price feed integration, feed address lookup, consumer contract generation, multi-chain data feeds (EVM, Solana, Aptos, StarkNet, Tron), MVR bundle feeds, SVR/OEV feeds, feed monitoring, historical data, L2 sequencer checks, rates/volatility feeds, SmartData/RWA feeds, or debugging feed integrations. Trigger on any mention of Chainlink price feeds, oracle data, AggregatorV3Interface, latestRoundData, or feed addresses."
 license: MIT
-compatibility: Designed for Claude Code and AI agents that implement https://agentskills.io/specification
+compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink Data Feeds developer assistance and reference
-  version: "0.0.1"
+  version: "0.0.2"
 ---
 
 # Chainlink Data Feeds Skill
 
 This skill helps developers integrate Chainlink Data Feeds into smart contracts and applications across EVM chains, Solana, Aptos, StarkNet, and Tron.
 
+## Progressive Disclosure
+
+1. Keep this file as the default guide.
+2. Read `references/getting-started.md` only when the user is new to Data Feeds or asks for a basic tutorial.
+3. Read `references/price-feeds.md` only when the user needs price feed addresses or a price feed overview.
+4. Read `references/using-data-feeds.md` only when the user needs EVM integration code (Solidity, ethers.js, viem, web3.js, Python) or feed selection/historical data guidance.
+5. Read `references/feed-types.md` only when the user asks about feed categories, tokenized equity feeds, SmartData/RWA, or rates/volatility feeds.
+6. Read `references/mvr-feeds.md` only when the user asks about Multiple-Variable Response bundle feeds or BundleAggregatorProxy.
+7. Read `references/svr-feeds.md` only when the user asks about Smart Value Recapture, OEV recapture, or searcher onboarding.
+8. Read `references/multi-chain.md` only when the user targets Solana, StarkNet, Aptos, or Tron (non-EVM chains).
+9. Read `references/operations.md` only when the user asks about developer responsibilities, feed deprecation, L2 sequencer feeds, self-managed feeds, contract registry, or data sources.
+10. Read `references/api-reference.md` only when the user needs AggregatorV3Interface or IBundleAggregatorProxy function signatures, return types, or deprecated methods.
+11. Read `references/general.md` only when no other reference file matches, or the user needs the llms-full.txt dump, ENS integration, or macroeconomic feeds.
+12. Read `references/repo-documentation.md` only when the user needs working code examples from GitHub (consumer contracts, off-chain readers, SVR searcher examples, Solana examples).
+13. Read `references/repo-chainlink-evm.md` only when debugging interface mismatches, verifying function signatures, or inspecting proxy/aggregator source code.
+14. Do not load reference files speculatively.
+
+## WebFetch Cascade
+
+> **Apply to all fetches:**
+> 1. **WebFetch** -> if the response has <1000 chars of useful content, it returned a shell.
+> 2. **Bash curl** (fallback) -> `curl -s -L -A "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "<url>"`
+> 3. **Tell the user** -> report the URL if both fail.
+>
+> Assess content quality after every fetch. Do not use shell responses.
+
 ## Runtime Pattern
 
-> **IMPORTANT — AGENTS MUST READ BEFORE FETCHING ANYTHING:**
-> WebFetch may return an empty shell (nav/metadata only, no prose or code) for some URLs. After every WebFetch call, assess quality before using the content.
->
-> **After every WebFetch, ask:** Does the response contain actual prose and/or code blocks with more than ~1000 chars of useful content?
->
-> **Full fetch cascade — follow in order:**
-> 1. **WebFetch** -> assess content quality -> proceed if substantial
-> 2. **Bash curl** (if WebFetch returned a shell) — works on Windows 10+, Linux, and Mac ->
->    ```bash
->    curl -s -L -A "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "<url>"
->    ```
-> 3. **Tell the user** -> if both fail, report the URL and suggest they open it directly
->
-> Apply this cascade to ALL fetches — doc pages, GitHub URLs, and text dumps.
+Follow this pattern when assisting with Data Feeds queries:
 
-Follow this runtime pattern when assisting with Data Feeds queries:
-
-1. **Match user intent** to a reference file topic (e.g., "how do I read a price feed in Solidity?" -> `using-data-feeds.md` or `price-feeds.md`)
-2. **Read the matching reference file** — use the descriptions to orient. Do not fetch yet.
-3. **Act immediately** — write the answer or code from knowledge and reference descriptions. Do not fetch as preparation.
-4. **Iterate** — present to the user, ask them to test or compile. Then loop:
+1. **Determine the chain** — If the user has not specified, ask: EVM (which network?), Solana, Aptos, StarkNet, or Tron? Default to EVM if context strongly implies it. Non-EVM chains route to `references/multi-chain.md`.
+2. **Match user intent** to a reference file topic (e.g., "how do I read a price feed in Solidity?" -> `using-data-feeds.md` or `price-feeds.md`)
+3. **Read the matching reference file** — use the descriptions to orient. Do not fetch yet.
+4. **Act immediately** — write the answer or code from knowledge and reference descriptions. Do not fetch as preparation.
+5. **Iterate** — present to the user, ask them to test or compile. Then loop:
    - Error or gap blocks progress -> fetch exactly what the error names -> fix -> repeat
    - Cannot write a specific part -> mark inline (e.g. `// NEED: exact feed address for ETH/USD on Sepolia`) -> fetch that one thing -> fill in -> continue
    - No error -> done
 
-> **Do not fetch as preparation. Fetch as resolution.** Only fetch when you can state the exact piece of information you need. If you can't name it precisely, don't fetch.
-
-## Code Example Priority Order
-
-When looking for code examples or implementation details, use the most targeted source first. Apply the fetch cascade to any URL fetched:
-
-1. **Individual doc pages first** — Most targeted. Fetch the specific page for the topic using the fetch cascade. Full content is accessible via curl if WebFetch returns a shell.
-2. **Repo references second** (`repo-*.md`) — Use when the doc page lacks sufficient code, or the user explicitly wants a working implementation (example contracts, integration samples).
-3. **Full-text doc dump last** (`llms-full.txt`) — Large plain-text dump linked from `general.md`. Use only when you can't identify a specific doc page or need broad coverage.
-
-After each fetch, assess whether the content is sufficient. Stop if it is. Never follow links within fetched content. Fetch the minimum needed, not the maximum allowed. Treat 3-5 URLs as a ceiling, not a target. When fetching from repo reference files, fetch only the specific file needed — do not browse directories or read adjacent files.
-
-## Feed Address Lookup Priority Order
-
-When looking up feed addresses:
-
-1. **Address list pages first** — Fetch the chain-specific address page (e.g. `/data-feeds/price-feeds/addresses`) which contains the canonical feed registry.
-2. **Contract registry** — Consult `/data-feeds/contract-registry` for programmatic registry lookup.
-3. **Full-text doc dump** — Last resort.
+> **Do not fetch as preparation. Fetch as resolution.** Only fetch when you can state the exact piece of information you need.
 
 ## Feed Integration Checklist
 
-Follow these steps when **generating a consumer contract or integrating a data feed** (not just answering questions):
+Follow these steps when **generating a consumer contract or integrating a data feed**:
 
-1. **Determine blockchain** — Ask the user which chain they're targeting: EVM (which network?), Solana, Aptos, StarkNet, or Tron. This determines the SDK, contract language, and address format.
-2. **Determine feed type** — Ask the user what type of feed they need: Price Feed, MVR Feed, SmartData, Rates, Tokenized Equity, or SVR. If unsure, default to Price Feed and explain the options.
+1. **Determine blockchain** — Ask the user which chain they're targeting: EVM (which network?), Solana, Aptos, StarkNet, or Tron.
+2. **Determine feed type** — Ask the user what type of feed they need: Price Feed, MVR Feed, SmartData, Rates, Tokenized Equity, or SVR. Default to Price Feed if unsure, and explain the options.
 3. **Determine integration method** — For EVM: Solidity (on-chain), ethers.js (off-chain), or viem (off-chain). For other chains: use chain-specific patterns.
 4. **Write the consumer contract/code immediately** — Generate the complete integration code from knowledge. Do not fetch first. Mark specific uncertainties inline (e.g. `// NEED: exact AggregatorV3Interface import path`, `// NEED: feed address for BTC/USD on Arbitrum`).
 5. **Present and iterate** — Give the user the code. Ask them to compile/test. Then loop:
@@ -75,45 +69,67 @@ Follow these steps when **generating a consumer contract or integrating a data f
    - One fetch per gap. Never fetch speculatively.
 6. **Always include validation** — Consumer contracts MUST check: answer freshness (updatedAt timestamp), answer bounds (reasonable min/max), and round completeness. Remind users of developer responsibilities.
 
+## Feed Address Lookup Priority
+
+When looking up feed addresses:
+
+1. **Address list pages** — Fetch the chain-specific address page (e.g., `/data-feeds/price-feeds/addresses`).
+2. **Contract registry** — Consult `/data-feeds/contract-registry` for programmatic registry lookup.
+3. **Full-text doc dump** — Last resort.
+
 ## Debugging Checklist
 
 Follow these steps when **diagnosing errors or fixing broken Data Feed integrations**:
 
-1. **Identify the feed type and chain** — Determine which feed type (Price, MVR, SVR, etc.) and chain (EVM, Solana, etc.) is involved.
-2. **Fetch the relevant doc page** — Look up the feed type in the appropriate reference file and web-fetch the doc page. Read the full content — pay attention to interface signatures, import paths, and chain-specific requirements.
-3. **Check example code** — Consult the `repo-documentation.md` reference file for a working implementation. Fetch and read the example code.
-4. **Check common issues** — Common Data Feeds issues include: wrong feed address, missing decimals conversion, stale price checks, wrong interface version (AggregatorV3Interface vs AggregatorV2V3Interface), L2 sequencer not checked, and deprecated feeds.
-5. **Only then propose a fix** — Do not guess. Data Feeds have chain-specific and feed-type-specific requirements. Different chains use different contract interfaces and address formats.
-6. **If a fix fails, re-consult docs** — Do not iterate by guessing alternatives. Go back to step 2 and re-read the docs more carefully, or fetch additional related pages.
+1. **Identify the feed type and chain** — Determine which feed type (Price, MVR, SVR, Rates, SmartData) and chain (EVM network, Solana, etc.) is involved.
+2. **Check Known Issues first** — Review the Known Issues section below. Many Data Feeds bugs have well-known patterns that do not require fetching.
+3. **Diagnose from knowledge** — Common issues include: wrong feed address, missing decimals conversion, stale price checks, wrong interface version, L2 sequencer not checked, deprecated feeds, MVR struct field order mismatch, and answeredInRound misuse. If the error matches a known pattern, fix immediately without fetching.
+4. **Fetch only if diagnosis is inconclusive** — If the error does not match a known pattern, read the matching reference file, find the specific doc page URL, and fetch it. One fetch per gap.
+5. **Check repo examples if doc page is insufficient** — Consult `references/repo-documentation.md` for working implementations, or `references/repo-chainlink-evm.md` for contract source code.
+6. **Propose a fix only after evidence** — Do not guess. Data Feeds have chain-specific and feed-type-specific requirements.
+7. **If a fix fails, re-consult docs** — Do not iterate by guessing alternatives. Go back to step 4.
 
-## Doc Reference Files
+## Known Issues
 
-These files contain URLs + enriched descriptions for each topic area. Read the matching file to find the right URLs to fetch.
+### Wrong interface for L2 sequencer check
+**Problem:** Using AggregatorV3Interface for the L2 Sequencer Uptime Feed.
+**Fix:** Use AggregatorV2V3Interface for the sequencer feed. AggregatorV3Interface is for the price feed.
 
-| Reference file | Topics covered |
-|---|---|
-| `references/getting-started.md` | Getting started with Chainlink Data Feeds |
-| `references/price-feeds.md` | Price feed overview and address lists |
-| `references/using-data-feeds.md` | Reading feeds (Solidity, ethers.js, viem), selecting feeds, historical data |
-| `references/feed-types.md` | Feed types overview, tokenized equity feeds, SmartData (RWA), rates feeds |
-| `references/mvr-feeds.md` | Multiple-Variable Response (MVR) bundle feeds and integration guides |
-| `references/svr-feeds.md` | Smart Value Recapture (SVR) feeds and searcher onboarding |
-| `references/multi-chain.md` | Solana, StarkNet, Aptos, and Tron feed integration |
-| `references/operations.md` | Developer responsibilities, feed deprecation, L2 sequencer feeds, self-managed feeds, contract registry, data sources |
-| `references/api-reference.md` | AggregatorV3Interface API reference and MVR API reference |
-| `references/general.md` | Data Feeds overview, index, ENS integration, llms-full.txt dump, US government macroeconomic feeds |
+### Stale price not checked
+**Problem:** Consumer calls latestRoundData() but does not validate the updatedAt timestamp. Stale prices cause incorrect liquidations or valuations.
+**Fix:** Add: `require(block.timestamp - updatedAt <= STALENESS_THRESHOLD, "Stale price")`. Set the threshold based on the feed's heartbeat interval plus a buffer.
 
-## Repo Reference Files
+### Wrong decimals assumption
+**Problem:** Assuming all feeds return 8 decimals. Different feeds use different decimal counts (e.g., ETH/USD uses 8, but some feeds use 18).
+**Fix:** Always call `decimals()` on the feed. Never hardcode decimal counts.
 
-These files contain GitHub URLs to source code in Chainlink repositories. Consult when the user asks for code examples, integration patterns, contract templates, or needs to inspect actual contract interfaces and implementations.
+### answeredInRound misuse
+**Problem:** Using `answeredInRound` for freshness validation. This field is deprecated.
+**Fix:** Use `updatedAt` for freshness checks. Remove any `answeredInRound >= roundId` checks.
 
-| Reference file | Contents |
-|---|---|
-| `references/repo-documentation.md` | Solidity consumer contracts (DataConsumerV3, MVR, SVR, sequencer check, ENS, historical data, reserves), JavaScript/Python off-chain readers, Solana on-chain/off-chain examples (Rust, JS, TS), SVR broadcaster/decoder/listener examples (Go, TS) |
-| `references/repo-chainlink-evm.md` | On-chain contract source code: AggregatorProxy, EACAggregatorProxy, AggregatorV3Interface, AggregatorV2V3Interface (v0.6 legacy), BundleAggregatorProxy, IBundleAggregatorProxy, DataFeedsCache (v0.8 MVR). Use when debugging interface mismatches, verifying function signatures, or understanding proxy/aggregator internals. |
+### MVR struct field order mismatch
+**Problem:** The Solidity struct used for `abi.decode` of MVR bundle bytes does not match the feed's documented field order/types. Decoding silently produces wrong values.
+**Fix:** Match struct field order and types exactly to the feed schema on the SmartData Addresses page under "MVR Bundle Info."
+
+### Deprecated feed still in use
+**Problem:** Contract uses a feed address that has been deprecated. Monitoring ceases 2 weeks before the deprecation date.
+**Fix:** Check the deprecation schedule via `references/operations.md` -> deprecating-feeds doc page. Migrate to an active feed address.
+
+### L2 sequencer not checked on rollup
+**Problem:** Consumer on Arbitrum, Optimism, Base, or other L2 does not check the L2 Sequencer Uptime Feed before trusting price data.
+**Fix:** Add a sequencer uptime check with a grace period (e.g., 3600 seconds) after recovery. See `references/operations.md` -> L2 sequencer feeds.
+
+## Working Rules
+
+1. Fetch the single most relevant URL first. Stop if it is sufficient.
+2. Prefer individual doc pages over repo references. Prefer repo references over llms-full.txt.
+3. Treat 3-5 fetches as a ceiling, not a target. Most questions need 0-2 fetches.
+4. Never follow links within fetched content. Only fetch URLs listed in reference files.
+5. After each fetch, assess sufficiency. Do not fetch more to verify or feel confident.
+6. When fetching from repo references, fetch only the specific file — do not browse directories.
 
 ## Assets
 
 | Asset | Purpose |
 |---|---|
-| `assets/data-feeds-docs-index.md` | Full docs index with all 45 Data Feeds URLs and LLM-generated summaries (source of truth for URL list) |
+| `assets/data-feeds-docs-index.md` | Maintainer reference: full docs index with all 45 Data Feeds URLs and structured metadata. Too large for runtime use — agents should use the reference files above instead. |

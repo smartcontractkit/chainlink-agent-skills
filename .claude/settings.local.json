@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebSearch",
+      "WebFetch(domain:skills.sh)"
+    ]
+  }
+}

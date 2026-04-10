@@ -1,8 +1,16 @@
 # smartcontractkit/documentation — Data Feeds Examples
 
+## Repository Overview
+
 - https://github.com/smartcontractkit/documentation/blob/main/README.md — Repository overview and contribution guide for Chainlink documentation site
+
+## EVM Solidity Consumers
+
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/DataConsumerV3.sol — Solidity consumer contract reading a price feed via AggregatorV3Interface
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/DataConsumerWithSequencerCheck.sol — Solidity consumer with L2 sequencer uptime check before reading price feed
+
+## Off-Chain Readers (JavaScript / Python)
+
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/PriceConsumerV3.js — JavaScript (ethers.js) off-chain price feed reader
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/PriceConsumerV3Ethers.js — JavaScript (ethers.js) alternative price feed consumer example
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/PriceConsumerV3.py — Python off-chain price feed reader using web3.py
@@ -13,7 +21,13 @@
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/ReserveConsumerV3.sol — Solidity consumer for Proof of Reserve feeds
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/ENSConsumer.sol — Solidity consumer resolving feed addresses via ENS
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/ENSConsumer.js — JavaScript ENS-based feed address resolver
+
+## MVR Examples
+
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/MVR/MVRDataConsumer.sol — Solidity consumer for Multiple-Variable Response (MVR) bundle feeds
+
+## SVR Searcher Examples
+
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/broadcaster.go — Go SVR searcher broadcaster example for Smart Value Recapture
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/broadcaster.ts — TypeScript SVR searcher broadcaster example
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/decoder.go — Go SVR event decoder for parsing SVR transaction events
@@ -24,6 +38,9 @@
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/bundle-transaction-event.json — JSON schema for SVR bundle transaction event
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/single-transaction-event.json — JSON schema for SVR single transaction event
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/DataFeeds/SVR/decoding-abi.json — ABI definition for decoding SVR transaction data
+
+## Solana Examples
+
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/Solana/PriceFeeds/on-chain-read.rs — Rust on-chain Solana price feed reader (native)
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/Solana/PriceFeeds/on-chain-read-anchor.rs — Rust on-chain Solana price feed reader (Anchor framework)
 - https://github.com/smartcontractkit/documentation/blob/main/public/samples/Solana/PriceFeeds/off-chain-read.js — JavaScript off-chain Solana price feed reader
