@@ -1,6 +1,6 @@
 ---
 name: chainlink-ccip-skill
-description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in this version, and prefer secure, conservative contract patterns."
+description: "Handle Chainlink CCIP requests including cross-chain token transfers, cross-chain messaging, fund bridging, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, and CCT setup. Use this skill whenever the user mentions CCIP, Chainlink cross-chain, cross-chain token bridges on Chainlink, or wants to move tokens or data between blockchains using Chainlink infrastructure, even if they do not say 'CCIP' explicitly."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
@@ -18,7 +18,7 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 ## Progressive Disclosure
 
 1. Keep this file as the default guide.
-2. Read [references/user-stories.md](references/user-stories.md) only when the request is ambiguous or you need routing examples.
+2. Read [references/examples.md](references/examples.md) only when you need a concrete reference for what a good response looks like (preflight summaries, monitoring explanations, contract-generation structure).
 3. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live CCIP facts, current tool behavior, route or token availability, or message-status surfaces.
 4. Read [references/ccip-mcp.md](references/ccip-mcp.md) only when the `ccip_sdk` MCP tool is available and the request can be fulfilled by it for monitoring, discovery, or SDK method calls.
 5. Read [references/ccip-tools.md](references/ccip-tools.md) only when the user wants a tool-first workflow through CCIP CLI, API, or SDK.
