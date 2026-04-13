@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+*__pycache__/
 
 # Env and secrets
 .env
