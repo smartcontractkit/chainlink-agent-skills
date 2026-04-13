@@ -3,6 +3,7 @@ name: chainlink-ccip-skill
 description: "Handle Chainlink CCIP requests with a safety-first workflow. Use for CCIP message sends, fund bridging through CCIP tools, sender and receiver contract development, message status lookup, route connectivity checks, supported token discovery, or CCT setup. Ask for missing route details, require explicit approval before any on-chain action, refuse mainnet writes in this version, and prefer secure, conservative contract patterns."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
+allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   version: "0.0.2"
   mcp-server: "@chainlink/mcp-server"
@@ -102,3 +103,20 @@ Do not treat the user's original intent as the second confirmation. Ask again ri
 2. Explain the chosen path briefly.
 3. Generate code only when code is actually needed.
 4. Keep unsupported or out-of-scope features out of the answer rather than speculating about them.
+
+## Documentation Access
+
+This skill references official CCIP documentation URLs throughout its reference files. Whether the model can fetch those URLs depends on the host agent's capabilities.
+
+1. If WebFetch, a browser tool, or an MCP server that can retrieve documentation is available, use it to fetch the referenced URL before answering.
+2. If no documentation-fetching tool is available, do not silently improvise CCIP patterns from training data alone. Instead:
+   - Use the embedded reference content in this skill's reference files as the floor for guidance.
+   - Tell the user that live documentation could not be verified.
+   - Provide the specific URL so the user can check it directly.
+3. For contract-first workflows where correctness matters most, prefer the concrete examples in [references/ccip-solidity-examples.md](references/ccip-solidity-examples.md) over generating patterns from memory.
+
+## MCP Recommendations
+
+This skill works best when the Chainlink MCP server (`@chainlink/mcp-server`) is connected. It provides live access to CCIP message status, lane data, and SDK methods through the `ccip_sdk` tool.
+
+When the Chainlink MCP server is not available, the Context7 MCP server (`@upstash/context7-mcp`) is a useful fallback for fetching current Chainlink documentation. It can retrieve content from `docs.chain.link` and other public documentation sources, covering the gap for contract patterns, tutorials, and API references that this skill cannot embed in full.
