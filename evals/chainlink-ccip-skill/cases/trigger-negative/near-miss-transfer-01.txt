@@ -1,0 +1,1 @@
+send 1 ETH from my wallet to another wallet on the same chain using cast send

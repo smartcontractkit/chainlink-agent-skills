@@ -1,0 +1,1 @@
+need a simple sender/receiver for ccip, nothing fancy just data only. solidity please, and make sure the receiver checks who sent it
