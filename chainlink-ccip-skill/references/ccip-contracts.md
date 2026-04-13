@@ -1,6 +1,6 @@
 # CCIP Contracts
 
-Use this file only for contract-first CCIP requests where the user wants sender or receiver contracts, contract modifications, or project setup help for CCIP Solidity development.
+Use this file only for contract-first CCIP requests where the user wants sender or receiver contracts, contract modifications, or project setup help for CCIP Solidity development. These patterns are EVM-specific. For non-EVM chains (Solana programs, Aptos Move modules), see [ccip-non-evm.md](ccip-non-evm.md).
 
 ## Trigger Conditions
 

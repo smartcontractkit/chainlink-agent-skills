@@ -35,13 +35,55 @@ If the route or network is missing, ask for it. Do not assume a lane.
 5. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
 
 Reference points:
+- Tools overview: `https://docs.chain.link/ccip/tools/`
 - CLI docs: `https://docs.chain.link/ccip/tools/cli/`
 - API docs: `https://docs.chain.link/ccip/tools/api/`
 - SDK docs: `https://docs.chain.link/ccip/tools/sdk/`
 - CLI package: `@chainlink/ccip-cli`
 - SDK package: `@chainlink/ccip-sdk`
+- SDK examples repo: `https://github.com/smartcontractkit/ccip-sdk-examples`
 
 For TypeScript SDK code examples (fee estimation, token transfers, messaging, status checks), see [ccip-sdk-examples.md](ccip-sdk-examples.md).
+
+## Multi-Chain Support
+
+The SDK, CLI, and API support multiple blockchain families:
+
+| Chain Family | SDK/CLI Status |
+|-------------|---------------|
+| EVM | Full support |
+| Solana (SVM) | Full support |
+| Aptos | Full support |
+| Sui | Partial (manual execution only) |
+| TON | Partial (no token pool/registry queries) |
+
+For non-EVM-specific workflow guidance (SDK chain classes, CLI options, wallet setup, tutorials), see [ccip-non-evm.md](ccip-non-evm.md).
+
+### Non-EVM CLI Examples
+
+```bash
+# Send from Solana to EVM
+ccip-cli send \
+  --source solana-devnet \
+  --dest ethereum-testnet-sepolia \
+  --router <solana-router> \
+  --receiver 0xYourEVMAddress \
+  --transfer-tokens <token>=0.001
+
+# Send from Aptos to EVM
+ccip-cli send \
+  --source aptos-testnet \
+  --dest ethereum-testnet-sepolia \
+  --router <aptos-router> \
+  --receiver 0xYourEVMAddress \
+  --transfer-tokens <token>=0.001
+
+# Track any message (works for all chain families)
+ccip-cli show <tx-hash-or-message-id> --wait
+
+# Check lane latency
+ccip-cli lane-latency solana-devnet ethereum-testnet-sepolia
+```
 
 ## Testnet Tokens
 

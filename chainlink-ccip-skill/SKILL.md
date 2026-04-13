@@ -29,17 +29,19 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 10. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
 11. Read [references/ccip-solidity-examples.md](references/ccip-solidity-examples.md) only when generating or reviewing CCIP Solidity contracts and you need concrete code patterns (sender, receiver, token transfer, defensive receiver).
 12. Read [references/ccip-sdk-examples.md](references/ccip-sdk-examples.md) only when the user wants TypeScript SDK usage examples for fee estimation, token transfers, messaging, or status checks.
-13. Do not load reference files speculatively.
+13. Read [references/ccip-non-evm.md](references/ccip-non-evm.md) only when the user wants to work with CCIP on Solana, Aptos, Sui, TON, or any non-EVM chain family.
+14. Do not load reference files speculatively.
 
 ## Routing
 
 1. Use a tool-first path for sending without custom contracts, bridging funds, status lookup, connectivity checks, and route or token discovery.
 2. When the `ccip_sdk` MCP tool is available, prefer it over direct CLI or SDK invocation for monitoring, discovery, and programmatic SDK method calls. Fall back to CLI or SDK when the tool is not available.
 3. Use a contract-first path for sender and receiver contract work and CCT setup flows.
-4. Ask one focused question if the route, network, token, amount, or target contracts are missing.
-5. Proceed without approval only for read-only work such as explanation, discovery, status checks, and code generation.
-6. Trigger the approval protocol before any action that could create, transfer, deploy, register, enable, or configure on-chain state.
-7. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
+4. For non-EVM chain requests (Solana, Aptos, Sui, TON), route to the non-EVM reference for workflow guidance. Do not apply EVM-specific patterns (Solidity, Foundry, Hardhat, Chainlink Local) to non-EVM chains.
+5. Ask one focused question if the route, network, token, amount, or target contracts are missing.
+6. Proceed without approval only for read-only work such as explanation, discovery, status checks, and code generation.
+7. Trigger the approval protocol before any action that could create, transfer, deploy, register, enable, or configure on-chain state.
+8. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
 
 ## Safety Guardrails
 

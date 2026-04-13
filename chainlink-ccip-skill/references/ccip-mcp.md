@@ -186,15 +186,13 @@ If the tool returns "Unknown CCIP SDK method":
 
 ## Non-EVM Chain Families
 
-The `ccip_sdk` MCP tool accepts `family` values for `solana`, `aptos`, `sui`, and `ton` in addition to `evm`. These non-EVM families are supported by the MCP tool at the transport layer, but this skill version does not provide workflow guidance for non-EVM chains.
+The `ccip_sdk` MCP tool accepts `family` values for `solana`, `aptos`, `sui`, and `ton` in addition to `evm`.
 
 When a user asks about non-EVM CCIP operations through MCP:
-1. Use the MCP tool to retrieve the requested data.
-2. Relay the tool's results to the user.
-3. Do not apply EVM-specific workflow patterns (contract generation, Foundry setup, Chainlink Local) to non-EVM chains.
-4. Do not improvise non-EVM workflow guidance beyond what the tool returns.
-
-Workflow-level non-EVM support is planned for a future version.
+1. Use the MCP tool with the appropriate `family` value to retrieve the requested data.
+2. For workflow guidance beyond what the tool returns, read [ccip-non-evm.md](ccip-non-evm.md) for SDK chain classes, CLI usage, wallet setup, architectural differences, and official tutorial links.
+3. Do not apply EVM-specific workflow patterns (Solidity contract generation, Foundry/Hardhat setup, Chainlink Local) to non-EVM chains.
+4. For non-EVM `target='chain'` calls, set `family` to the appropriate value and provide `rpcUrl` (defaults exist for `evm` Sepolia, `solana` devnet, and `aptos` testnet).
 
 ## Refusal Rules
 
