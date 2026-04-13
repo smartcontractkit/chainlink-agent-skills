@@ -16,12 +16,15 @@ Use this file only when the answer depends on current CCIP facts that can change
 
 URL:
 - `https://docs.chain.link/ccip`
+- EVM tutorials: `https://docs.chain.link/ccip/tutorials/evm`
+- Solana (SVM) tutorials: `https://docs.chain.link/ccip/tutorials/svm`
+- Aptos tutorials: `https://docs.chain.link/ccip/tutorials/aptos`
 
 Use for:
 - concepts and architecture
-- tutorials and implementation guidance
+- tutorials and implementation guidance (EVM, Solana, Aptos)
 - interfaces, contracts, and best practices
-- CCT concepts and registration flows
+- CCT concepts and registration flows (EVM and Solana)
 - service limits, billing, and security-oriented documentation
 
 Do not use as the primary source for:
@@ -83,12 +86,29 @@ Do not use as the primary source for:
 - contract authoring guidance
 - CLI, API, or SDK usage
 
+### CCIP SDK Examples
+
+URL:
+- `https://github.com/smartcontractkit/ccip-sdk-examples`
+
+Use for:
+- working multi-chain SDK code examples (EVM, Solana, Aptos)
+- Node.js scripts for fee estimation, token transfers, message status
+- React/browser bridge applications (EVM-only and multi-chain)
+- Hardhat v3 integration with SDK-assisted operations
+
+Do not use as the primary source for:
+- contract interfaces or architecture
+- live route or message data
+
 ## Practical Selection Rules
 
 1. For conceptual or contract questions, start with CCIP Docs.
 2. For side-effecting tool workflows, start with the CCIP CLI docs.
 3. For monitoring, querying, and message lookup workflows, start with the CCIP API docs.
 4. For programmatic integrations, start with the CCIP SDK docs.
-5. For route connectivity or token-availability questions, start with CCIP Directory.
-6. For explorer-style message-status questions, use CCIP Explorer.
-7. If the request spans multiple categories, use the smallest number of official sources that fully resolves the question.
+5. For working SDK code examples, start with the CCIP SDK Examples repo.
+6. For route connectivity or token-availability questions, start with CCIP Directory.
+7. For explorer-style message-status questions, use CCIP Explorer.
+8. For non-EVM tutorials (Solana, Aptos), start with the chain-specific tutorial sections in CCIP Docs.
+9. If the request spans multiple categories, use the smallest number of official sources that fully resolves the question.

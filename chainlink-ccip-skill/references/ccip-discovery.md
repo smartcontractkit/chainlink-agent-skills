@@ -16,9 +16,9 @@ Do not use this workflow for message status, lane-performance monitoring, direct
 
 ## Default Path
 
-1. Prefer the CCIP Directory as the primary source of truth for route existence, network classification, and supported tokens.
+1. Prefer the CCIP Directory as the primary source of truth for route existence, network classification, and supported tokens. The directory covers both EVM and non-EVM chains (Solana, Aptos lanes appear in the directory).
 2. When the `ccip_sdk` MCP tool is available, use it with `target='api'` as an additional source for route and token discovery queries. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
-3. Use CLI `get-supported-tokens` only as an additional check when the user has concrete router or network context and command-line output would help.
+3. Use CLI `get-supported-tokens` only as an additional check when the user has concrete router or network context and command-line output would help. The CLI supports non-EVM chains natively.
 4. Use CCIP Tools documentation only when the request depends on current tool behavior rather than the directory itself.
 5. If the user is actually asking about current lane performance instead of route existence, route to [ccip-monitoring.md](ccip-monitoring.md).
 

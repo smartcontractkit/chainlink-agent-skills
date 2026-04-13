@@ -1,6 +1,6 @@
 # CCIP Monitoring
 
-Use this file only for CCIP message lookup, monitoring, status explanation, lane performance checks, or failed-message diagnosis.
+Use this file only for CCIP message lookup, monitoring, status explanation, lane performance checks, or failed-message diagnosis. Monitoring surfaces (CCIP API, CLI `show`/`search`, Explorer) work for messages on all chain families including Solana and Aptos -- message status lookup via the API is chain-agnostic.
 
 ## Trigger Conditions
 
