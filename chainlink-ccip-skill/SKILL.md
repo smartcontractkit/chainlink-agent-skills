@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.2"
+  version: "0.0.3"
   mcp-server: "@chainlink/mcp-server"
 ---
 
