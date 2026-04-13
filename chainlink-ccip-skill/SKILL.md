@@ -27,7 +27,9 @@ Route CCIP requests to the simplest valid path while keeping side effects tightl
 8. Read [references/chainlink-local.md](references/chainlink-local.md) only when the user wants local simulation, local tests, or forked-environment testing for CCIP contracts.
 9. Read [references/ccip-monitoring.md](references/ccip-monitoring.md) only when the user wants message lookup, monitoring, status explanation, lane performance, or failed-message diagnosis.
 10. Read [references/ccip-discovery.md](references/ccip-discovery.md) only when the user wants route connectivity checks, network classification, or supported-token discovery.
-11. Do not load reference files speculatively.
+11. Read [references/ccip-solidity-examples.md](references/ccip-solidity-examples.md) only when generating or reviewing CCIP Solidity contracts and you need concrete code patterns (sender, receiver, token transfer, defensive receiver).
+12. Read [references/ccip-sdk-examples.md](references/ccip-sdk-examples.md) only when the user wants TypeScript SDK usage examples for fee estimation, token transfers, messaging, or status checks.
+13. Do not load reference files speculatively.
 
 ## Routing
 

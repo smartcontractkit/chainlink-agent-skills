@@ -58,6 +58,8 @@ Use the official CCIP EVM contracts and interfaces as the starting point:
 - `IRouterClient`
 - `Client`
 
+For concrete, production-ready code examples of each contract shape, see [ccip-solidity-examples.md](ccip-solidity-examples.md). Use those examples as the starting point for code generation.
+
 Important behaviors from the official references:
 
 1. `CCIPReceiver.ccipReceive` only accepts calls from the authorized router.
