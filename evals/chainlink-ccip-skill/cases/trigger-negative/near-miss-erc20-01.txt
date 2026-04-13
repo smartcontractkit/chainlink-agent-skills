@@ -1,0 +1,1 @@
+deploy an ERC-20 token on Sepolia with 1 million supply and add it to my Foundry project

@@ -776,3 +776,149 @@ tests:
       category: trigger-positive
       requiresApproval: yes
     assert: *trigger_positive_asserts
+  # --- Messy real-user functional prompts ---
+  - description: functional / messy / messy-tool-first-01
+    vars:
+      case_file: cases/functional/messy-tool-first-01.txt
+      workflow: tool-first
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "yes"
+    metadata:
+      workflow: tool-first
+      category: functional
+      requiresApproval: yes
+    assert: *functional_asserts
+  - description: functional / messy / messy-tool-first-02
+    vars:
+      case_file: cases/functional/messy-tool-first-02.txt
+      workflow: tool-first
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "yes"
+    metadata:
+      workflow: tool-first
+      category: functional
+      requiresApproval: yes
+    assert: *functional_asserts
+  - description: functional / messy / messy-contract-first-01
+    vars:
+      case_file: cases/functional/messy-contract-first-01.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
+  - description: functional / messy / messy-contract-first-02
+    vars:
+      case_file: cases/functional/messy-contract-first-02.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
+  - description: functional / messy / messy-monitoring-01
+    vars:
+      case_file: cases/functional/messy-monitoring-01.txt
+      workflow: monitoring
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: monitoring
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
+  - description: functional / messy / messy-discovery-01
+    vars:
+      case_file: cases/functional/messy-discovery-01.txt
+      workflow: discovery
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: discovery
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
+  - description: functional / messy / messy-multi-01
+    vars:
+      case_file: cases/functional/messy-multi-01.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
+  # --- Near-miss trigger-negative prompts ---
+  - description: trigger-negative / near-miss / near-miss-bridge-01
+    vars:
+      case_file: cases/trigger-negative/near-miss-bridge-01.txt
+      workflow: tool-first
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: tool-first
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_asserts
+  - description: trigger-negative / near-miss / near-miss-bridge-02
+    vars:
+      case_file: cases/trigger-negative/near-miss-bridge-02.txt
+      workflow: tool-first
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: tool-first
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_asserts
+  - description: trigger-negative / near-miss / near-miss-erc20-01
+    vars:
+      case_file: cases/trigger-negative/near-miss-erc20-01.txt
+      workflow: contract-first
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: contract-first
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_asserts
+  - description: trigger-negative / near-miss / near-miss-transfer-01
+    vars:
+      case_file: cases/trigger-negative/near-miss-transfer-01.txt
+      workflow: tool-first
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: tool-first
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_asserts
+  - description: trigger-negative / near-miss / near-miss-defi-01
+    vars:
+      case_file: cases/trigger-negative/near-miss-defi-01.txt
+      workflow: tool-first
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+    metadata:
+      workflow: tool-first
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_asserts

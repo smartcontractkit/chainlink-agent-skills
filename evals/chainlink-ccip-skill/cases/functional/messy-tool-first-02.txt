@@ -1,0 +1,1 @@
+ok so i need to bridge some tokens from eth sepolia to arb sepolia using chainlink. not sure what the fee is, can you figure that out first before doing anything? dont write contracts pls
