@@ -184,6 +184,18 @@ If the tool returns "Unknown CCIP SDK method":
 2. For questions about live message status or current lane performance, prefer MCP over cached assumptions.
 3. Read [official-sources.md](official-sources.md) when the answer depends on sources beyond what the MCP tool covers.
 
+## Non-EVM Chain Families
+
+The `ccip_sdk` MCP tool accepts `family` values for `solana`, `aptos`, `sui`, and `ton` in addition to `evm`. These non-EVM families are supported by the MCP tool at the transport layer, but this skill version does not provide workflow guidance for non-EVM chains.
+
+When a user asks about non-EVM CCIP operations through MCP:
+1. Use the MCP tool to retrieve the requested data.
+2. Relay the tool's results to the user.
+3. Do not apply EVM-specific workflow patterns (contract generation, Foundry setup, Chainlink Local) to non-EVM chains.
+4. Do not improvise non-EVM workflow guidance beyond what the tool returns.
+
+Workflow-level non-EVM support is planned for a future version.
+
 ## Refusal Rules
 
 1. All safety guardrails, approval protocols, and mainnet-write restrictions from the main skill file still apply when using MCP tools.
