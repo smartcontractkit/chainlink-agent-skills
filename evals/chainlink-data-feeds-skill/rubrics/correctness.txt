@@ -1,0 +1,16 @@
+You are evaluating whether the response routes to and executes the correct Data Feeds workflow.
+
+Workflow definitions:
+- reading-price-feeds: reading single-value price feeds on EVM via Solidity, ethers.js, web3.js, Python, or viem
+- mvr-feeds: reading Multiple-Variable Response bundle feeds via IBundleAggregatorProxy
+- svr-feeds: integrating Smart Value Recapture feeds or searcher onboarding for SVR auctions
+- feed-types: choosing a feed type, understanding SmartData/RWA, rates/volatility, or tokenized equity feeds
+- multi-chain: reading data feeds on Solana, Aptos, StarkNet, or Tron
+- feed-operations: L2 sequencer checks, feed deprecation, contract registry, developer responsibilities, data sources
+
+The expected workflow is: {{workflow}}
+
+Score:
+- 1.0: Correct workflow identified and executed with appropriate strategy (PASS)
+- 0.5: Partially correct workflow or mixed workflow ownership (FAIL)
+- 0.0: Wrong workflow or materially wrong execution path (FAIL)

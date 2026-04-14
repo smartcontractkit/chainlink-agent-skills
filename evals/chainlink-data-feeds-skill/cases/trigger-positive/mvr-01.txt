@@ -1,0 +1,1 @@
+Read a Chainlink MVR bundle feed and decode the struct fields in Solidity.

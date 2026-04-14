@@ -1,0 +1,1 @@
+Write me an ERC-20 token contract with a burn function.

@@ -1,0 +1,18 @@
+You are evaluating whether the response handles live Data Feeds facts correctly.
+
+Check:
+1. When the prompt depends on a specific feed address, the response either provides a known example address (with a note to verify) or recommends checking the official address page
+2. Response does not confidently invent current feed addresses, deprecation dates, or network-specific parameters from memory
+3. Response uses the correct source:
+   - Address pages for feed addresses
+   - Deprecation page for deprecation schedules
+   - Contract registry for feed verification
+   - Reference files for integration patterns (no fetch needed)
+4. Conceptual guidance (how to read a feed, what interface to use) is answered directly without suggesting a fetch
+
+Infer from the prompt whether live-source handling is actually required.
+
+Score:
+- 1.0: Correct freshness handling and source choice (PASS)
+- 0.5: Partial freshness awareness but weak source discipline (PASS if minor)
+- 0.0: Treats live facts as static or uses wrong source (FAIL)

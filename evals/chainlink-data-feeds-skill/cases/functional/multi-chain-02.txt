@@ -1,0 +1,1 @@
+I want to read a Chainlink price feed on StarkNet using the CLI without deploying any contracts.

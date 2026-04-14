@@ -1,0 +1,3 @@
+interface:
+  display_name: "Chainlink Data Feeds Skill"
+  short_description: "Help with Chainlink Data Feeds integration"

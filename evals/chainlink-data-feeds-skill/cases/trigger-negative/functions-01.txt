@@ -1,0 +1,1 @@
+I want to use Chainlink Functions to call an external API from my smart contract.

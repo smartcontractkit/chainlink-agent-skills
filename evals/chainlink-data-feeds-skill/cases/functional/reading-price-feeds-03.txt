@@ -1,0 +1,1 @@
+My price feed consumer contract is deployed on Arbitrum. My auditor says I need to check the L2 sequencer status before reading prices. How do I add that?

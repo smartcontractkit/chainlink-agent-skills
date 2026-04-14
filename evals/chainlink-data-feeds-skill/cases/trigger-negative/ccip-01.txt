@@ -1,0 +1,1 @@
+Bridge USDC from Ethereum Sepolia to Base Sepolia using Chainlink CCIP.
