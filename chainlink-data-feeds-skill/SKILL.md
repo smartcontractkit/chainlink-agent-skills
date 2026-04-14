@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink Data Feeds developer assistance and reference
-  version: "0.0.3"
+  version: "0.0.1"
 ---
 
 # Chainlink Data Feeds Skill
@@ -48,6 +48,17 @@ These are non-negotiable in generated code. Every consumer contract or integrati
 4. Never use `answeredInRound` for freshness validation — this field is deprecated.
 5. Remind users that example code is unaudited and not for production use without a security review.
 6. If the user is targeting mainnet, emphasize developer responsibilities and recommend a security audit.
+
+## Documentation Access
+
+This skill references official Data Feeds documentation URLs throughout its reference files. Whether the model can fetch those URLs depends on the host agent's capabilities.
+
+1. If WebFetch, a browser tool, or an MCP server that can retrieve documentation is available, use it to fetch the referenced URL before answering.
+2. If no documentation-fetching tool is available, do not silently improvise Data Feeds patterns from training data alone. Instead:
+   - Use the embedded reference content in this skill's reference files as the floor for guidance.
+   - Tell the user that live documentation could not be verified.
+   - Provide the specific URL so the user can check it directly.
+3. For contract-first workflows where correctness matters most, prefer the concrete examples in [references/reading-price-feeds.md](references/reading-price-feeds.md) over generating patterns from memory.
 
 ## Working Rules
 
