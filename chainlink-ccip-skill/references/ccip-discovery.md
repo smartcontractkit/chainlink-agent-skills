@@ -16,9 +16,9 @@ Do not use this workflow for message status, lane-performance monitoring, direct
 
 ## Default Path
 
-1. Prefer the CCIP Directory as the primary source of truth for route existence, network classification, and supported tokens.
+1. Prefer the CCIP Directory as the primary source of truth for route existence, network classification, and supported tokens. The directory covers both EVM and non-EVM chains (Solana, Aptos lanes appear in the directory).
 2. When the `ccip_sdk` MCP tool is available, use it with `target='api'` as an additional source for route and token discovery queries. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
-3. Use CLI `get-supported-tokens` only as an additional check when the user has concrete router or network context and command-line output would help.
+3. Use CLI `get-supported-tokens` only as an additional check when the user has concrete router or network context and command-line output would help. The CLI supports non-EVM chains natively.
 4. Use CCIP Tools documentation only when the request depends on current tool behavior rather than the directory itself.
 5. If the user is actually asking about current lane performance instead of route existence, route to [ccip-monitoring.md](ccip-monitoring.md).
 
@@ -65,46 +65,3 @@ Reference points:
 2. Refuse to imply that discovery confirms current lane performance; route that question to monitoring instead.
 3. Refuse to guess route or token support when the directory does not confirm it.
 
-## Triggering Tests
-
-These prompts should trigger this story pack:
-
-- "Are Ethereum Sepolia and Base Sepolia connected by CCIP?"
-- "Is this CCIP route mainnet or testnet?"
-- "Which tokens are supported on this route?"
-- "Can I move USDC on this route?"
-
-These prompts should not trigger this story pack:
-
-- "Show me the status of this message."
-- "Bridge funds using CCIP."
-- "Create a CCIP receiver contract."
-
-## Functional Tests
-
-1. If the user asks whether two chains are connected, use the CCIP Directory first.
-2. If the user asks which tokens are supported, use the CCIP Directory first and CLI only as a complement when appropriate.
-3. If the user asks about route classification, answer mainnet or testnet explicitly.
-4. If the request is really about lane performance, redirect to monitoring.
-5. If the route exists but the token does not, explain that distinction clearly.
-6. Keep the workflow read-only.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. routes route/token questions away from monitoring and send flows
-2. uses the CCIP Directory as the primary source of truth
-3. distinguishes route existence from token support
-4. distinguishes route existence from current lane performance
-5. gives clear, direct answers for mainnet vs testnet classification
-6. keeps the workflow read-only
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Are Ethereum Sepolia and Base Sepolia connected by CCIP, and is that route testnet or mainnet?"
-2. "Which tokens are supported on the Arbitrum Sepolia to Base Sepolia route?"
-3. "Can I move USDC on this CCIP route, or is the route available but the token unsupported?"
-4. "Tell me whether this is a route-availability problem or just a lane-performance problem."

@@ -78,6 +78,183 @@ npm install @chainlink/local
 
 Prefer the starter-kit structure from the official docs when the user wants the quickest working path.
 
+## Foundry No-Fork Example
+
+Complete test showing EOA-to-EOA token transfer with LINK fee payment. Based on the official [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry).
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {Test} from "forge-std/Test.sol";
+import {CCIPLocalSimulator, IRouterClient, LinkToken, BurnMintERC677Helper} from
+    "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+
+contract CCIPLocalTest is Test {
+    CCIPLocalSimulator public ccipLocalSimulator;
+    uint64 public destinationChainSelector;
+    IRouterClient public router;
+    LinkToken public linkToken;
+    BurnMintERC677Helper public ccipBnMToken;
+
+    address alice;
+    address bob;
+
+    function setUp() public {
+        ccipLocalSimulator = new CCIPLocalSimulator();
+
+        (
+            uint64 chainSelector,
+            IRouterClient sourceRouter,
+            ,
+            ,
+            LinkToken link,
+            BurnMintERC677Helper ccipBnM,
+        ) = ccipLocalSimulator.configuration();
+
+        destinationChainSelector = chainSelector;
+        router = sourceRouter;
+        linkToken = link;
+        ccipBnMToken = ccipBnM;
+
+        alice = makeAddr("alice");
+        bob = makeAddr("bob");
+    }
+
+    function test_transferTokensPayFeesInLink() public {
+        ccipBnMToken.drip(alice);
+        uint256 amountToSend = 100;
+
+        uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
+        uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
+
+        vm.startPrank(alice);
+        ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
+
+        ccipBnMToken.approve(address(router), amountToSend);
+
+        Client.EVMTokenAmount[] memory tokensToSend = new Client.EVMTokenAmount[](1);
+        tokensToSend[0] = Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
+
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(bob),
+            data: "",
+            tokenAmounts: tokensToSend,
+            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+            feeToken: address(linkToken)
+        });
+
+        uint256 fees = router.getFee(destinationChainSelector, message);
+        linkToken.approve(address(router), fees);
+        router.ccipSend(destinationChainSelector, message);
+
+        vm.stopPrank();
+
+        assertEq(ccipBnMToken.balanceOf(alice), balanceOfAliceBefore - amountToSend);
+        assertEq(ccipBnMToken.balanceOf(bob), balanceOfBobBefore + amountToSend);
+    }
+
+    function test_transferTokensPayFeesInNative() public {
+        ccipBnMToken.drip(alice);
+        uint256 amountToSend = 100;
+
+        uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
+        uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
+
+        vm.startPrank(alice);
+        deal(alice, 5 ether);
+
+        ccipBnMToken.approve(address(router), amountToSend);
+
+        Client.EVMTokenAmount[] memory tokensToSend = new Client.EVMTokenAmount[](1);
+        tokensToSend[0] = Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
+
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(bob),
+            data: "",
+            tokenAmounts: tokensToSend,
+            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
+            feeToken: address(0)
+        });
+
+        uint256 fees = router.getFee(destinationChainSelector, message);
+        router.ccipSend{value: fees}(destinationChainSelector, message);
+
+        vm.stopPrank();
+
+        assertEq(ccipBnMToken.balanceOf(alice), balanceOfAliceBefore - amountToSend);
+        assertEq(ccipBnMToken.balanceOf(bob), balanceOfBobBefore + amountToSend);
+    }
+}
+```
+
+Run with:
+
+```bash
+forge test --match-contract CCIPLocalTest
+```
+
+Key patterns: `CCIPLocalSimulator` provides all pre-deployed addresses via `configuration()`. Use `requestLinkFromFaucet` for LINK, `drip` for test tokens. Fees paid via LINK require `approve` to router; native fees use `{value: fees}`.
+
+## Hardhat No-Fork Example
+
+Equivalent test in Hardhat using the `@chainlink/local` npm package:
+
+```javascript
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+describe("CCIP Local Simulator", function () {
+  let ccipSimulator, router, linkToken, ccipBnM;
+  let chainSelector;
+  let alice, bob;
+
+  beforeEach(async function () {
+    [alice, bob] = await ethers.getSigners();
+
+    const CCIPLocalSimulator = await ethers.getContractFactory("CCIPLocalSimulator");
+    ccipSimulator = await CCIPLocalSimulator.deploy();
+
+    const config = await ccipSimulator.configuration();
+    chainSelector = config.chainSelector_;
+    router = await ethers.getContractAt("IRouterClient", config.sourceRouter_);
+    linkToken = await ethers.getContractAt("LinkToken", config.linkToken_);
+    ccipBnM = await ethers.getContractAt("BurnMintERC677Helper", config.ccipBnM_);
+  });
+
+  it("should transfer tokens paying fees in native", async function () {
+    await ccipBnM.drip(alice.address);
+    const amountToSend = 100;
+
+    const balanceBefore = await ccipBnM.balanceOf(bob.address);
+
+    await ccipBnM.connect(alice).approve(await router.getAddress(), amountToSend);
+
+    const message = {
+      receiver: ethers.AbiCoder.defaultAbiCoder().encode(["address"], [bob.address]),
+      data: "0x",
+      tokenAmounts: [{ token: await ccipBnM.getAddress(), amount: amountToSend }],
+      extraArgs: "0x",
+      feeToken: ethers.ZeroAddress,
+    };
+
+    const fees = await router.getFee(chainSelector, message);
+    await router.connect(alice).ccipSend(chainSelector, message, { value: fees });
+
+    const balanceAfter = await ccipBnM.balanceOf(bob.address);
+    expect(balanceAfter - balanceBefore).to.equal(amountToSend);
+  });
+});
+```
+
+## Starter Kits
+
+For the quickest working setup:
+
+- Foundry: `https://github.com/smartcontractkit/ccip-starter-kit-foundry`
+- Hardhat: `https://github.com/smartcontractkit/ccip-starter-kit-hardhat`
+
 ## Local Testing Workflow
 
 ### No-fork local simulator
@@ -85,7 +262,7 @@ Prefer the starter-kit structure from the official docs when the user wants the 
 This is the default path.
 
 1. Start with the official local simulator guide for the current framework.
-2. Use the simulator to obtain local router, LINK, token, and chain-selector configuration.
+2. Use the simulator to obtain local router, LINK, token, and chain-selector configuration via `configuration()`.
 3. Write or update tests for the specific CCIP path the user cares about.
 4. Keep the first test small and reproducible.
 5. Move to forked environments only after the no-fork path is working or when the user explicitly needs the fork.
@@ -101,6 +278,10 @@ Use forked environments only when the user needs to test against realistic chain
 5. If the simulator details differ from the CCIP Directory, treat the CCIP Directory as the source of truth.
 6. When fork-network details are missing or need correction, configure them explicitly with `setNetworkDetails(...)` using CCIP Directory values.
 7. Do not introduce fork complexity when the no-fork simulator already answers the question.
+
+## Scope
+
+Chainlink Local is EVM-only. There is no local simulator for Solana, Aptos, Sui, or TON. For non-EVM CCIP testing, deploy directly to testnet.
 
 ## What To Test First
 
@@ -121,49 +302,3 @@ Prioritize:
 4. Keep test setup simple enough that a developer can rerun it quickly.
 5. In fork tests, prefer verified CCIP Directory values over simulator defaults when they differ.
 
-## Triggering Tests
-
-These prompts should trigger this story pack:
-
-- "Add Chainlink Local tests for this CCIP sender and receiver."
-- "This repo is Foundry. Add a local simulator test before I try testnet."
-- "This is a Hardhat project. Use Chainlink Local instead of changing frameworks."
-- "Create a forked-environment CCIP test only if the basic local simulator is not enough."
-
-These prompts should not trigger this story pack:
-
-- "Bridge funds using the CLI."
-- "Show me the status of this message."
-- "Create a CCIP contract but do not add tests."
-
-## Functional Tests
-
-1. If the user asks for local testing, choose Chainlink Local instead of live-network execution.
-2. If the repo is already Hardhat, stay in Hardhat.
-3. If the repo is already Foundry, stay in Foundry.
-4. If no framework is established, default to Foundry.
-5. If a no-fork test can satisfy the goal, do not jump to forked environments.
-6. If a fork is requested, use the official forked-environment guide for the chosen framework.
-7. In fork tests, compare `getNetworkDetails(...)` output against the CCIP Directory and correct mismatches with explicit config.
-8. Preserve security checks in the tested contracts.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. routes local-testing requests into Chainlink Local instead of live-network workflows
-2. keeps the repo in its existing framework when that choice is already made
-3. defaults to the simplest reproducible local simulator path
-4. escalates to forked environments only when justified
-5. uses the CCIP Directory as the source of truth for fork-network details
-6. preserves security checks in local tests
-7. helps the user validate the contract before testnet
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Add a local CCIP simulator test for this Foundry sender/receiver pair before we touch testnet."
-2. "This is a Hardhat repo. Add Chainlink Local coverage for the CCIP receiver without switching frameworks."
-3. "Use the simplest local simulator setup for this token-transfer contract, and only suggest a fork if it is truly needed."
-4. "My receiver handles tokens and data. Add a local test that covers the failure case and point me to the defensive pattern if needed."

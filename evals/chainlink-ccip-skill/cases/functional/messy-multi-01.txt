@@ -1,0 +1,1 @@
+I want to send a cross-chain message with some tokens attached. like both data and tokens in one ccip message. can you build that for me? foundry project, testnet only

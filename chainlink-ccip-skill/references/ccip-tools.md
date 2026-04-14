@@ -35,11 +35,55 @@ If the route or network is missing, ask for it. Do not assume a lane.
 5. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
 
 Reference points:
+- Tools overview: `https://docs.chain.link/ccip/tools/`
 - CLI docs: `https://docs.chain.link/ccip/tools/cli/`
 - API docs: `https://docs.chain.link/ccip/tools/api/`
 - SDK docs: `https://docs.chain.link/ccip/tools/sdk/`
 - CLI package: `@chainlink/ccip-cli`
 - SDK package: `@chainlink/ccip-sdk`
+- SDK examples repo: `https://github.com/smartcontractkit/ccip-sdk-examples`
+
+For TypeScript SDK code examples (fee estimation, token transfers, messaging, status checks), see [ccip-sdk-examples.md](ccip-sdk-examples.md).
+
+## Multi-Chain Support
+
+The SDK, CLI, and API support multiple blockchain families:
+
+| Chain Family | SDK/CLI Status |
+|-------------|---------------|
+| EVM | Full support |
+| Solana (SVM) | Full support |
+| Aptos | Full support |
+| Sui | Partial (manual execution only) |
+| TON | Partial (no token pool/registry queries) |
+
+For non-EVM-specific workflow guidance (SDK chain classes, CLI options, wallet setup, tutorials), see [ccip-non-evm.md](ccip-non-evm.md).
+
+### Non-EVM CLI Examples
+
+```bash
+# Send from Solana to EVM
+ccip-cli send \
+  --source solana-devnet \
+  --dest ethereum-testnet-sepolia \
+  --router <solana-router> \
+  --receiver 0xYourEVMAddress \
+  --transfer-tokens <token>=0.001
+
+# Send from Aptos to EVM
+ccip-cli send \
+  --source aptos-testnet \
+  --dest ethereum-testnet-sepolia \
+  --router <aptos-router> \
+  --receiver 0xYourEVMAddress \
+  --transfer-tokens <token>=0.001
+
+# Track any message (works for all chain families)
+ccip-cli show <tx-hash-or-message-id> --wait
+
+# Check lane latency
+ccip-cli lane-latency solana-devnet ethereum-testnet-sepolia
+```
 
 ## Testnet Tokens
 
@@ -82,48 +126,3 @@ For testnet flows, the standard test token is **CCIP-BnM** (burn-and-mint). It i
 3. Refuse to skip the fee-estimation and approval steps for side-effecting actions.
 4. If the user asks for unsupported behavior, explain the limit and offer the closest safe alternative.
 
-## Triggering Tests
-
-These prompts should trigger this story pack:
-
-- "Bridge USDC from Ethereum Sepolia to Base Sepolia using CCIP."
-- "Send a CCIP test message to this receiver and tell me the fee first."
-- "Use CCIP tools to move funds without writing contracts."
-- "Check supported tokens on this CCIP route, then prepare a transfer."
-
-These prompts should not trigger this story pack:
-
-- "Write a CCIP sender contract in Solidity."
-- "Add Foundry tests for my CCIP receiver."
-- "Explain how CCIP works at a high level."
-
-## Functional Tests
-
-1. If the user asks to bridge funds without contracts, choose the tool-first path instead of generating contracts.
-2. If the route is missing, ask for it before proposing execution.
-3. If the token is unsupported on the route, stop and explain that constraint.
-4. If the user wants a fee quote only, provide the non-executing path and do not ask for transaction approval.
-5. If the user wants execution on mainnet, refuse the write action.
-6. If execution proceeds on testnet, require both the preflight approval and the second confirmation.
-7. After execution, direct read-only follow-up tracking to [ccip-monitoring.md](ccip-monitoring.md).
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. routes to tools instead of contracts for direct send and bridge requests
-2. asks only for the missing inputs needed for the next safe step
-3. verifies route and token support before proposing execution
-4. estimates fees before execution
-5. enforces approval and second-confirmation guardrails
-6. refuses mainnet writes
-7. hands off read-only follow-up tracking to the monitoring workflow
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Bridge 1 test USDC from Ethereum Sepolia to Base Sepolia using CCIP. Tell me the fee first and do not write contracts."
-2. "Send a CCIP message with payload `hello world` to this receiver on testnet, but ask me before executing anything."
-3. "Check whether this route supports USDC and, if it does, prepare the transfer flow without deploying contracts."
-4. "I want to use CCIP tools, not Solidity, to move funds across chains. Walk me through the safest path."

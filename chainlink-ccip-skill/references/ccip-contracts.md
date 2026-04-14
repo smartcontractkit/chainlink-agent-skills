@@ -1,6 +1,6 @@
 # CCIP Contracts
 
-Use this file only for contract-first CCIP requests where the user wants sender or receiver contracts, contract modifications, or project setup help for CCIP Solidity development.
+Use this file only for contract-first CCIP requests where the user wants sender or receiver contracts, contract modifications, or project setup help for CCIP Solidity development. These patterns are EVM-specific. For non-EVM chains (Solana programs, Aptos Move modules), see [ccip-non-evm.md](ccip-non-evm.md).
 
 ## Trigger Conditions
 
@@ -57,6 +57,8 @@ Use the official CCIP EVM contracts and interfaces as the starting point:
 - `CCIPReceiver`
 - `IRouterClient`
 - `Client`
+
+For concrete, production-ready code examples of each contract shape, see [ccip-solidity-examples.md](ccip-solidity-examples.md). Use those examples as the starting point for code generation.
 
 Important behaviors from the official references:
 
@@ -164,49 +166,3 @@ Local simulation and local contract testing are handled separately. Do not load 
 2. Refuse to guess package versions or remappings when imports clearly indicate a different dependency graph.
 3. If a safer simple design can satisfy the request, do not generate a more complex architecture by default.
 
-## Triggering Tests
-
-These prompts should trigger this story pack:
-
-- "Create a CCIP sender and receiver in Solidity."
-- "Build a token-transfer receiver using CCIPReceiver."
-- "Add programmable token transfer support to this CCIP contract."
-- "Fix my Foundry CCIP imports and remappings."
-
-These prompts should not trigger this story pack:
-
-- "Bridge funds with CCIP tools."
-- "Show me the status of this message."
-- "Which tokens are supported on this route?"
-
-## Functional Tests
-
-1. If the user asks for contracts, choose the contract-first path instead of CLI or API workflows.
-2. If the user asks for data-only, token-only, or data-plus-token support, generate the matching shape rather than a one-size-fits-all contract.
-3. If the request is a receiver contract, preserve router validation and receive-side checks.
-4. If the request needs project setup help, prefer the Foundry tagged-install path by default.
-5. If OpenZeppelin import versions are split, call that out explicitly and align remappings instead of guessing.
-6. If the user asks for mainnet deployment, refuse the write step but continue with safe code-generation help.
-7. If the request would be safer with a smaller design, generate the smaller design.
-8. If the request mixes token and data delivery with receiver-side state changes, surface the defensive-example option explicitly.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. routes contract requests away from tool-first flows
-2. defaults to secure, conservative patterns
-3. verifies or preserves chain, sender, and router checks where relevant
-4. quotes fees before sending
-5. prefers Foundry tagged installs and explicit remappings for CCIP Solidity work
-6. keeps receiver logic simple and auditable
-7. surfaces EOA-receiver behavior and defensive receiver patterns when relevant
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Create a minimal CCIP sender and receiver in Solidity for arbitrary messaging on testnet, with secure defaults."
-2. "Build a programmable token-transfer CCIP receiver and keep the receive-side business logic small and auditable."
-3. "My Foundry project cannot resolve `@chainlink/contracts-ccip` imports. Fix the install and remappings using the safest path."
-4. "I need a token-only CCIP sender/receiver pair. Prefer a boring, security-first implementation over abstraction."

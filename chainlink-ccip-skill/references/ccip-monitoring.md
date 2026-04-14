@@ -1,6 +1,6 @@
 # CCIP Monitoring
 
-Use this file only for CCIP message lookup, monitoring, status explanation, lane performance checks, or failed-message diagnosis.
+Use this file only for CCIP message lookup, monitoring, status explanation, lane performance checks, or failed-message diagnosis. Monitoring surfaces (CCIP API, CLI `show`/`search`, Explorer) work for messages on all chain families including Solana and Aptos -- message status lookup via the API is chain-agnostic.
 
 ## Trigger Conditions
 
@@ -114,49 +114,3 @@ If log parsing is not practical, the transaction hash itself can be used with th
 3. Refuse mainnet side-effecting remediation in this version.
 4. If the user wants write remediation, require the same approval and second-confirmation guardrails as other on-chain actions.
 
-## Triggering Tests
-
-These prompts should trigger this story pack:
-
-- "Check whether my CCIP message landed."
-- "Show me the status of this tx hash."
-- "Search CCIP messages from this sender."
-- "Help me inspect a failed CCIP message and explain what happened."
-- "What is the lane latency for this route?"
-
-These prompts should not trigger this story pack:
-
-- "Bridge funds using CCIP."
-- "Create a CCIP sender contract."
-- "Add Chainlink Local tests for this receiver."
-
-## Functional Tests
-
-1. If the user asks for monitoring or message lookup, choose API-first or CLI lookup paths instead of contract generation.
-2. If the user asks for query or search behavior, prefer the API first.
-3. If the user asks for direct command-line lookup, use the CLI path.
-4. If the user asks for failed-message diagnosis, start read-only.
-5. If the user asks for side-effecting remediation, require approval and refuse mainnet writes.
-6. If the request is actually route discovery, redirect to the route/token workflow instead of overusing monitoring.
-7. Explain message state and next steps clearly.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. routes monitoring requests away from contract generation and send flows
-2. prefers API for monitoring and querying
-3. uses CLI effectively for direct lookup and debugging
-4. keeps default monitoring read-only
-5. distinguishes lane performance from route existence
-6. explains the message lifecycle clearly
-7. preserves approval guardrails for any remediation step
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Show me the status of this CCIP tx hash and explain the lifecycle in plain English."
-2. "Search CCIP messages for this sender and summarize what happened."
-3. "Help me diagnose this failed CCIP message, but do not execute anything yet."
-4. "Check lane latency for this route and tell me whether I should treat it as a route problem or just current performance."
