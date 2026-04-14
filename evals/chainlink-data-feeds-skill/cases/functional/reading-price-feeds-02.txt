@@ -1,0 +1,1 @@
+I need to read the BTC/USD price offchain using ethers.js. Show me a complete script I can run with Node.js.

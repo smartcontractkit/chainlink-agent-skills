@@ -1,0 +1,1 @@
+Read an MVR bundle feed offchain using ethers.js v5. I need to handle the decimal scaling for each field.

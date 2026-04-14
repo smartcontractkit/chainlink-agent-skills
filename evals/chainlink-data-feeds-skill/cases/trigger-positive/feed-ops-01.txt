@@ -1,0 +1,1 @@
+My contract is on Optimism. How do I check the L2 sequencer status before reading the price feed?

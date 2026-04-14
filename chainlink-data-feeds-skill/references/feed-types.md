@@ -1,18 +1,156 @@
 # Feed Types
 
-## Overview
+## Trigger Conditions
 
-- [https://docs.chain.link/data-feeds/feed-types](https://docs.chain.link/data-feeds/feed-types) — Defines the major Chainlink Data Feeds categories and what each is used for in onchain applications. It provides a concise table mapping feed type to purpose: Price Feeds for decentralized asset pricing; SmartData feeds for RWA-focused single-value and multi-variable response (MVR) datasets like reserves, NAV, AUM, and bundled OHLC for efficient onchain reads; Smart Value Recapture (SVR) feeds for metrics to recapture MEV/reduce value leakage; Rate and Volatility feeds for interest rate curves, staking APR, and realized volatility benchmarks; L2 Sequencer Uptime feeds for detecting L2 sequencer availability to drive circuit breakers/fallback logic; and Self-Managed feeds where updates are published by a chain/third party and are not operated or monitored by Chainlink Labs.. Key details: Price Feeds: aggregated decentralized asset prices for collateral, lending, derivatives; SmartData: RWA-focused feeds including single-value and MVR; examples include reserves, NAV, AUM, bundled OHLC sets; SVR Feeds: metrics intended to help protocols recapture MEV or reduce external value leakage; Rate and Volatility Feeds: interest rate curves, staking APR, realized volatility benchmarks for pricing/risk/hedging; L2 Sequencer Uptime Feeds: real-time sequencer status for circuit breakers and fallback transaction logic; Self-Managed Feeds: onchain updates published by chain/third party; not operated or monitored by Chainlink Labs
+Read this file when:
+- The user asks about different types of Chainlink Data Feeds
+- The user needs help choosing which feed type to use
+- The user asks about SmartData, Proof of Reserve, NAV, AUM, or RWA feeds
+- The user asks about rate or volatility feeds (Bitcoin Interest Rate, ETH Staking APR, Realized Volatility)
+- The user asks about tokenized equity feeds or Ondo Finance feeds
+
+## Feed Type Overview
+
+| Feed Type | Purpose | Interface |
+|-----------|---------|-----------|
+| **Price Feeds** | Aggregated decentralized asset prices (crypto, forex, commodities, equities) | AggregatorV3Interface |
+| **SmartData** | RWA-focused: reserves (PoR), NAV, AUM — single-value and MVR bundle variants | AggregatorV3Interface (single) or IBundleAggregatorProxy (MVR) |
+| **SVR Feeds** | Price feeds with MEV/OEV recapture for liquidation-related value | AggregatorV3Interface (same as standard, different address) |
+| **Rate and Volatility** | Interest rate curves, staking APR, realized volatility benchmarks | AggregatorV3Interface |
+| **L2 Sequencer Uptime** | Real-time sequencer status for circuit breakers on L2 rollups | AggregatorV2V3Interface |
+| **Self-Managed** | Updates written by chain/third party, not Chainlink node operators | AggregatorV3Interface (different operational model) |
+
+## Decision Path
+
+1. **Reading an asset price** (ETH/USD, BTC/USD, etc.) → Use a **Price Feed**. See `reading-price-feeds.md`.
+2. **Reading multiple related values in one call** (e.g., NAV + AUM + total return) → Use an **MVR Feed**. See `mvr-feeds.md`.
+3. **Recapturing MEV from liquidations** → Use an **SVR Feed**. See `svr-feeds.md`.
+4. **Interest rates, staking APR, or volatility** → Use a **Rate and Volatility Feed** (see below).
+5. **Proof of Reserve, NAV, or AUM** → Use a **SmartData Feed** (see below).
+6. **Tokenized equity pricing** → Use a **Tokenized Equity Feed** (see below).
+7. **L2 sequencer health** → Use the **L2 Sequencer Uptime Feed**. See `feed-operations.md`.
+
+## SmartData Feeds (RWA)
+
+SmartData provides onchain data for tokenized real-world assets. It includes two variants:
+
+### Single-Value SmartData
+
+Read like standard Price Feeds via AggregatorV3Interface and `latestRoundData()`. Feed categories:
+- **Proof of Reserve (PoR)**: confirms reserve backing for asset-backed tokens. Answers may be in non-price units (e.g., ounces, token counts).
+- **NAVLink**: Net Asset Value for funds and structured products.
+- **SmartAUM**: Assets Under Management.
+
+Sourcing models for PoR:
+- **Offchain**: data from custodian, fund administrator, auditor, or asset manager via external adapter.
+- **Cross-chain**: reads reserves from the source chain where assets are held.
+- **Self-reported**: issuer provides reserve data via API. Higher risk — issuers could manipulate reported reserves by adding addresses they do not control.
+
+### MVR SmartData
+
+Multi-variable response feeds return multiple fields per update. See `mvr-feeds.md` for integration.
+
+### Addresses
+
+SmartData feed addresses: `https://docs.chain.link/data-feeds/smartdata/addresses`
+
+Filter using "Show Multiple-Variable Response (MVR) feeds" checkbox for MVR variants.
+
 ## Rate and Volatility Feeds
 
-- [https://docs.chain.link/data-feeds/rates-feeds](https://docs.chain.link/data-feeds/rates-feeds) — Explains Chainlink Rate and Volatility Data Feeds and how to consume them like standard Chainlink Data Feeds by using a Rate/Volatility feed contract address instead of a Price Feed address. Describes three feed categories: Bitcoin Interest Rate Curve (base rates for lending/borrowing risk, derivatives valuation, swaps; normalized methodology with daily rates; sources include OTC lending desks, DeFi lending pools, perpetual futures markets), ETH Staking APR (trust-minimized APR for Ethereum validator staking; annualized returns computed offchain at epoch level; 30-day and 90-day rolling windows; updates at least daily), and Realized Volatility (percent price movement over rolling windows such as 24h/7d/30d; not implied volatility; providers sample prices every 10 minutes; onchain updates when heartbeat or deviation thresholds are met). Points to address/parameter pages and contact forms for enhancements.. Key details: Read Rate/Volatility feeds the same way as other Chainlink Data Feeds; only the feed address differs from Price Feeds; Bitcoin Interest Rate Curve feeds provide base rates; normalized methodology; daily rates; sources include OTC lending desks, DeFi lending pools, perpetual futures markets; ETH Staking APR is annualized and computed over 30-day and 90-day rolling windows; ETH Staking APR uses offchain computation at epoch level, consensus among data providers, then writes results onchain; ETH Staking APR feeds update at a minimum of once per day; Realized volatility is a percent of asset price movement over a specified interval; explicitly not implied volatility; Realized volatility feeds are provided for specific rolling windows (e.g., 24h, 7d, 30d) to compare trends; Volatility estimates refreshed by sampling price data every 10 minutes; Onchain updates occur when feed heartbeat or deviation threshold is met; per-feed parameters available on the addresses page
-- [https://docs.chain.link/data-feeds/rates-feeds/addresses](https://docs.chain.link/data-feeds/rates-feeds/addresses) — Directory-style documentation page for Chainlink Data Feeds focused on Rate and Volatility Feeds, intended to provide onchain feed contract addresses by network. It points readers to the general “Using Data Feeds” guide for integration/consumption patterns and to “LINK Token Contracts” for LINK token and faucet details. Includes a prominent caution that only feeds listed in official docs are reviewed; community/custom-deployed feeds may carry additional risks, so developers must perform due diligence and make responsible data quality decisions before integrating feeds into smart contracts. The page is organized around network selection and feed address lookup rather than SDK-specific code.. Key details: Purpose: lookup Rate and Volatility Feed contract addresses per supported network; Integration guidance is deferred to the “Using Data Feeds” documentation; LINK token and faucet information is deferred to “LINK Token Contracts”; Caveat: official-doc feeds are reviewed; community/custom feeds may have additional risks; Recommendation: perform close diligence and responsible data quality decisions before using feeds in smart contracts
-## SmartData (RWA)
+Read rate and volatility feeds exactly like standard Price Feeds — only the feed address differs.
 
-- [https://docs.chain.link/data-feeds/smartdata](https://docs.chain.link/data-feeds/smartdata) — Explains Chainlink SmartData, an onchain data suite for tokenized real-world assets (RWAs), providing minting assurances and key metrics like reserves, Net Asset Value (NAV), and Assets Under Management (AUM). Distinguishes two feed types: single-value SmartData feeds (read like standard Data Feeds via AggregatorV3Interface) and Multiple-Variable Response (MVR) feeds (return bytes bundles via BundleAggregatorProxy requiring latestBundle() + decoding into a struct and decimal scaling). Describes product categories: Proof of Reserve, NAVLink, SmartAUM. Details Proof of Reserve sourcing models (offchain via external adapters; cross-chain via source-chain querying) and highlights risk caveats for self-reported reserves/addresses; users must assess data quality and feed configuration themselves. Includes a Solidity example reading a PoR feed using latestRoundData().. Key details: Single-value SmartData feeds use AggregatorV3Interface and are read like Price Feeds (latestRoundData()); MVR feeds use BundleAggregatorProxy and return a bytes array that must be decoded; MVR read pattern: call latestBundle() -> decode bytes into a struct matching the feed schema -> apply decimal scaling to numeric fields; Proof of Reserve answers may be in non-price units (e.g., ounces or token counts); Offchain reserves sourced from APIs via external adapter; methods include third-party audit, custodian pull, or self-reported issuer API (higher risk); Cross-chain reserves sourced from the chain where reserves are held; may use external adapter querying source-chain client; sometimes composite adapter for dynamic ID/address lists; Cross-chain self-reporting patterns: IPoRAddressList wallet address manager contract or self-hosted API listing addresses; both carry additional risk; Documentation emphasizes user responsibility to review feed configuration and data quality; Chainlink Labs not responsible for self-reported accuracy; Feed contract addresses are referenced via the separate 'SmartData Feed Addresses' page
-- [https://docs.chain.link/data-feeds/smartdata/addresses](https://docs.chain.link/data-feeds/smartdata/addresses) — Directory-style documentation page for Chainlink SmartData feed addresses, intended to help developers locate the correct onchain contract addresses for SmartData-related Data Feeds. It primarily points readers to the SmartData Feeds usage docs for integration guidance and to the LINK Token Contracts page for LINK token and faucet details. The page includes prominent risk/disclaimer guidance specific to Proof of Reserve feeds that use wallet address manager contracts, especially cross-chain configurations: if the wallet address manager is self-reporting and ownership/control of addresses is not cryptographically verified, issuers could manipulate reported reserves by adding addresses they do not control. Chainlink Labs disclaims responsibility for self-reported reserves accuracy; users must perform their own data quality and issuer risk assessment.. Key details: Purpose: provide contract address references for SmartData feeds (address directory page); Integration guidance is deferred to: SmartData Feeds documentation; LINK token and faucet info is deferred to: LINK Token Contracts page; Caveat: Proof of Reserve feeds using wallet address manager can differ by configuration across chains; Risk: self-reporting wallet address manager may include unverified addresses; issuer could inflate reserves by adding addresses not controlled; Each feed’s configuration is documented in the contract address section (users should verify per-feed settings); Disclaimer: users are solely responsible for reviewing feed configuration and data quality; Chainlink Labs not responsible for self-reported reserves accuracy
+### Bitcoin Interest Rate Curve
+
+- Base rates for lending/borrowing risk, derivatives valuation, and swaps.
+- Normalized methodology with daily rates.
+- Sources: OTC lending desks, DeFi lending pools, perpetual futures markets.
+
+### ETH Staking APR
+
+- Annualized trust-minimized APR for Ethereum validator staking.
+- Computed offchain at epoch level across data providers.
+- Available in 30-day and 90-day rolling windows.
+- Updates at least once per day.
+
+### Realized Volatility
+
+- Percent of asset price movement over specified intervals (24h, 7d, 30d).
+- Not implied volatility — this measures actual historical price movement.
+- Providers sample prices every 10 minutes.
+- Onchain updates when heartbeat or deviation threshold is met.
+
+### Addresses
+
+Rate and volatility feed addresses: `https://docs.chain.link/data-feeds/rates-feeds/addresses`
+
 ## Tokenized Equity Feeds
 
-- [https://docs.chain.link/data-feeds/tokenized-equity-feeds](https://docs.chain.link/data-feeds/tokenized-equity-feeds) — Explains Chainlink Tokenized Equity Feeds: 24/5 continuous pricing for tokenized representations of US equities/ETFs, returning a calculated “primary market” token value based on issuer methodology (may include total return adjustments like dividends/corporate actions). Describes how feeds aggregate multi-session equity market data (regular, pre-, post-, overnight) and apply session-aware smoothing to reduce microstructure noise and phantom liquidations during thin liquidity transitions, at the cost of potential tracking lag. Details session coverage hours (ET), input sources by session, and key differences vs standard crypto price feeds (continuous multi-session vs point-in-time, variable data quality/coverage, provider-specific behaviors). Highlights risks (limited provider coverage, structural illiquidity, price jumps at transitions, smoothing lag, weekend/holiday behavior, corporate actions, halts not explicitly flagged) and mitigations/best practices (staleness monitoring, protocol risk parameters, integration testing, restricting operations in illiquid sessions). Notes developers must contact Chainlink Labs before integrating and review Selecting Quality Data Feeds/ToS.. Key details: Tokenized equities are issuer tokens providing exposure to stocks/ETFs; feeds price the token instrument, not the underlying equity directly; Feed provides continuous 24/5 pricing across US sessions: pre-market (04:00–09:30 ET), regular (09:30–16:00), post-market (16:00–20:00), overnight (20:00–04:00); weekend has no traditional trading (stale); Value is a calculated primary market price / theoretical token value; may incorporate total return adjustments (dividends, corporate actions, multipliers); Session-aware smoothing: dampens brief spikes in illiquid sessions, converges after legitimate moves, but can introduce tracking lag during rapid moves; Data quality/coverage varies by session: regular highest (multiple providers), extended moderate (limited), overnight lower (very limited), weekend N/A; Extended/overnight provider outages can cause flatlining/stale values; mitigation: staleness detection via last update timestamp and defined fallback/pause behavior; Protocols should consider restricting high-risk operations (e.g., large liquidations/new positions) during extended/overnight sessions; Provider-specific behaviors differ by issuer; consult Provider Catalog (e.g., Ondo Finance, SmartData) before integration; Integration caveat: developers must contact Chainlink Labs prior to integrating tokenized equity feeds and ensure protocol risk parameters match feed behavior
-- [https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo](https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo) — Explains Chainlink Tokenized Equity Feeds for Ondo Finance Global Markets (GM) and how they differ from standard price feeds by reporting Total Return Value (TRV) rather than raw equity price. TRV is computed as: Token Price = Underlying Equity Market Price (from Chainlink 24/5 equity feeds across regular, pre/post-market, overnight) × multiplier sValue (from Ondo’s SyntheticSharesOracle reflecting dividend reinvestment and corporate actions). Details sValue update rules: small changes (≤1% per 24h) apply automatically; large changes (>1%) require a scheduled pause and manual confirmation. Describes corporate action “pause” mode where the feed freezes at last good price until unpaused after Ondo confirms alignment; minimum pause duration enforced. Notes integrator responsibilities and risk parameter configuration; feed may not update during pauses.. Key details: Formula: Token Price = Underlying Equity Market Price × Multiplier (sValue); Underlying equity price source: Chainlink 24/5 equity price feeds aggregating regular, pre-market, post-market, overnight sessions; sValue source: Ondo SyntheticSharesOracle contract (dividend reinvestments + corporate action adjustments); sValue updates: small (≤1% per 24h) applied immediately via automation; large (>1%) require scheduled pause window + manual confirmation; Corporate action mode: pause scheduled ≥24h in advance; at pause time feed freezes at last known good token price; new sValue staged but not applied until unpause; When SyntheticSharesOracle returns paused=true, Chainlink feed freezes and will not update until manually unpaused; Minimum pause duration enforced (≥10 minutes) to prevent premature unpausing; Fail-safe: if stock price changes before sValue update (timing mismatch), feed remains frozen to avoid incorrect token prices; Integrator caveat: developers responsible for configuring protocol risk parameters and validating feed performance; review Selecting Quality Data Feeds and Terms of Service
-- [https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers](https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers) — Catalog page for Chainlink Tokenized Equity Feeds providers (asset issuers) and their operational characteristics. Explains that tokenized equity feeds have issuer-specific implementations impacting pricing methodology, data handling, and corporate action behavior, and that developers must carefully integrate and set protocol risk parameters. Includes a provider table with fields: provider, feed type, price calculation, corporate action handling, documentation link, and issuer contact. Notes important caveats: review “Selecting Quality Data Feeds” and Chainlink Terms of Service; integration requires validating feed operation/performance expectations; contact Chainlink Labs (datafeeds@chain.link) before integrating. Currently lists Ondo Finance with Total Return Value pricing (Underlying Equity Market Price × multiplier/sValue) and pause-based corporate action handling with manual confirmation.. Key details: Provider table columns: Provider, Feed Type, Price Calculation, Corporate Action Handling, Documentation, Issuer Contact; Caveat: tokenized equity feeds require careful integration; developers responsible for protocol risk parameters; Caveat: issuer-specific implementations affect pricing, data handling, and operational behavior; Recommendation: review Selecting Quality Data Feeds and Chainlink Terms of Service before use; Contact Chainlink Labs: datafeeds@chain.link prior to integrating tokenized equity feeds; Ondo Finance: Feed Type = Total Return Value; Price = Underlying Equity Market Price × Multiplier (sValue); Corporate actions = pause-based with manual confirmation
+Continuous 24/5 pricing for tokenized representations of US equities and ETFs. These feeds differ significantly from standard crypto price feeds.
+
+### Key characteristics
+
+- **Continuous pricing** across US market sessions: pre-market (04:00-09:30 ET), regular (09:30-16:00), post-market (16:00-20:00), overnight (20:00-04:00).
+- **Calculated value**: returns a primary market token value based on issuer methodology, not a simple market price. May include total return adjustments (dividends, corporate actions).
+- **Session-aware smoothing**: dampens brief spikes during illiquid sessions but can introduce tracking lag during rapid moves.
+- **Variable data quality**: regular session has highest coverage (multiple providers), extended/overnight is limited.
+- **Weekend**: no traditional trading — data may be stale.
+
+### Risks
+
+- Limited provider coverage during extended/overnight sessions.
+- Price jumps at session transitions.
+- Corporate actions trigger pauses in the feed.
+- Halts are not explicitly flagged.
+
+### Best practices
+
+- Monitor staleness via last update timestamp.
+- Configure protocol risk parameters to match feed behavior.
+- Consider restricting high-risk operations (large liquidations, new positions) during extended/overnight sessions.
+- Contact Chainlink Labs (`datafeeds@chain.link`) before integrating tokenized equity feeds.
+
+### Ondo Finance (Total Return Value)
+
+Ondo GM feeds report Total Return Value: `Token Price = Underlying Equity Market Price * sValue`
+
+- sValue comes from Ondo's SyntheticSharesOracle (reflects dividend reinvestment and corporate actions).
+- Small sValue changes (<=1% per 24h) apply automatically.
+- Large sValue changes (>1%) require a scheduled pause and manual confirmation.
+- During corporate action pauses, the feed freezes at the last known good token price until unpaused.
+- Minimum pause duration enforced (>=10 minutes).
+
+## Freshness Rules
+
+1. Feed type definitions and categories are stable — use this file directly.
+2. Specific feed addresses, parameters, and availability by network change — fetch the relevant address page from `official-sources.md`.
+3. Tokenized equity feed provider details and issuer-specific behaviors may change — fetch the provider page when the user needs current operational specifics.
+
+## Triggering Tests
+
+- "What types of data feeds does Chainlink offer?"
+- "I need a Proof of Reserve feed for my RWA token"
+- "How do I read the Bitcoin interest rate curve from Chainlink?"
+- "What's the difference between SmartData and a regular price feed?"
+
+## Functional Tests
+
+1. Response correctly maps the user's use case to the right feed type.
+2. SmartData guidance distinguishes between single-value and MVR variants.
+3. Rate/Volatility guidance says to read like a standard price feed with a different address.
+4. Tokenized equity response mentions the contact requirement and session-specific risks.
+
+## Eval Checks
+
+1. Decision path correctly routes: asset prices → Price Feed, multiple values → MVR, reserves → SmartData PoR.
+2. PoR guidance mentions risk levels for self-reported vs. audited sourcing.
+3. Tokenized equity response includes pausing/corporate action behavior.
+4. Response does not conflate MVR with single-value SmartData.
+5. Rate/Volatility response does not introduce a special interface — it uses AggregatorV3Interface.
+
+## A/B Prompt Pack
+
+- "What kind of Chainlink feed do I need for my lending protocol that holds tokenized treasury bills?"
+- "I want to use Chainlink's ETH staking APR feed in my yield optimizer"
+- "How do I integrate Ondo tokenized equity feeds?"
+- "What's a SmartData feed and how is it different from a price feed?"

@@ -1,0 +1,1 @@
+My Chainlink price feed consumer is returning stale data and I keep getting reverts. The contract is on Arbitrum.

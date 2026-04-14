@@ -1,0 +1,1 @@
+How can I verify onchain that a Chainlink price feed proxy is officially operated by Chainlink and still active?

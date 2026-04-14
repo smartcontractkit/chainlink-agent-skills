@@ -1,0 +1,12 @@
+You are evaluating whether the response clearly shows Data Feeds skill activation.
+
+A positive-trigger response should show:
+- Data Feeds-specific integration patterns (AggregatorV3Interface, latestRoundData, IBundleAggregatorProxy)
+- Validation requirements (staleness checks, decimals handling)
+- Chain-appropriate guidance (L2 sequencer checks, multi-chain patterns)
+- Feed-type-specific terminology and workflows
+
+Score:
+- 1.0: Clear Data Feeds-specific triggered behavior appropriate to the prompt (PASS)
+- 0.5: Partial or ambiguous signal of skill activation (FAIL)
+- 0.0: Generic or wrong-domain behavior (FAIL)

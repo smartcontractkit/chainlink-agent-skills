@@ -1,0 +1,213 @@
+description: Chainlink Data Feeds Skill Evaluation
+
+prompts:
+  - file://prompts/baseline.js
+  - file://prompts/with-skill.js
+
+providers:
+  - id: "anthropic:messages:${PROMPTFOO_BASELINE_PROVIDER:-claude-sonnet-4-20250514}"
+    label: baseline
+    config:
+      temperature: 0
+      max_tokens: 4096
+  - id: "anthropic:messages:${PROMPTFOO_WITH_SKILL_PROVIDER:-claude-sonnet-4-20250514}"
+    label: with-skill
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+commandLineOptions:
+  maxConcurrency: 2
+
+defaultTest:
+  options:
+    provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+  assert:
+    - type: llm-rubric
+      value: file://rubrics/must-pass.txt
+
+# Reusable assertion sets
+trigger_positive_asserts: &trigger_positive_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-positive.txt
+
+trigger_negative_asserts: &trigger_negative_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-negative.txt
+
+functional_asserts: &functional_asserts
+  - type: llm-rubric
+    value: file://rubrics/correctness.txt
+  - type: llm-rubric
+    value: file://rubrics/completeness.txt
+  - type: llm-rubric
+    value: file://rubrics/safety.txt
+  - type: llm-rubric
+    value: file://rubrics/freshness.txt
+  - type: llm-rubric
+    value: file://rubrics/clarification.txt
+
+tests:
+  # ── Functional: Reading Price Feeds ──────────────────────────────────
+  - vars:
+      case_file: cases/functional/reading-price-feeds-01.txt
+      workflow: reading-price-feeds
+      requires_live_source: "yes"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/reading-price-feeds-02.txt
+      workflow: reading-price-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/reading-price-feeds-03.txt
+      workflow: reading-price-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/reading-price-feeds-04.txt
+      workflow: reading-price-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: MVR Feeds ────────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/mvr-feeds-01.txt
+      workflow: mvr-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/mvr-feeds-02.txt
+      workflow: mvr-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: SVR Feeds ────────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/svr-feeds-01.txt
+      workflow: svr-feeds
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Feed Types ───────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/feed-types-01.txt
+      workflow: feed-types
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Multi-Chain ──────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/multi-chain-01.txt
+      workflow: multi-chain
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/multi-chain-02.txt
+      workflow: multi-chain
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Feed Operations ──────────────────────────────────────
+  - vars:
+      case_file: cases/functional/feed-operations-01.txt
+      workflow: feed-operations
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/feed-operations-02.txt
+      workflow: feed-operations
+      requires_live_source: "yes"
+    assert: *functional_asserts
+
+  # ── Trigger Positive ─────────────────────────────────────────────────
+  - vars:
+      case_file: cases/trigger-positive/reading-price-feeds-01.txt
+      workflow: reading-price-feeds
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/reading-price-feeds-02.txt
+      workflow: reading-price-feeds
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/mvr-01.txt
+      workflow: mvr-feeds
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/svr-01.txt
+      workflow: svr-feeds
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/multi-chain-01.txt
+      workflow: multi-chain
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/feed-ops-01.txt
+      workflow: feed-operations
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/feed-types-01.txt
+      workflow: feed-types
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/debugging-01.txt
+      workflow: reading-price-feeds
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  # ── Trigger Negative ─────────────────────────────────────────────────
+  - vars:
+      case_file: cases/trigger-negative/ccip-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/vrf-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/automation-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/data-streams-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/functions-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/generic-solidity-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts

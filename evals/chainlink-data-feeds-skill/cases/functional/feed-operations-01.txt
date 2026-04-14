@@ -1,0 +1,1 @@
+I'm deploying my protocol on Base. Do I need to add anything special for the L2 sequencer? Show me the full Solidity code.

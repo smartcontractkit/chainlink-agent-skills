@@ -1,23 +1,293 @@
-# Multi-Chain (Solana, StarkNet, Aptos, Tron)
+# Multi-Chain Data Feeds (Solana, Aptos, StarkNet, Tron)
 
-## Aptos
+## Trigger Conditions
 
-- [https://docs.chain.link/data-feeds/aptos](https://docs.chain.link/data-feeds/aptos) — Explains how to integrate Chainlink Data Feeds into Aptos Move smart contracts on Aptos testnet using the Aptos CLI. Aptos uses a single Chainlink price feed contract that serves multiple feeds; developers query specific data by passing feed ID(s), unlike EVM where each feed has its own contract address. Walks through creating/funding a testnet account, initializing a Move package, configuring Move.toml with Chainlink package addresses and dependencies, downloading ChainlinkPlatform and ChainlinkDataFeeds packages, and writing a Move module that calls data_feeds::router::get_benchmarks to fetch Benchmark data, extract price/timestamp, and store it in account global storage with a view function to read it. Includes compile/publish and on-chain interaction via aptos move run. Notes about profiles, gas costs, and funding via faucet (Octas).. Key details: Aptos integration uses a single price feed contract; query by passing feed_id(s) rather than per-feed contract addresses; Requires Aptos CLI; verify with `aptos help`; Create/fund testnet account: `aptos init --network=testnet --assume-yes` (ed25519 key); faucet funds in Octas; Initialize Move package: `aptos move init --name aptos-data-feeds`; Move.toml must set addresses: sender/owner=<your address>, data_feeds=0xf1099f...fdd3 (testnet), platform=0x516e77...c99 (testnet), move_stdlib=0x1, aptos_std=0x1; Dependencies include AptosFramework/MoveStdlib via aptos-core git rev=main and ChainlinkDataFeeds via local path `./ChainlinkDataFeeds`; Download compiled packages: `aptos move download --account <platform_addr> --package ChainlinkPlatform` and `aptos move download --account <datafeeds_addr> --package ChainlinkDataFeeds`; Update `ChainlinkDataFeeds/Move.toml` to point ChainlinkPlatform dependency to local path: `ChainlinkPlatform = { local = "../ChainlinkPlatform" }`; Move call pattern: `use data_feeds::router::get_benchmarks;` then `get_benchmarks(account, feed_ids, billing_data)` returning `vector<Benchmark>`; extract with `get_benchmark_value(&benchmark)` and `get_benchmark_timestamp(&benchmark)`; Contract stores `PriceData { price: u256, timestamp: u256 }` in global storage; uses `exists<PriceData>`, `borrow_global_mut`, `move_to`; view returns `Option<PriceData>` via `some(*data)`/`none()`; Publish: `aptos move publish --skip-fetch-latest-git-deps`; default profile from `~/.aptos/config.yaml`, override with `--profile`; Fund for gas if needed: `aptos account fund-with-faucet --account <YOUR_PUBLIC_ADDRESS> --amount 100000000` (1 APT = 100,000,000 Octas); Invoke entry function: `aptos move run --function-id '<ADDR>::MyOracleContractTest::fetch_price' --args hex:<feed_id>`; example BTC/USD testnet feed id `0x01a0b4d920000332000000000000000000000000000000000000000000000000`
+Read this file when:
+- The user wants to read Chainlink Data Feeds on a non-EVM chain
+- The user mentions Solana, Aptos, StarkNet, or Tron in a data feeds context
+- The user asks about Move, Cairo, Anchor, or TronBox in a data feeds context
+
+For EVM chain integrations, use `reading-price-feeds.md` instead.
+
+## Chain Selection
+
+| Chain | Language | Framework | Feed Model |
+|-------|----------|-----------|------------|
+| Solana | Rust | Anchor / native Solana | Account-based; use `chainlink_solana` SDK |
+| Aptos | Move | Aptos CLI | Single contract queried by feed ID |
+| StarkNet | Cairo | Starknet Foundry / Starkli | Cairo contracts on Starknet Sepolia |
+| Tron | Solidity | TronBox | Similar to EVM; uses AggregatorV3Interface |
 
 ## Solana
 
-- [https://docs.chain.link/data-feeds/solana](https://docs.chain.link/data-feeds/solana) — Explains how Chainlink Data Feeds work on the Solana network and what developers must know to use them. Describes that Solana feeds use Offchain Reporting (OCR) to aggregate data from centralized and decentralized exchanges and that Chainlink’s Solana deployment has no dependency on external chains (e.g., Ethereum). Clarifies Solana’s programming model: programs contain logic, accounts store data; programs are stateless, enabling local testing with a Solana Test Validator, but using Chainlink products requires deploying onchain to supported clusters. Lists supported clusters for Price Feeds (Mainnet, Devnet) and notes Testnet is unsupported. Provides tooling/language expectations (Node.js, Rust, Anchor, Solana CLI, starter kit) and wallet/keypair handling with Anchor/Solana CLI. Caveat: network congestion can reduce feed update frequency; follow Solana status and consult “Selecting Quality Data Feeds.”. Key details: Solana feeds use OCR; data aggregated from centralized + decentralized exchanges; Chainlink Solana deployment has no dependency on Ethereum or other external chains; Solana model: program (logic) + accounts (data) ~= EVM smart contract; state and logic are separate; Programs are stateless; can test locally with Solana Test Validator, but Chainlink usage requires onchain deployment to supported clusters; Price Feeds available on Solana Mainnet and Solana Devnet; not available on Solana Testnet cluster; CLI version guidance: use a Mainnet release Solana CLI version >= target cluster version; check with `solana --version` and `solana cluster-version --url <cluster>`; Wallet requirement: docs use filesystem wallets and Devnet SOL; Mainnet requires wallets funded with mainnet lamports; Anchor/Solana CLI can be pointed to a specific keypair file for deploy/manage operations; Caveat: high Solana network congestion may reduce feed update frequency; subscribe to Solana status; mitigate risk via Selecting Quality Data Feeds
-- [https://docs.chain.link/data-feeds/solana/using-data-feeds-off-chain](https://docs.chain.link/data-feeds/solana/using-data-feeds-off-chain) — Explains how to read Chainlink Data Feeds on Solana Devnet from an offchain client. Introduces the Chainlink Data Feeds Store Program (program ID cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ) and recommends using the Chainlink Solana consumer library instead of directly parsing feed account memory layouts (not guaranteed stable). Provides two paths: integrate into an existing Node project via @chainlink/solana-sdk + @project-serum/anchor, or use the smartcontractkit/solana-starter-kit repo. Shows JS/TS examples that load an OCR2 feed and subscribe to round updates, printing event.answer. Notes examples are hardcoded, unaudited, and not for production; offchain reads require no lamports, but Anchor still requires a wallet and env vars.. Key details: Chainlink Data Feeds Store Program ID: cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ; Use @chainlink/solana-sdk (consumer library); do not rely on direct account memory layout stability; Dependencies: @project-serum/anchor and @chainlink/solana-sdk; Node.js >= 14; Anchor env vars: ANCHOR_PROVIDER_URL=https://api.devnet.solana.com and ANCHOR_WALLET=./id.json; Create wallet for Anchor requirement: solana-keygen new --outfile ./id.json (no SOL needed for read-only); Load feed: OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider); Subscribe to updates: dataFeed.onRound(feedAddress, (event)=> console.log(event.answer.toNumber())); Run examples: node javascript-example.js; or yarn add ts-node typescript && yarn ts-node typescript-example.ts; Starter kit flow: git clone https://github.com/smartcontractkit/solana-starter-kit && cd solana-starter-kit && yarn install; run node read-data.js or yarn run read-data; Solana CLI install shown via curl https://release.solana.com/v1.13.6/install and verify with solana --version
-- [https://docs.chain.link/data-feeds/solana/using-data-feeds-solana](https://docs.chain.link/data-feeds/solana/using-data-feeds-solana) — Explains how to consume Chainlink Data Feeds on Solana onchain using the Chainlink Solana SDK v2 (direct account reads) and how to deploy/run an end-to-end example via the Chainlink Solana Starter Kit on Solana Devnet. Covers the OCR2 Data Feeds program ID used to verify feed ownership, recommends using the consumer library instead of relying on raw account memory layout, and provides Rust examples for both Anchor and vanilla Solana programs. Shows how to call read_feed_v2, extract latest_round_data/description/decimals, and format the fixed-point answer for logging. Includes starter-kit workflow (deploy program, call it, read stored result) and a migration section from v1 (CPI-based) to v2 (account reads). Warns example code is unaudited and uses hardcoded values; not for production.. Key details: OCR2 Data Feeds program ID (Devnet/Mainnet owner): HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny; Rust dependency: chainlink_solana = "2.0.8" in Cargo.toml; If using Anchor: anchor-lang = "0.31.1" plus chainlink_solana = "2.0.8"; SDK v2 pattern: chainlink_solana::v2::read_feed_v2(feed_data_bytes, feed_owner_pubkey_bytes) -> parsed feed object; Do not depend on feed account memory layout; use the consumer library query methods; Parsed feed methods shown: latest_round_data() (returns latest answer), description() (e.g., SOL/USD), decimals() (precision); Example formatting: convert padded integer answer + decimals into human-readable decimal string (custom Decimal Display); Starter kit uses Anchor to deploy to Solana Devnet and a Node.js client using Solana Web3 JS API to pass feed account, store result in an account, then read it back; Caveat: example code is unaudited, uses hardcoded values, and is not production-ready; v2 improves performance/lower compute units by direct account reads vs deprecated v1 CPI approach
+### Architecture
+
+- Feeds use Offchain Reporting (OCR); no dependency on Ethereum or external chains.
+- Solana model: programs (logic) + accounts (data) — state and logic are separate.
+- Price Feeds available on Solana **Mainnet** and **Devnet**. Testnet is not supported.
+- High network congestion may reduce feed update frequency.
+
+### On-Chain Reading (Rust / Anchor)
+
+Use the Chainlink Solana SDK v2 for direct account reads (preferred over deprecated v1 CPI approach):
+
+```toml
+# Cargo.toml
+[dependencies]
+chainlink_solana = "2.0.8"
+anchor-lang = "0.31.1"  # if using Anchor
+```
+
+```rust
+use chainlink_solana::v2::read_feed_v2;
+
+// OCR2 Data Feeds program ID (Devnet/Mainnet owner)
+const FEED_OWNER: &str = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny";
+
+// Read the feed account data
+let feed = read_feed_v2(feed_account_data, feed_owner_pubkey_bytes)?;
+let answer = feed.latest_round_data();
+let description = feed.description();  // e.g., "SOL / USD"
+let decimals = feed.decimals();
+```
+
+Do not depend on feed account memory layout — always use the SDK consumer library.
+
+### Off-Chain Reading (JavaScript / TypeScript)
+
+```bash
+npm install @chainlink/solana-sdk @project-serum/anchor
+```
+
+```javascript
+const { OCR2Feed } = require("@chainlink/solana-sdk");
+const anchor = require("@project-serum/anchor");
+
+// Set environment: ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
+//                  ANCHOR_WALLET=./id.json
+const CHAINLINK_PROGRAM_ID = "cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ";
+
+const provider = anchor.AnchorProvider.env();
+const dataFeed = await OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider);
+
+// Subscribe to round updates
+dataFeed.onRound(feedAddress, (event) => {
+    console.log("Price:", event.answer.toNumber());
+});
+```
+
+A wallet file is required even for read-only operations (Anchor requirement): `solana-keygen new --outfile ./id.json` (no SOL needed for reads).
+
+### Starter Kit
+
+```bash
+git clone https://github.com/smartcontractkit/solana-starter-kit
+cd solana-starter-kit && yarn install
+node read-data.js
+```
+
+## Aptos
+
+### Architecture
+
+Aptos uses a **single Chainlink price feed contract** that serves multiple feeds. Developers query by passing feed ID(s), unlike EVM where each feed has its own contract address.
+
+### Setup
+
+```bash
+aptos init --network=testnet --assume-yes
+aptos move init --name aptos-data-feeds
+```
+
+Configure `Move.toml`:
+```toml
+[addresses]
+sender = "<your-address>"
+data_feeds = "0xf1099f...fdd3"   # testnet
+platform = "0x516e77...c99"       # testnet
+move_stdlib = "0x1"
+aptos_std = "0x1"
+```
+
+Download Chainlink packages:
+```bash
+aptos move download --account <platform_addr> --package ChainlinkPlatform
+aptos move download --account <datafeeds_addr> --package ChainlinkDataFeeds
+```
+
+Update `ChainlinkDataFeeds/Move.toml` to point ChainlinkPlatform dependency to local path.
+
+### Reading a Feed (Move)
+
+```move
+use data_feeds::router::get_benchmarks;
+
+public entry fun fetch_price(account: &signer, feed_id: vector<u8>) {
+    let billing_data = vector::empty<u8>();
+    let feed_ids = vector::singleton(feed_id);
+    let benchmarks = get_benchmarks(account, feed_ids, billing_data);
+
+    let benchmark = vector::borrow(&benchmarks, 0);
+    let price = get_benchmark_value(benchmark);
+    let timestamp = get_benchmark_timestamp(benchmark);
+    // Store or use price and timestamp
+}
+```
+
+Example BTC/USD testnet feed ID: `0x01a0b4d920000332000000000000000000000000000000000000000000000000`
+
+### Deploy and Run
+
+```bash
+aptos move publish --skip-fetch-latest-git-deps
+aptos move run --function-id '<ADDR>::MyOracleContractTest::fetch_price' --args hex:<feed_id>
+```
+
+Fund for gas: `aptos account fund-with-faucet --account <ADDR> --amount 100000000` (1 APT = 100M Octas).
 
 ## StarkNet
 
-- [https://docs.chain.link/data-feeds/starknet](https://docs.chain.link/data-feeds/starknet) — Explains how to use Chainlink Data Feeds on Starknet (non-EVM, Cairo) with availability on Starknet Sepolia. Outlines three approaches: reading feeds offchain (no Starknet account) via Starkli CLI or Starknet Foundry; reading onchain via a consumer contract compiled/declared/deployed with Starknet Foundry; and experimenting locally using Starknet Devnet RS (Docker-based Rust devnet) with prefunded accounts and scripts to deploy aggregator/consumer contracts. Provides a Starkli CLI walkthrough calling a Price Feed aggregator proxy’s latest_round_data on the ETH/USD feed, including required inputs (proxy address, function selector, RPC endpoint) and how to interpret the returned hex array (round_id, answer, block_num, started_at, updated_at). Notes RPC provider is interchangeable (example uses Blast API; Alchemy/Infura also possible).. Key details: Starknet is not EVM-compatible; smart contracts use Cairo; Chainlink Data Feeds are available as Cairo smart contracts on Starknet Sepolia; Offchain reads can be done without a Starknet account using Starkli CLI or Starknet Foundry; Starkli version check: `starkli --version`; Read a feed via `starkli call <aggregator_proxy_address> latest_round_data --rpc <starknet_sepolia_rpc_url>`; Example ETH/USD aggregator proxy address: 0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44; Example RPC endpoint: https://starknet-sepolia.public.blastapi.io/rpc/v0_7 (any Sepolia RPC provider works); latest_round_data returns an array of hex-encoded fields: round_id, answer, block_num, started_at, updated_at; Devnet option: Starknet Devnet RS (local Docker-based testnet in Rust) with scripts and prefunded accounts
-- [https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry](https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry) — Index/landing page that points to Starknet Foundry-based tutorials for integrating Chainlink Data Feeds on Starknet. It explains that the linked guides provide step-by-step instructions to (1) read Data Feeds offchain, (2) deploy and interact with an onchain consumer contract, and (3) experiment locally using Starknet Devnet RS. The page itself contains no implementation details, code, or configuration; it primarily serves as navigation to the three Starknet Foundry guides and broader Data Feeds documentation sections.. Key details: Purpose: curated entry point to Starknet Foundry tutorials for Chainlink Data Feeds on Starknet; Linked guides: 'Read Data from Chainlink Data Feeds (Offchain)'; Linked guides: 'Deploy and interact with a Consumer Contract (Onchain)'; Linked guides: 'Experiment with Data Feeds using Starknet Devnet RS'; No code snippets, CLI commands, or contract interfaces are provided on this page
-- [https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/consumer-contract](https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/consumer-contract) — Tutorial for Starknet Sepolia showing how to deploy and interact with a Chainlink Data Feeds consumer contract using Starknet Foundry (snforge/sncast) and Scarb. Uses a local OpenZeppelin account: create an account, fund it with testnet ETH, deploy the account, then deploy an AggregatorConsumer contract configured with the ETH/USD Chainlink proxy aggregator address. Demonstrates calling set_answer to fetch the latest aggregator answer and store it in internal storage (_answer), and read_answer to read the stored value. Notes that deployment output may show the consumer address in decimal and must be converted to hex for typical use. Caveat: feed answers have feed-specific decimals (ETH/USD uses 8); check the Price Feed addresses page for decimals.. Key details: Install Starknet Foundry v0.21.0; verify with `snforge --version` or `sncast --version`; Install Scarb v2.6.4; verify with `scarb --version` (asdf can manage both); Clone repo: `git clone https://github.com/smartcontractkit/chainlink-starknet.git` and `cd chainlink-starknet/examples/contracts/aggregator_consumer/`; Run tests to validate setup: `make test`; Create OZ local account for Sepolia: `make create-account`; stored at `~/.starknet_accounts/starknet_open_zeppelin_accounts.json`; Fund account with at least the printed `max_fee` in testnet ETH (Blast Starknet Sepolia ETH Faucet; or Argent/Braavos/StarkGate); Deploy account: `make deploy-account`; Update deploy script aggregator address to Starknet Sepolia ETH/USD proxy: `0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44`; Deploy consumer: `make ac-deploy NETWORK=testnet`; deployed address may be printed in decimal; convert to hex; Interact: update scripts with `consumer_address`; run `make ac-set-answer NETWORK=testnet` then `make ac-read-answer NETWORK=testnet`; ETH/USD answers use 8 decimals
-- [https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/read-data](https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/read-data) — Explains how to read Chainlink Price Feed data on Starknet (Sepolia) using the Starknet Foundry CLI. The tutorial calls the ETH/USD aggregator proxy contract’s latest_round_data function via sncast against a Starknet RPC endpoint, then interprets the returned hex array as round_id, answer (price), block_num, started_at, and updated_at (Unix timestamps). Includes expected sample output and a decoding table. Notes that the example uses a Blast API RPC URL but any Starknet Sepolia RPC provider (e.g., Alchemy, Infura) can be used. Points to the Price Feed Contract Addresses page for available feeds and next steps for deploying a consumer contract or using a devnet.. Key details: Requires Starknet Foundry toolkit; check versions with `snforge --version` or `sncast --version`; CLI pattern: `sncast --url <RPC> call --contract-address <addr> --function "latest_round_data"`; Example RPC URL: `https://starknet-sepolia.public.blastapi.io/rpc/v0_7`; Example ETH/USD proxy contract address: `0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44`; Return value is an array of hex-encoded fields: round_id, answer, block_num, started_at, updated_at; answer represents the latest feed value (price) and timestamps are Unix seconds; RPC provider is interchangeable (Blast API used in example; Alchemy/Infura mentioned)
-- [https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs](https://docs.chain.link/data-feeds/starknet/tutorials/snfoundry/sn-devnet-rs) — Tutorial for experimenting with Chainlink Data Feeds patterns on Starknet locally using Starknet Devnet RS (Docker) plus Starknet Foundry (snforge/sncast) and Scarb. It walks through cloning the chainlink-starknet repo, configuring snfoundry.toml to point sncast at the local RPC endpoint, running tests, starting/restarting a devnet container, importing a prefunded devnet account into a local accounts.json, and deploying/interacting with mock contracts. Steps include deploying a MockAggregator, reading the latest round (defaults to zeros), setting latest round values via scripts, then deploying both MockAggregator and an AggregatorConsumer that stores an answer fetched from the aggregator. Notes include hardcoded addresses intended for Devnet RS and that rerunning devnet recreates the container for a clean state.. Key details: Requires Starknet Foundry v0.21.0 (check via `snforge --version` or `sncast --version`); Requires Scarb v2.6.4 (check via `scarb --version`); Devnet runs in Docker; start/restart with `make devnet` (stops/recreates container if already running); Clone repo: `git clone https://github.com/smartcontractkit/chainlink-starknet.git` and cd to `examples/contracts/aggregator_consumer/`; Configure `snfoundry.toml` sncast devnet URL to `http://127.0.0.1:5050/rpc`; Verify setup by running `make test` (contracts compile and tests pass); Import a prefunded devnet account into local `accounts.json` via `make add-account`; Deploy MockAggregator with `make ma-deploy NETWORK=devnet`; read latest round with `make agg-read-latest-round NETWORK=devnet`; set latest round with `make ma-set-latest-round NETWORK=devnet`; Deploy both aggregator + consumer with `make devnet-deploy` (runs `deploy_mock_aggregator` and `deploy_aggregator_consumer` scripts); AggregatorConsumer functions: `set_answer` fetches latest `answer` from aggregator and stores to `_answer`; `read_answer` returns stored `_answer`
+### Architecture
+
+StarkNet is non-EVM; smart contracts use Cairo. Chainlink Data Feeds are deployed as Cairo contracts on Starknet Sepolia.
+
+### Off-Chain Reading (Starkli CLI)
+
+No Starknet account required for reads:
+
+```bash
+starkli call \
+  0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44 \
+  latest_round_data \
+  --rpc https://starknet-sepolia.public.blastapi.io/rpc/v0_7
+```
+
+Returns a hex array: `[round_id, answer, block_num, started_at, updated_at]`.
+
+Any Starknet Sepolia RPC provider works (Blast API, Alchemy, Infura).
+
+Example ETH/USD proxy: `0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44`
+
+### Off-Chain Reading (Starknet Foundry)
+
+```bash
+sncast --url <RPC> call \
+  --contract-address 0x228128e84cdfc51003505dd5733729e57f7d1f7e54da679474e73db4ecaad44 \
+  --function "latest_round_data"
+```
+
+### On-Chain Consumer Contract
+
+Requirements: Starknet Foundry v0.21.0, Scarb v2.6.4.
+
+```bash
+git clone https://github.com/smartcontractkit/chainlink-starknet.git
+cd chainlink-starknet/examples/contracts/aggregator_consumer/
+make test  # verify setup
+```
+
+Deploy flow:
+1. Create OpenZeppelin account: `make create-account`
+2. Fund with testnet ETH (Blast Starknet Sepolia Faucet)
+3. Deploy account: `make deploy-account`
+4. Deploy consumer: `make ac-deploy NETWORK=testnet`
+5. Interact: `make ac-set-answer NETWORK=testnet`, `make ac-read-answer NETWORK=testnet`
+
+ETH/USD answers use 8 decimals. Deployed address may print in decimal — convert to hex.
+
+### Local Devnet
+
+Use Starknet Devnet RS (Docker-based local testnet):
+
+```bash
+make devnet                              # start devnet container
+make add-account                         # import prefunded devnet account
+make devnet-deploy                       # deploy mock aggregator + consumer
+make agg-read-latest-round NETWORK=devnet
+```
 
 ## Tron
 
-- [https://docs.chain.link/data-feeds/tron](https://docs.chain.link/data-feeds/tron) — Tutorial for reading Chainlink Data Feeds on the TRON blockchain using a deployed consumer contract plus an offchain JavaScript reader. Walks through setting up a TRON wallet (TronLink), getting Nile testnet TRX, cloning Chainlink’s smart-contract-examples repo, configuring a .env with a Nile private key, compiling and deploying a Solidity contract with TronBox to TRON Nile Testnet, then using TronWeb to call the contract and print formatted prices. The Solidity contract (DataFeedReader.sol) uses AggregatorV3Interface and exposes functions to fetch latest round data, latest price, decimals, and description. Offchain script (reader.js) shows TronWeb configuration, contract calls, BigInt/decimal formatting, timestamps/round IDs, and error handling. Security caveat: never share/commit private keys; use testnet accounts.. Key details: Prereqs: JavaScript + Solidity knowledge; Node.js >= 20 (example: nvm use 20); npm; Install TronBox globally: npm install -g tronbox; verify with tronbox version (>= 3.3; example output Tronbox v4.2.0, Solidity v0.8.23 via tron-solc); Repo path: git clone https://github.com/smartcontractkit/smart-contract-examples.git && cd smart-contract-examples/data-feeds/tron/getting-started; Env setup: cp .env.example .env; set export PRIVATE_KEY_NILE=your_nile_testnet_private_key_here; load with source .env; Compile: tronbox compile; Deploy to Nile: tronbox migrate --network nile; save deployed contract address from output; Edit offchain/reader.js: replace YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE with deployed address; run node offchain/reader.js; Solidity contract functions: getChainlinkDataFeedLatestAnswer(), getLatestPrice(), getDecimals(), getDescription(); Tutorial feed addresses (Nile): BTC/USD TD3hrfAtPcnkLSsRh4UTgjXBo6KyRfT1AR; ETH/USD TYaLVmqGzz33ghKEMTdC64dUnde5LZc6Y3; Wallet/test tokens: use TronLink; get 2000 test TRX from https://nileex.io/join/getJoinPage; private key must not be shared or committed
+### Architecture
+
+Tron uses Solidity-compatible smart contracts with AggregatorV3Interface — similar to EVM chains. Deploy with TronBox.
+
+### Setup
+
+```bash
+npm install -g tronbox  # >= 3.3
+git clone https://github.com/smartcontractkit/smart-contract-examples.git
+cd smart-contract-examples/data-feeds/tron/getting-started
+cp .env.example .env
+# Set PRIVATE_KEY_NILE=<your nile testnet private key>
+source .env
+```
+
+Get test TRX: use TronLink wallet + `https://nileex.io/join/getJoinPage` for 2000 test TRX.
+
+### Consumer Contract (Solidity on Tron)
+
+The contract uses the same AggregatorV3Interface as EVM:
+
+```solidity
+// DataFeedReader.sol
+import {AggregatorV3Interface} from "@chainlink/contracts/...";
+
+function getLatestPrice() public view returns (int256) {
+    (, int256 price, , , ) = dataFeed.latestRoundData();
+    return price;
+}
+```
+
+### Deploy and Read
+
+```bash
+tronbox compile
+tronbox migrate --network nile
+# Note the deployed contract address from output
+
+# Edit offchain/reader.js with your deployed address
+node offchain/reader.js
+```
+
+Test feed addresses (Nile testnet):
+- BTC/USD: `TD3hrfAtPcnkLSsRh4UTgjXBo6KyRfT1AR`
+- ETH/USD: `TYaLVmqGzz33ghKEMTdC64dUnde5LZc6Y3`
+
+Note: Tron uses base58 addresses, not hex.
+
+## Freshness Rules
+
+1. Integration patterns (SDK versions, CLI commands, code patterns) are stable within major versions — use this file directly.
+2. Feed addresses, program IDs, and RPC endpoints may change — fetch the chain-specific docs page for current values when the user needs a specific address.
+3. Package/dependency versions may update — verify against the docs page if the user reports compilation errors with versions in this file.
+
+## Triggering Tests
+
+- "How do I read a Chainlink price feed on Solana?"
+- "I need to integrate price data in my Aptos Move contract"
+- "Can I use Chainlink Data Feeds on StarkNet?"
+- "Set up a Chainlink data feed consumer on Tron testnet"
+
+## Functional Tests
+
+1. Solana response uses chainlink_solana SDK v2, not deprecated v1 CPI pattern.
+2. Aptos response explains the single-contract-with-feed-ID model.
+3. StarkNet response distinguishes between off-chain reads (no account) and on-chain consumer (account + deploy).
+4. Tron response uses TronBox and base58 addresses.
+5. All responses include validation guidance appropriate to the chain.
+
+## Eval Checks
+
+1. Correct chain identified and chain-specific patterns used (not EVM patterns on non-EVM chains).
+2. SDK/framework versions match current recommendations.
+3. Example feed addresses and program IDs are realistic (not invented).
+4. Off-chain vs on-chain reading paths distinguished where applicable.
+5. Prerequisites mentioned (CLI tools, wallets, test tokens).
+
+## A/B Prompt Pack
+
+- "Read the SOL/USD price in a Solana Anchor program"
+- "I want to fetch BTC/USD on Aptos testnet using Move"
+- "Read ETH/USD price from StarkNet using the CLI without deploying anything"
+- "Deploy a Chainlink price feed consumer on Tron Nile testnet"

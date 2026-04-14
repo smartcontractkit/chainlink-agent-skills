@@ -1,0 +1,22 @@
+You are checking hard requirements. FAIL if ANY of these violations occur:
+
+General must-pass violations:
+1. Generated Solidity consumer has no staleness check (missing `updatedAt` validation)
+2. Decimal count is hardcoded (e.g., assumes 8 decimals) instead of calling `decimals()`
+3. Uses `answeredInRound` for freshness validation (this field is deprecated)
+4. Consumer on an L2 chain does not check or mention L2 sequencer uptime
+5. MVR bundle decoding uses a struct that doesn't match the documented field order/types
+6. Response invents a feed address without indicating it should be verified
+7. Response uses AggregatorV3Interface for the L2 sequencer uptime feed (should be AggregatorV2V3Interface)
+
+Workflow-specific must-pass checks:
+- **reading-price-feeds**: Validation trifecta present — staleness, decimals, answer bounds
+- **mvr-feeds**: Struct field order matches documented schema; staleness check on bundle timestamp
+- **svr-feeds**: Uses standard AggregatorV3Interface (not a custom SVR interface); mentions compatibility form
+- **multi-chain**: Uses chain-appropriate patterns (not EVM patterns on Solana/Aptos/StarkNet)
+- **feed-operations**: L2 sequencer code uses AggregatorV2V3Interface with grace period; answer interpretation correct (0=up, 1=down)
+- **feed-types**: Does not conflate MVR with single-value SmartData; correct interface identified per type
+
+Score:
+- 1.0: No must-pass violations (PASS)
+- 0.0: One or more violations (FAIL)

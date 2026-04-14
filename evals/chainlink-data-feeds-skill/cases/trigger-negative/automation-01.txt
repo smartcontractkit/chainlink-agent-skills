@@ -1,0 +1,1 @@
+Set up Chainlink Automation to call my contract function every 5 minutes.

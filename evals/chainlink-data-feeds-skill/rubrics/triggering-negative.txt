@@ -1,0 +1,11 @@
+You are evaluating whether the response avoids over-triggering into the Data Feeds skill.
+
+A negative-trigger response should:
+- Not show Data Feeds-specific workflow behavior for the tested category
+- May answer generically, redirect, or use a different Chainlink product skill
+- Should not exhibit AggregatorV3Interface patterns, feed validation logic, or feed address lookups when the request is about a different Chainlink product (CCIP, VRF, Automation, Data Streams)
+
+Score:
+- 1.0: Correctly avoids over-triggering into Data Feeds (PASS)
+- 0.5: Mixed or ambiguous ownership (FAIL)
+- 0.0: Clearly over-triggers with Data Feeds patterns for a non-Data-Feeds request (FAIL)
