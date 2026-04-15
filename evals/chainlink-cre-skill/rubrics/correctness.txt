@@ -1,0 +1,19 @@
+You are evaluating whether the response routes to and executes the correct CRE workflow.
+
+Workflow definitions:
+- workflow-generation: generating complete CRE workflow code (TypeScript or Go) with triggers, handlers, and configuration
+- http-client: making HTTP GET/POST requests using sendRequest or runInNodeMode with consensus aggregation
+- evm-client: reading from or writing to smart contracts using the EVM client capability
+- triggers: configuring cron, HTTP, or EVM log triggers for workflows
+- secrets: managing secrets via runtime.getSecret(), secrets.yaml, and CLI secrets commands
+- getting-started: CLI installation, account setup, project initialization, first simulation
+- operations: simulating, deploying, monitoring, activating, pausing, updating, or deleting workflows
+- concepts: consensus computing, finality levels, non-determinism, WASM runtime details
+- cli: CRE CLI command usage, flags, and patterns
+
+The expected workflow is: {{workflow}}
+
+Score:
+- 1.0: Correct workflow identified and executed with appropriate strategy (PASS)
+- 0.5: Partially correct workflow or mixed workflow ownership (FAIL)
+- 0.0: Wrong workflow or materially wrong execution path (FAIL)

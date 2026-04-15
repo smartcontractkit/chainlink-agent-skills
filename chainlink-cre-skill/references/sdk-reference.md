@@ -1,20 +1,330 @@
-- [https://docs.chain.link/cre/reference/sdk/confidential-http-client-go](https://docs.chain.link/cre/reference/sdk/confidential-http-client-go) — This page provides a comprehensive guide to the Confidential HTTP Client in the Chainlink SDK, which allows for privacy-preserving API requests within secure enclaves. It covers core types like ConfidentialHTTPRequest and HTTPRequest, methods for making requests (SendRequest and client.SendRequest), and template syntax for injecting secrets. Important caveats include that this feature is experimental and only usable in simulation, not in deployed workflows. The page also details response encryption options and how to manage secrets.. Key details: confidentialhttp.SendRequest: high-level helper for requests; confidentialhttp.HTTPRequest: structure for HTTP requests; EncryptOutput: controls response encryption behavior; TemplatePublicValues: injects non-secret values into templates; VaultDonSecrets: manages secrets from Vault
-- [https://docs.chain.link/cre/reference/sdk/confidential-http-client-ts](https://docs.chain.link/cre/reference/sdk/confidential-http-client-ts) — This page provides a comprehensive guide to the Confidential HTTP Client in Chainlink's SDK, which allows for privacy-preserving API requests within secure enclaves. It covers core types like ConfidentialHTTPRequest and HTTPResponse, methods for making requests (high-level and low-level), and the use of secrets and encryption. Key patterns include the use of Go template syntax for injecting secrets into requests and the structure of request and response objects. Important caveats include the experimental status of the feature and its limitation to simulation environments only.. Key details: sendRequest() method for high-level requests; ConfidentialHTTPRequest structure with vaultDonSecrets; Response encryption option; Template syntax for secret injection; ConfidentialHTTPSendRequester for managing requests
-- [https://docs.chain.link/cre/reference/sdk/consensus-go](https://docs.chain.link/cre/reference/sdk/consensus-go) — This page provides an overview of consensus aggregation strategies in Chainlink's SDK, focusing on how to aggregate results from multiple nodes into a single reliable value. It details built-in aggregation functions like ConsensusMedianAggregation and ConsensusIdenticalAggregation, as well as aggregation via struct tags using ConsensusAggregationFromTags. Important caveats include the types supported for each aggregation method and the use of struct tags to define aggregation behavior. The page is essential for developers implementing consensus in their Chainlink applications.. Key details: ConsensusAggregation[T] is a generic interface for aggregation strategies.; Built-in functions include ConsensusMedianAggregation, ConsensusIdenticalAggregation, ConsensusCommonPrefixAggregation, and ConsensusCommonSuffixAggregation.; Supported types for aggregation include Go numeric types, *big.Int, and decimal.Decimal.; Struct tags like consensus_aggregation define aggregation behavior for struct fields.; Use cre.RunInNodeMode to execute node-level code with aggregation.
-- [https://docs.chain.link/cre/reference/sdk/consensus-ts](https://docs.chain.link/cre/reference/sdk/consensus-ts) — This page provides an overview of consensus and aggregation strategies in Chainlink's SDK, focusing on how to aggregate results from multiple nodes to achieve a reliable outcome. It details built-in aggregation functions like consensusMedianAggregation and consensusIdenticalAggregation, as well as field-based aggregation using ConsensusAggregationByFields. Important usage patterns, such as specifying default values for failed executions, are also covered.. Key details: consensusMedianAggregation<T>() for median calculation; consensusIdenticalAggregation<T>() for identical value checks; ConsensusAggregationByFields<T>(fields) for object field aggregation; Default values can be specified for failed executions; Supported types include number, bigint, Date, and arrays
-- [https://docs.chain.link/cre/reference/sdk/core-go](https://docs.chain.link/cre/reference/sdk/core-go) — This page serves as a reference for the core data structures and functions of the Chainlink CRE Go SDK. It covers key components like `cre.Handler`, `Runtime`, and `NodeRuntime`, which are essential for building workflows. The page explains how to set up workflows using triggers, manage asynchronous operations with `Promise`, and provides entry points like `main()` and `InitWorkflow`. Important caveats include the specific callback signatures required for different triggers and the behavior of promises in a single-threaded environment.. Key details: cre.Handler links triggers to callback functions; InitWorkflow initializes workflows and registers handlers; Promise execution driven by .Await() in a single-threaded environment; RunInNodeMode executes code on individual nodes and aggregates results; Callback function signatures must match trigger output types
-- [https://docs.chain.link/cre/reference/sdk/core-ts](https://docs.chain.link/cre/reference/sdk/core-ts) — This page serves as a reference for the core data structures and functions of the Chainlink CRE TypeScript SDK, detailing key components like the handler() function, Runtime and NodeRuntime interfaces, and the .result() pattern for asynchronous operations. It explains import styles, workflow entry points, and logging mechanisms, emphasizing the importance of specific callback signatures for triggers. Important caveats include the synchronous nature of WASM execution and the necessity of using the .result() pattern for SDK capabilities.. Key details: handler() links triggers to callback functions; Runtime and NodeRuntime manage execution contexts; Use runtime.log() for logging in workflows; The .result() pattern is used for async operations; main() is the entry point for workflows; Direct imports recommended for new projects; Namespace imports for existing codebases
-- [https://docs.chain.link/cre/reference/sdk/evm-client-go](https://docs.chain.link/cre/reference/sdk/evm-client-go) — This page serves as a comprehensive reference for the evm.Client, a tool for interacting with EVM-compatible blockchains. It details client instantiation, read and write methods, and utility functions essential for building workflows. Key patterns include constructing requests for contract calls, balance queries, and transaction retrievals. Important caveats include the use of Chain Selectors for network identification and the necessity of wrapping the client in type-safe bindings for smart contracts.. Key details: Client instantiation requires ChainSelector ID.; CallContract method for executing smart contract functions.; BalanceAt retrieves token balance for an account.; FilterLogs queries historical event logs.; GetTransactionByHash retrieves transaction details by hash.; EstimateGas estimates gas for transactions.; WriteReport submits state-changing transactions.
-- [https://docs.chain.link/cre/reference/sdk/evm-client-ts](https://docs.chain.link/cre/reference/sdk/evm-client-ts) — This page serves as a comprehensive reference for the EVMClient, a tool for interacting with EVM-compatible blockchains. It covers client instantiation, various read and write methods, and utility functions. Key methods include callContract(), filterLogs(), balanceAt(), estimateGas(), and transaction retrieval functions. Important caveats include the need for correct ChainSelector IDs and understanding of block number parameters. The page is tailored for TypeScript SDK users.. Key details: Client instantiation requires ChainSelector ID.; callContract() executes smart contract functions.; filterLogs() queries historical event logs.; balanceAt() retrieves account token balance.; estimateGas() estimates gas for transactions.; getTransactionByHash() retrieves transactions by hash.; getTransactionReceipt() fetches transaction receipts.
-- [https://docs.chain.link/cre/reference/sdk/http-client-go](https://docs.chain.link/cre/reference/sdk/http-client-go) — This page provides a comprehensive guide on using the HTTP Client in Chainlink's SDK for making HTTP requests to external APIs. It covers key methods like http.SendRequest for making GET and POST requests, and sendRequester.SendReport for submitting reports. Important configurations include request timeouts, caching behavior, and handling non-idempotent requests. The page emphasizes the need for deterministic request payloads and provides examples for configuring requests and handling responses.. Key details: http.SendRequest for making HTTP calls; client.SendRequest for complex scenarios; sendRequester.SendReport for report submission; Request Timeout: default 5 seconds, max 10 seconds; CacheSettings for preventing duplicate requests; MaxAge for cached responses up to 10 minutes
-- [https://docs.chain.link/cre/reference/sdk/http-client-ts](https://docs.chain.link/cre/reference/sdk/http-client-ts) — This page serves as a reference for making offchain HTTP requests using the HTTPClient in Chainlink's TypeScript SDK. It details both high-level and low-level methods for sending requests, emphasizing the recommended high-level sendRequest() method that automates consensus aggregation. Key patterns include using SendRequester for simplified HTTP calls and handling responses with utility functions like ok(), text(), and json(). Important caveats include caching limitations for sendReport() due to varying signatures across nodes.. Key details: High-level sendRequest() method signature and usage; Low-level sendRequest() requires manual runtime wrapping; sendReport() method for submitting reports; Utility functions: ok(), text(), json(), getHeader(); Response handling and error checking
-- [https://docs.chain.link/cre/reference/sdk/overview-go](https://docs.chain.link/cre/reference/sdk/overview-go) — This page provides a comprehensive overview of the Chainlink CRE Go SDK, detailing its core functionalities, including contract bindings, triggers, and EVM interactions. It outlines key components such as cre.Handler, cre.Runtime, and cre.Promise, along with configuration formats for various triggers like Cron and HTTP. Important caveats include the experimental nature of the Confidential HTTP Client and the need for proper setup of contract bindings using the CRE CLI. The page serves as a technical reference for developers seeking to implement workflows using the SDK.. Key details: cre.Handler, cre.Runtime, cre.Promise for workflow building; Trigger types: Cron, HTTP, EVM Log; evm.Client for EVM interactions; http.Client for offchain API requests; confidentialhttp.Client for privacy-preserving requests; ConsensusMedianAggregation for data processing; CRE CLI for generating type-safe Go bindings
-- [https://docs.chain.link/cre/reference/sdk/overview-ts](https://docs.chain.link/cre/reference/sdk/overview-ts) — This page provides a comprehensive overview of the Chainlink CRE TypeScript SDK, detailing its package structure, TypeScript types, and runtime environment. It covers key functionalities such as working with contract ABIs, making offchain API requests, and configuring various triggers. Important caveats include the use of Protocol Buffers for type definitions and the implications of compiling TypeScript workflows to WebAssembly. The SDK supports both direct and namespace imports, and it integrates with viem for type-safe contract interactions.. Key details: Package: @chainlink/cre-sdk; TypeScript version: >= 5.9; Runtime requirements: Bun >= 1.2.21; Uses Protocol Buffers for type definitions; Supports direct and namespace imports; EVMClient for EVM interactions; HTTPClient for offchain requests; ConfidentialHTTPClient for privacy-preserving requests; Consensus aggregation methods available
-- [https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-go](https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-go) — This page provides a comprehensive guide on implementing the Cron Trigger in Chainlink's Go SDK. It explains how to create a cron trigger instance using standard cron expressions, with a focus on the configuration struct and callback function signature. Key details include the minimum interval of 30 seconds for scheduling and the structure of the cron payload. The page emphasizes the importance of adhering to the specified function signature for callback functions.. Key details: cron.Trigger creates a cron trigger instance; cron.Config requires a Schedule field with a cron expression; Minimum interval for scheduling is 30 seconds; Callback function signature: func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*YourReturnType, error)
-- [https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-ts](https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-ts) — This page provides a comprehensive guide on implementing a Cron Trigger using the Chainlink SDK for TypeScript. It covers creating the trigger with standard cron expressions, configuring the trigger with a schedule, and defining a callback function that processes the payload containing the execution time. Key patterns include the trigger method's configuration object and the callback function's signature. Important caveats include the minimum interval of 30 seconds for scheduling. Complete code examples illustrate the setup and execution of a cron-triggered workflow.. Key details: Trigger method accepts a configuration object with 'schedule' field as a cron expression.; Minimum interval for scheduling is 30 seconds.; Payload includes 'scheduledExecutionTime' with seconds and nanos.; Callback function must conform to specific signature with runtime and payload parameters.; Complete example provided for initializing and running a cron-triggered workflow.
-- [https://docs.chain.link/cre/reference/sdk/triggers/evm-log-trigger-go](https://docs.chain.link/cre/reference/sdk/triggers/evm-log-trigger-go) — This page provides a comprehensive guide on implementing the EVM Log Trigger in Chainlink's SDK for Go. It covers the creation of log triggers, configuration structures, and callback function signatures. Key patterns include the use of type-safe helper functions and the configuration of event filters using the `evm.FilterLogTriggerRequest` struct. Important caveats include understanding confidence levels for block confirmations and the need to decode log data based on event ABIs.. Key details: evm.LogTrigger creates an EVM log trigger instance.; FilterLogTriggerRequest struct includes Addresses and Topics fields.; Confidence levels: SAFE, LATEST, FINALIZED.; Callback function signature: func onEvmTrigger(config *Config, runtime cre.Runtime, log *evm.Log) (*YourReturnType, error).; Topics field allows for wildcard filtering.
-- [https://docs.chain.link/cre/reference/sdk/triggers/evm-log-trigger-ts](https://docs.chain.link/cre/reference/sdk/triggers/evm-log-trigger-ts) — This page provides a comprehensive guide on creating and configuring an EVM Log Trigger using the Chainlink SDK in TypeScript. It details the necessary base64 encoding for addresses and topic values, the configuration object structure for the logTrigger method, and the payload format for callback functions. Important caveats include the requirement for padding indexed parameters to 32 bytes and ensuring correct encoding to avoid trigger failures. The page also includes complete code examples for setting up the trigger and processing log data.. Key details: logTrigger() method requires addresses and topics to be base64 encoded; Confidence levels: CONFIDENCE_LEVEL_LATEST, CONFIDENCE_LEVEL_SAFE, CONFIDENCE_LEVEL_FINALIZED; Topics must be padded to 32 bytes for indexed parameters; Payload includes address, topics, data, txHash, blockHash, blockNumber; Callback function signature must accept runtime and log parameters
-- [https://docs.chain.link/cre/reference/sdk/triggers/http-trigger-go](https://docs.chain.link/cre/reference/sdk/triggers/http-trigger-go) — This page provides a comprehensive guide on implementing the HTTP Trigger in Chainlink's SDK for Go. It details the configuration structure, including the required 'AuthorizedKeys' for workflow deployment, and outlines the callback function signature necessary for handling HTTP requests. Important caveats include the necessity of authorization keys for deployed workflows and the specific type of key supported. The page also includes code snippets demonstrating the creation of an HTTP trigger instance and the callback function.. Key details: http.Trigger creates an HTTP trigger instance; http.Config requires AuthorizedKeys for deployed workflows; http.AuthorizedKey defines the EVM address for authorization; Callback function must match specific signature; Authorization keys are mandatory for deployment
-- [https://docs.chain.link/cre/reference/sdk/triggers/http-trigger-ts](https://docs.chain.link/cre/reference/sdk/triggers/http-trigger-ts) — This page provides a comprehensive guide on implementing HTTP triggers in Chainlink workflows using TypeScript. It covers the creation and configuration of triggers, including the required 'authorizedKeys' for deployment, and details the payload structure for callback functions. Key patterns include using the 'HTTPCapability' class and the 'trigger()' method, along with examples of handling incoming HTTP requests. Important caveats include the necessity of authorization for deployed workflows and the use of the 'decodeJson' helper for parsing payloads.. Key details: trigger() method requires authorizedKeys for deployment; Payload input is a Uint8Array containing raw HTTP request data; decodeJson helper recommended for JSON parsing; Callback function must conform to specific signature; Empty configuration only valid for local simulation
-- [https://docs.chain.link/cre/reference/sdk/triggers/overview-go](https://docs.chain.link/cre/reference/sdk/triggers/overview-go) — This page provides an overview of the trigger capabilities in the Chainlink CRE Go SDK, detailing the configuration and payload structures for various trigger types, including Cron, HTTP, and EVM Log triggers. It emphasizes the required callback signatures and offers insights into how to set up and utilize these triggers effectively within workflows. Important considerations regarding event emissions and scheduling are highlighted.. Key details: Cron Trigger uses standard cron expressions for scheduling.; HTTP Trigger activates on HTTP requests to a designated endpoint.; EVM Log Trigger responds to specific log events from smart contracts.; Each trigger type has unique configuration and payload requirements.; Callback signatures must be adhered to for proper functionality.
-- [https://docs.chain.link/cre/reference/sdk/triggers/overview-ts](https://docs.chain.link/cre/reference/sdk/triggers/overview-ts) — This page provides an overview of the trigger capabilities within the Chainlink CRE TypeScript SDK. It details three main trigger types: Cron Trigger, HTTP Trigger, and EVM Log Trigger, each with specific configuration requirements and callback signatures. The documentation emphasizes the importance of understanding payload structures and offers guidance on setting up and testing these triggers in workflows. Key considerations include the use of cron expressions for scheduling and handling HTTP requests effectively.. Key details: Cron Trigger uses standard cron expressions for scheduling.; HTTP Trigger activates on incoming HTTP requests to a designated endpoint.; EVM Log Trigger responds to specific logs emitted by smart contracts.; Each trigger type has unique configuration and payload structures.; Callback signatures are required for each trigger type.
+# SDK Reference
+
+Use this file when the user needs SDK API details: core types, consensus/aggregation functions, EVM Client methods, HTTP Client methods, or trigger type definitions.
+
+## Trigger Conditions
+
+- "What types does the CRE SDK expose?"
+- "How do I use the Runtime type?"
+- "What aggregation methods are available?"
+- "What's the API for EVMClientCapability?"
+
+Do not use for workflow structure (see workflow-patterns.md), specific usage examples (see evm-client.md, http-client.md, triggers.md), or CLI commands (see cli-reference.md).
+
+## TypeScript SDK
+
+Package: `@chainlink/cre-sdk`
+
+### Core Types
+
+#### `Runtime<Config>`
+
+The main runtime object passed to handler callbacks. Provides access to configuration, logging, time, secrets, and report generation.
+
+| Property/Method | Return Type | Description |
+|-----------------|-------------|-------------|
+| `config` | `Config` | Parsed configuration from config.json |
+| `log(message: string)` | `void` | Log a message (visible in simulation and monitoring) |
+| `now()` | `Date` | Consensus-derived timestamp (DON mode) |
+| `getSecret(name: string)` | `string \| undefined` | Retrieve a secret by name |
+| `report(data: `0x${string}`)` | `SignedReport` | Generate a signed report from ABI-encoded data |
+
+#### `handler(trigger, callback)`
+
+Creates a handler definition binding a trigger to a callback function.
+
+```typescript
+handler(trigger: TriggerDefinition, callback: HandlerCallback): HandlerDefinition
+```
+
+#### `Runner`
+
+Manages workflow lifecycle.
+
+```typescript
+const runner = await Runner.newRunner<Config>(options?)
+await runner.run(initWorkflow)
+```
+
+Options:
+- `configSchema?: StandardSchema` - Optional schema for runtime config validation (Zod, ArkType)
+
+#### `Promise<T>` / `.result()`
+
+All capability calls return an object with `.result()` which blocks execution synchronously until the consensus-verified result is available.
+
+```typescript
+const response = httpClient.sendRequest(runtime, fetchFn, agg)(url).result()
+const contractData = evmClient.callContract(runtime, opts).result()
+```
+
+### Consensus/Aggregation Types
+
+#### `ConsensusAggregationByFields<T>`
+
+Per-field aggregation configuration:
+
+```typescript
+type ConsensusAggregationByFields<T> = {
+  method: "byFields"
+  fields: {
+    [K in keyof T]: { method: "median" | "identical" | "mode" }
+  }
+}
+```
+
+#### `ConsensusAggregationIdentical`
+
+Requires all nodes to return the identical result:
+
+```typescript
+type ConsensusAggregationIdentical = {
+  method: "identical"
+}
+```
+
+### EVM Client API
+
+#### `EVMClientCapability`
+
+```typescript
+const evmClient = new EVMClientCapability()
+```
+
+#### `callContract(runtime, options)`
+
+Read from a smart contract.
+
+```typescript
+evmClient.callContract(runtime, {
+  toAddress: string,
+  chainSelectorName: string,
+  callMsg: {
+    data: `0x${string}`,
+    blockNumber?: bigint,
+  },
+}): { result(): CallContractResult }
+```
+
+`CallContractResult`:
+- `data: string` - ABI-encoded return data
+
+#### `writeReport(runtime, options)`
+
+Write a signed report onchain.
+
+```typescript
+evmClient.writeReport(runtime, {
+  toAddress: string,
+  chainSelectorName: string,
+  report: SignedReport,
+  gasLimit?: bigint,
+}): { result(): WriteReportResult }
+```
+
+`WriteReportResult`:
+- `txHash: string` - Transaction hash
+- `txStatus: "Success" | "Reverted" | "Pending" | "FatalError"` - Transaction status
+
+### HTTP Client API
+
+#### `HTTPClientCapability`
+
+```typescript
+const httpClient = new HTTPClientCapability()
+```
+
+#### `sendRequest(runtime, fetchFn, aggregation)`
+
+Execute a fetch function in DON mode with consensus aggregation.
+
+```typescript
+httpClient.sendRequest<Args extends any[], R>(
+  runtime: Runtime,
+  fetchFn: (...args: Args) => R,
+  aggregation: ConsensusAggregation<R>,
+): (...args: Args) => { result(): R }
+```
+
+#### `runInNodeMode(runtime, fetchFn, aggregation, options?)`
+
+Execute a fetch function in node mode with consensus aggregation.
+
+```typescript
+httpClient.runInNodeMode<Args extends any[], R>(
+  runtime: Runtime,
+  fetchFn: (...args: Args) => R,
+  aggregation: ConsensusAggregation<R>,
+  options?: { cache?: boolean },
+): (...args: Args) => { result(): R }
+```
+
+### Trigger Types
+
+#### `CronCapability`
+
+```typescript
+const cron = new CronCapability()
+cron.trigger({ schedule: string }): TriggerDefinition
+```
+
+Callback receives: `(runtime: Runtime<Config>) => T`
+
+#### `HTTPCapability`
+
+```typescript
+const http = new HTTPCapability()
+http.trigger({ authorizedKeys: string[] }): TriggerDefinition
+```
+
+Callback receives: `(runtime: Runtime<Config>, event: HTTPTriggerPayload) => T`
+
+`HTTPTriggerPayload`:
+- `body: object`
+- `headers: Record<string, string>`
+- `url: string`
+
+#### `EVMLogCapability`
+
+```typescript
+const evmLog = new EVMLogCapability()
+evmLog.trigger({
+  contractAddress: string,
+  chainSelectorName: string,
+  eventSignature: string,
+}): TriggerDefinition
+```
+
+Callback receives: `(runtime: Runtime<Config>, event: EVMLogPayload) => T`
+
+`EVMLogPayload`:
+- `address: string`
+- `topics: string[]`
+- `data: string`
+- `blockNumber: bigint`
+- `transactionHash: string`
+
+### ConfidentialHTTPClientCapability
+
+```typescript
+const client = new ConfidentialHTTPClientCapability()
+client.sendRequest(runtime, {
+  url: string,
+  method: string,
+  headers?: Record<string, string>,
+  body?: string,
+}): { result(): ConfidentialHTTPResponse }
+```
+
+## Go SDK
+
+Package: `github.com/smartcontractkit/cre-sdk-go`
+
+### Core Types
+
+#### `cre.Runtime`
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `Logger()` | `Logger` | Structured logger |
+| `Now()` | `time.Time` | Consensus-derived timestamp |
+| `Rand()` | `(*rand.Rand, error)` | Consensus-safe random source |
+| `GetSecret(name string)` | `(string, error)` | Retrieve a secret |
+| `Report(data []byte)` | `SignedReport` | Generate signed report |
+| `EVMClient()` | `EVMClient` | Access the EVM client |
+
+#### `cre.NodeRuntime`
+
+Available inside `RunInNodeMode` callbacks:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `Fetch(req *http.Request)` | `(*http.Response, error)` | Execute HTTP request |
+| `Logger()` | `Logger` | Structured logger |
+
+#### `cre.Handler(trigger, callback)`
+
+```go
+cre.Handler(trigger TriggerDefinition, callback HandlerFunc) HandlerDefinition
+```
+
+#### `cre.Promise[T]`
+
+Asynchronous result wrapper.
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `Await()` | `(T, error)` | Block until result is available |
+
+### EVM Client API (Go)
+
+```go
+evmClient := runtime.EVMClient()
+```
+
+#### Generated Bindings
+
+```go
+binding := abi.NewMyContract(address, chainSelector, evmClient)
+result, err := binding.MyMethod(args...).Await()
+```
+
+#### WriteReport
+
+```go
+txResult, err := evmClient.WriteReport(cre.WriteReportConfig{
+    ToAddress:         string,
+    ChainSelectorName: string,
+    Report:            SignedReport,
+    GasLimit:          *big.Int,
+}).Await()
+```
+
+### HTTP Client API (Go)
+
+```go
+httpClient := creHttp.NewHTTPClient()
+```
+
+#### RunInNodeMode
+
+```go
+result, err := httpClient.RunInNodeMode(runtime, fetchFn, aggregation).Await()
+```
+
+### Trigger Types (Go)
+
+#### Cron
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+
+cron.Trigger(cron.Config{Schedule: "*/30 * * * * *"})
+```
+
+Callback: `func(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*Result, error)`
+
+#### Webhook (HTTP)
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/webhooktrigger"
+
+webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: []string{}})
+```
+
+#### EVM Log
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/evmlogtrigger"
+
+evmlogtrigger.Trigger(evmlogtrigger.Config{
+    ContractAddress:   "0x...",
+    ChainSelectorName: "ethereum-testnet-sepolia",
+    EventSignature:    "Transfer(address,address,uint256)",
+})
+```
+
+## Official Documentation
+
+- TypeScript SDK source: `https://github.com/smartcontractkit/cre-sdk-typescript`
+- Go SDK source: `https://github.com/smartcontractkit/cre-sdk-go`

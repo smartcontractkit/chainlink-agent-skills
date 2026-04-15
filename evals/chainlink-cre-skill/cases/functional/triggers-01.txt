@@ -1,0 +1,1 @@
+I want my CRE TypeScript workflow to support both a cron schedule (every 10 minutes) and an HTTP webhook trigger. Show me how to set up multiple handlers in the same workflow, with each trigger calling a different callback function.

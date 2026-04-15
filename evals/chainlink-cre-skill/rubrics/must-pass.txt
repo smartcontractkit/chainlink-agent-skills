@@ -1,0 +1,25 @@
+You are checking hard requirements. FAIL if ANY of these violations occur:
+
+General must-pass violations:
+1. Uses `Date.now()`, `new Date()`, or `time.Now()` instead of `runtime.now()` / `runtime.Now()` for timestamps in DON mode
+2. Uses `Math.random()`, `math/rand` global functions, or `crypto/rand` instead of `runtime.Rand()` for randomness in DON mode
+3. Hardcodes API keys, private keys, or credentials instead of using `runtime.getSecret()` / `runtime.GetSecret()`
+4. Uses `number` type for Solidity integer values in TypeScript instead of `bigint`
+5. Omits consensus aggregation when fetching external data via HTTP
+6. Uses `await` instead of `.result()` for CRE capability calls in TypeScript
+7. Uses unsorted map iteration in Go where order affects output
+8. Uses `Promise.race()` or `Promise.any()` in DON mode TypeScript code
+
+Workflow-specific must-pass checks:
+- **workflow-generation**: Complete workflow structure with trigger, handler, initWorkflow, main(); uses correct SDK imports
+- **http-client**: Uses `sendRequest` or `runInNodeMode` with aggregation; consensus method specified for all fields
+- **evm-client**: Uses `viem` for ABI encoding/decoding in TypeScript; uses `bigint` for block numbers and integer values
+- **triggers**: Correct trigger capability class and configuration; handler callback signature matches trigger type
+- **secrets**: Uses `runtime.getSecret()`/`runtime.GetSecret()`; references `secrets.yaml` configuration
+- **getting-started**: Includes `cre init` and `cre workflow simulate` commands; correct project structure
+- **operations**: Correct lifecycle order (deploy -> activate); mentions simulation before deployment
+- **concepts**: Accurately describes consensus model; correct execution mode distinctions (DON vs Node)
+
+Score:
+- 1.0: No must-pass violations (PASS)
+- 0.0: One or more violations (FAIL)

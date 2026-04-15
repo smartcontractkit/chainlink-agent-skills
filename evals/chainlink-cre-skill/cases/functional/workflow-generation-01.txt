@@ -1,0 +1,1 @@
+I want to build a CRE workflow in TypeScript that runs every 5 minutes, fetches the current ETH/USD price from the CoinGecko API, and writes the price to a consumer contract on Ethereum Sepolia. Generate the complete workflow code including the main.ts, config.json, and any other files I need.

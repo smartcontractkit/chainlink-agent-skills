@@ -1,0 +1,1 @@
+Generate a Go CRE workflow that listens for Transfer events on an ERC-20 contract and logs the sender, receiver, and amount. Use the EVM log trigger on Arbitrum Sepolia. Provide the complete code including the InitWorkflow function and all necessary imports.

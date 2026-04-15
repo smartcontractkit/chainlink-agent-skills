@@ -1,0 +1,1 @@
+What's the difference between sendRequest and runInNodeMode in the CRE TypeScript SDK? When should I use each one? Give me a concrete example of both patterns fetching from the same API endpoint.

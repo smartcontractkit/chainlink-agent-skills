@@ -1,0 +1,1 @@
+What trigger types does CRE support? I need my workflow to run on a schedule and also respond to webhook requests.
