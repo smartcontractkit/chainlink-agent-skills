@@ -28,6 +28,36 @@ Skills follow the [Agent Skills specification](https://agentskills.io/specificat
 - `allowed-tools`
 - `metadata.version` - Semver string
 
+## Running Evals
+
+Each skill has an eval suite in `evals/<skill-name>/` containing test cases, grading rubrics, and a promptfoo config.
+
+### With API keys (promptfoo)
+
+If `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` are set in `.env`:
+
+```
+source .env
+cd evals/<skill-name>
+npx promptfoo eval
+npx promptfoo view
+```
+
+### Without API keys (agent-powered)
+
+Read and follow the protocol in `evals/run-agent-eval.md`. This runs generation and grading entirely through Cursor subagents. Ask:
+
+```
+Run agent evals for chainlink-ccip-skill
+Run agent evals for chainlink-data-feeds-skill, functional cases only
+```
+
+### When to run evals
+
+- After modifying a skill's `SKILL.md` or `references/`
+- Before bumping the skill's patch version
+- When adding new eval cases (to verify they pass)
+
 ## Conventions
 
 - Do not commit `.env` or secret files.
