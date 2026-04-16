@@ -1,0 +1,1 @@
+I'm new to Chainlink CRE. Walk me through setting up my first project from scratch. I want to use TypeScript. Include CLI installation, project initialization, and running my first simulation.

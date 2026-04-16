@@ -1,0 +1,1 @@
+Explain how consensus works in CRE. I want to understand what happens when my workflow makes an HTTP request — how do multiple nodes agree on the result? What happens if one node gets a different response?

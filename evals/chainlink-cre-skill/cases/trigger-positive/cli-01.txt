@@ -1,0 +1,1 @@
+How do I install the CRE CLI and initialize a new project? I want to use TypeScript.

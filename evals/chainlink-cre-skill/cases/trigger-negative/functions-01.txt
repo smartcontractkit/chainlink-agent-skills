@@ -1,0 +1,1 @@
+How do I use Chainlink Functions to run custom JavaScript code offchain and bring the result onchain? I want to fetch from a private API and return the data to my smart contract.

@@ -1,0 +1,1 @@
+How do I make an authenticated API request in a CRE TypeScript workflow? I need to call a private API that requires a Bearer token in the Authorization header. The API returns JSON with a "result" field (number) and a "status" field (string). Show me how to do this with proper consensus aggregation.

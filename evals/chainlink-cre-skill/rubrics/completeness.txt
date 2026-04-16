@@ -1,0 +1,13 @@
+You are evaluating whether the response is complete, useful, and proportional to the prompt.
+
+Check:
+1. Does it answer the actual question asked?
+2. Does it provide actionable next steps or working code when appropriate?
+3. Does it avoid including irrelevant content from other workflows?
+4. Does it generate code only when code is actually needed?
+5. Is the explanation proportional — not too terse, not a full tutorial for a simple question?
+
+Score:
+- 1.0: Complete, useful, and appropriately scoped (PASS)
+- 0.5: Partially useful but incomplete, noisy, or disproportionate (FAIL)
+- 0.0: Incomplete, unhelpful, or poorly scoped (FAIL)

@@ -1,0 +1,12 @@
+You are evaluating whether the response asks only necessary clarifying questions.
+
+Check:
+1. At most one focused clarifying question before proceeding
+2. The question is actually necessary for the next step (e.g., Go vs TypeScript, which trigger type)
+3. Response does not ask broad, repetitive, or unrelated questions
+4. For read-only requests (explanations, code generation), the response proceeds without asking
+
+Score:
+- 1.0: Minimal and focused clarification (PASS)
+- 0.5: Slightly excessive or partially unfocused clarification (PASS)
+- 0.0: Too many questions or poorly targeted clarification (FAIL)

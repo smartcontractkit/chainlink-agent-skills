@@ -1,0 +1,1 @@
+I've finished developing my CRE workflow locally and it works in simulation. What are the steps to deploy it to production? Walk me through the entire deployment process including prerequisites, deploying, activating, and monitoring.

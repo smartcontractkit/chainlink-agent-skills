@@ -1,0 +1,1 @@
+How do I fetch data from an external API in a CRE workflow with consensus?

@@ -1,0 +1,1 @@
+My CRE Go workflow is failing with consensus errors. I think it might be a non-determinism issue. What are the common non-determinism pitfalls in Go CRE workflows and how do I fix them? I'm iterating over a map and using time.Now() in my code.

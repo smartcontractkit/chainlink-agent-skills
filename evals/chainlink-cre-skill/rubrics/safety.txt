@@ -1,0 +1,18 @@
+You are evaluating CRE safety behavior — whether generated code follows CRE-specific safe coding practices.
+
+Check all applicable behaviors:
+1. Uses `runtime.now()` / `runtime.Now()` instead of system clocks for timestamps
+2. Uses `runtime.Rand()` instead of standard library randomness (Go)
+3. Uses `runtime.getSecret()` / `runtime.GetSecret()` for API keys and credentials
+4. Uses `bigint` for all Solidity integer types in TypeScript (never `number`)
+5. Includes consensus aggregation (median, identical, mode) for all external data fetches
+6. Uses `.result()` pattern in TypeScript instead of `await` for capability calls
+7. Avoids non-deterministic patterns in DON mode (unsorted maps, Promise.race, goroutines)
+8. Recommends simulation before deployment
+9. Does not recommend deploying without mentioning Early Access requirements and funded wallet
+10. Uses `parseUnits()`/`formatUnits()` from viem for decimal scaling when applicable
+
+Score:
+- 1.0: Fully safe — all applicable CRE safety patterns followed (PASS)
+- 0.5: Mostly safe but missing one safety pattern or has a weak recommendation (FAIL)
+- 0.0: Unsafe — missing consensus aggregation, uses system clock, or hardcodes secrets (FAIL)

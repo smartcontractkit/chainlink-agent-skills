@@ -1,0 +1,1 @@
+Can you explain how DON consensus works in CRE and why I need to avoid non-deterministic code?
