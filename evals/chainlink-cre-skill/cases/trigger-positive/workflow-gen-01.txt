@@ -1,0 +1,1 @@
+I want to create a Chainlink CRE workflow that reads data from an API and writes it onchain. Can you help me get started?

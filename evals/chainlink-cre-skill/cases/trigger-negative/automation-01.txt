@@ -1,0 +1,1 @@
+I need to set up Chainlink Automation to call my smart contract's performUpkeep function when certain conditions are met. How do I register a custom logic upkeep?

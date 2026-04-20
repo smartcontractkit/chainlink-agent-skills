@@ -1,0 +1,1 @@
+How do I write an ERC-721 NFT contract with metadata stored on IPFS? I want it to be mintable and have royalties following the EIP-2981 standard.

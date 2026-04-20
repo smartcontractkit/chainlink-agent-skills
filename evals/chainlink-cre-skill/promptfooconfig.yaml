@@ -1,0 +1,215 @@
+description: Chainlink CRE Skill Evaluation
+
+prompts:
+  - file://prompts/baseline.js
+  - file://prompts/with-skill.js
+
+providers:
+  - id: "anthropic:messages:${PROMPTFOO_BASELINE_PROVIDER:-claude-sonnet-4-20250514}"
+    label: baseline
+    config:
+      temperature: 0
+      max_tokens: 4096
+  - id: "anthropic:messages:${PROMPTFOO_WITH_SKILL_PROVIDER:-claude-sonnet-4-20250514}"
+    label: with-skill
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+commandLineOptions:
+  maxConcurrency: 2
+
+defaultTest:
+  options:
+    provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+  assert:
+    - type: llm-rubric
+      value: file://rubrics/must-pass.txt
+
+# Reusable assertion sets
+trigger_positive_asserts: &trigger_positive_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-positive.txt
+
+trigger_negative_asserts: &trigger_negative_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-negative.txt
+
+functional_asserts: &functional_asserts
+  - type: llm-rubric
+    value: file://rubrics/correctness.txt
+  - type: llm-rubric
+    value: file://rubrics/completeness.txt
+  - type: llm-rubric
+    value: file://rubrics/safety.txt
+  - type: llm-rubric
+    value: file://rubrics/freshness.txt
+  - type: llm-rubric
+    value: file://rubrics/clarification.txt
+
+tests:
+  # ── Functional: Workflow Generation ──────────────────────────────────
+  - vars:
+      case_file: cases/functional/workflow-generation-01.txt
+      workflow: workflow-generation
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/workflow-generation-02.txt
+      workflow: workflow-generation
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: HTTP Client ─────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/http-client-01.txt
+      workflow: http-client
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/http-client-02.txt
+      workflow: http-client
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: EVM Client ──────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/evm-client-01.txt
+      workflow: evm-client
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/evm-client-02.txt
+      workflow: evm-client
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Triggers ────────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/triggers-01.txt
+      workflow: triggers
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Secrets ─────────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/secrets-01.txt
+      workflow: secrets
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Getting Started ─────────────────────────────────────
+  - vars:
+      case_file: cases/functional/getting-started-01.txt
+      workflow: getting-started
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Operations ──────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/operations-01.txt
+      workflow: operations
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Concepts ────────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/concepts-01.txt
+      workflow: concepts
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/concepts-02.txt
+      workflow: concepts
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Trigger Positive ───────────────────────────────────────────────
+  - vars:
+      case_file: cases/trigger-positive/workflow-gen-01.txt
+      workflow: workflow-generation
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/http-client-01.txt
+      workflow: http-client
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/evm-client-01.txt
+      workflow: evm-client
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/triggers-01.txt
+      workflow: triggers
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/cli-01.txt
+      workflow: cli
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/secrets-01.txt
+      workflow: secrets
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/concepts-01.txt
+      workflow: concepts
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/operations-01.txt
+      workflow: operations
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  # ── Trigger Negative ───────────────────────────────────────────────
+  - vars:
+      case_file: cases/trigger-negative/ccip-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/data-feeds-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/vrf-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/automation-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/functions-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/generic-solidity-01.txt
+      workflow: none
+      expected_trigger: "no"
+    assert: *trigger_negative_asserts

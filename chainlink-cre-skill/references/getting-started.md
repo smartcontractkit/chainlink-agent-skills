@@ -1,14 +1,311 @@
-- [https://docs.chain.link/cre/getting-started/before-you-build-go](https://docs.chain.link/cre/getting-started/before-you-build-go) — This page provides essential guidelines for developers preparing to build workflows using Chainlink's Cross-Chain Resource (CRE) framework. It emphasizes the importance of using specific functions like runtime.Now() and runtime.Rand() for time and randomness to ensure consensus across nodes. The page also outlines best practices for managing secrets, deploying workflows, and utilizing various triggers. It serves as a precursor to more advanced topics and offers links to further resources and examples.. Key details: Use runtime.Now() for timestamps to ensure consensus; Use runtime.Rand() for generating random values; Secrets should be managed with 1Password for production; Deployment requires Early Access approval; Explore triggers like HTTP and EVM Log for production workflows
-- [https://docs.chain.link/cre/getting-started/before-you-build-ts](https://docs.chain.link/cre/getting-started/before-you-build-ts) — This page provides essential guidance for developers using Chainlink's CRE, emphasizing key differences from typical development practices. It covers library compatibility with QuickJS, safe handling of Solidity integers using bigint, and safe decimal scaling techniques to avoid precision loss. Important caveats include the need to test third-party libraries in simulation and the use of runtime.now() for consistent timestamps. The page also outlines next steps for deploying workflows and managing secrets.. Key details: TypeScript compiles to WebAssembly, not Node.js; Use bigint for large numbers to avoid precision loss; Use viem's parseUnits() and formatUnits() for safe decimal scaling; Use runtime.now() for consistent timestamps across nodes; Test third-party libraries with 'cre workflow simulate'
-- [https://docs.chain.link/cre/getting-started/cli-installation](https://docs.chain.link/cre/getting-started/cli-installation) — This page provides a comprehensive guide on installing the Chainlink CRE CLI, detailing the steps for macOS, Linux, and Windows. It covers prerequisites for installation, configuration settings, and important considerations for setting up the CLI. Key patterns include project setup and simulation, fetching offchain data, and managing secrets. The page emphasizes the need for proper authentication and organization management within the CLI environment.. Key details: Installation instructions for macOS, Linux, and Windows; Project setup requirements; Authentication management; Organization linking; Secrets management with 1Password
-- [https://docs.chain.link/cre/getting-started/cli-installation/macos-linux](https://docs.chain.link/cre/getting-started/cli-installation/macos-linux) — This page provides detailed instructions for installing the Chainlink CRE CLI on macOS and Linux, covering both automatic and manual installation methods. It includes steps for verifying file integrity, extracting and installing the binary, adding it to the system PATH, and troubleshooting common issues. Important notes include handling macOS Gatekeeper warnings and selecting the correct binary based on system architecture.. Key details: Automatic installation via curl command; Manual installation requires downloading from GitHub; Verify file integrity using SHA-256 checksum; Add CLI to PATH for accessibility; macOS Gatekeeper handling with xattr command
-- [https://docs.chain.link/cre/getting-started/cli-installation/windows](https://docs.chain.link/cre/getting-started/cli-installation/windows) — This page provides a comprehensive guide on installing the Chainlink Developer Platform CLI (CRE CLI) on Windows. It covers both automatic and manual installation methods, including verifying file integrity, extracting the binary, adding it to the system PATH, and verifying the installation. Important details such as the recommended version (v1.0.11) and checksum verification steps are highlighted to ensure a secure installation.. Key details: Recommended version: v1.0.11; Automatic installation via PowerShell: irm https://cre.chain.link/install.ps1 | iex; Manual installation requires SHA-256 checksum verification; Add CLI to PATH for command accessibility; Verify installation with 'cre version'
-- [https://docs.chain.link/cre/getting-started/overview](https://docs.chain.link/cre/getting-started/overview) — This page provides an overview of the Chainlink CRE (Contract Request Execution) tutorial, guiding users through building a workflow that integrates offchain and onchain data. It outlines the tutorial structure, which includes project setup, fetching offchain data, reading from and writing to the blockchain. Key concepts such as triggers (Cron, HTTP, EVM) and the importance of understanding the trigger-and-callback model are emphasized. A notable caveat warns against using provided examples in production without proper audits.. Key details: Multi-part tutorial structure; Cron Trigger for scheduling; HTTP Capability for fetching data; EVM Read/Write for blockchain interactions; Educational example provided 'AS IS'; Supported languages: Go and TypeScript
-- [https://docs.chain.link/cre/getting-started/part-1-project-setup-go](https://docs.chain.link/cre/getting-started/part-1-project-setup-go) — This page guides users through setting up a Chainlink CRE project using Go. It covers initializing a project with the 'cre init' command, exploring the generated project structure, and configuring a minimal workflow for simulation. Key files like 'project.yaml', 'workflow.yaml', and 'main.go' are explained, along with the necessary configuration for running a local simulation. Important prerequisites include having the CRE CLI, a CRE account, and Go version 1.25.3 or higher.. Key details: Run 'cre init' to scaffold a new project.; Project structure includes directories for contracts and workflows.; Main workflow logic is in 'main.go'.; Use 'cre workflow simulate' to run simulations.; Config files: 'config.production.json', 'config.staging.json', 'workflow.yaml'.
-- [https://docs.chain.link/cre/getting-started/part-1-project-setup-ts](https://docs.chain.link/cre/getting-started/part-1-project-setup-ts) — This page guides users through setting up a Chainlink CRE project using TypeScript. It covers initializing a project with the `cre init` command, exploring the generated project structure, and configuring workflows for simulation. Key files like `project.yaml`, `workflow.yaml`, and `main.ts` are explained, along with their roles. Users learn to verify authentication, install dependencies, and run a local simulation. Important TypeScript concepts, such as type safety and runtime validation, are introduced, emphasizing the need for a funded Sepolia account and the Bun runtime.. Key details: Command to initialize project: cre init; Project structure includes project.yaml, workflow.yaml, and main.ts; Config files: config.staging.json, config.production.json; Cron trigger setup in main.ts; CLI command to run simulation: cre workflow simulate; Requires Bun version 1.2.21 or higher; Must have a funded Sepolia account for gas fees
-- [https://docs.chain.link/cre/getting-started/part-2-fetching-data-go](https://docs.chain.link/cre/getting-started/part-2-fetching-data-go) — This page guides users on how to fetch offchain data using the Chainlink CRE SDK in Go. It covers updating the workflow configuration to include an API endpoint, understanding the http.SendRequest pattern for handling non-deterministic data, and implementing a function to fetch data from a public API. Key concepts include consensus aggregation to ensure reliable results from multiple nodes. Important caveats include handling non-deterministic responses and the need for dependency management.. Key details: Update config.staging.json with apiUrl key; Use http.SendRequest for fetching data; Implement fetchMathResult function for API calls; Use ConsensusMedianAggregation for reliable results; Run 'go get' to sync dependencies; Run 'go mod tidy' to clean up module files; Simulate workflow with 'cre workflow simulate'
-- [https://docs.chain.link/cre/getting-started/part-2-fetching-data-ts](https://docs.chain.link/cre/getting-started/part-2-fetching-data-ts) — This page guides users through modifying a Chainlink workflow to fetch data from a public API using the CRE SDK's HTTPClient. It covers updating the workflow's configuration to include an API URL, understanding the runInNodeMode pattern for handling non-deterministic data, and implementing HTTP fetch logic in TypeScript. Key considerations include the use of consensusMedianAggregation to ensure reliable results from potentially varying API responses.. Key details: Configuration in config.staging.json with apiUrl key; runInNodeMode helper for offchain operations; HTTPClient for making API requests; consensusMedianAggregation for reliable data aggregation; Use of .result() method for handling async operations in WASM
-- [https://docs.chain.link/cre/getting-started/part-3-reading-onchain-value-go](https://docs.chain.link/cre/getting-started/part-3-reading-onchain-value-go) — This documentation page guides users through reading an onchain value from a smart contract using Chainlink's tools. It covers configuring the environment with a Sepolia RPC URL, creating contract bindings in Go, and integrating onchain data into workflows. Key patterns include using a binding for type-safe interactions and managing RPC URLs securely. Important caveats include the need for a dedicated RPC provider for production use and protecting API keys in configuration files.. Key details: Contract address: 0xa17CF997C28FF154eDBae1422e6a50BeF23927F4; ABI JSON format for contract interactions; Configuration in config.staging.json using evms array; Use of cre generate-bindings command for Go bindings; Chain selectors in string, numeric ID, and Go constant formats
-- [https://docs.chain.link/cre/getting-started/part-3-reading-onchain-value-ts](https://docs.chain.link/cre/getting-started/part-3-reading-onchain-value-ts) — This documentation page guides users through reading an onchain value from a smart contract using the Chainlink TypeScript SDK. It covers configuring the environment with a Sepolia RPC URL, creating a contract ABI file for type-safe interactions, and updating workflow logic to integrate onchain values. Key patterns include using the EVMClient and Viem for contract interactions, and important caveats include protecting RPC URLs and using the correct chain identifiers in configuration files.. Key details: Contract address: 0xa17CF997C28FF154eDBae1422e6a50BeF23927F4; Configuration format in config.staging.json includes evms array; RPC URL for Sepolia: https://ethereum-sepolia-rpc.publicnode.com; ABI definition for Storage contract in TypeScript; Use of getNetwork() for chain selector conversion; Important to use 'as const' for TypeScript type inference
-- [https://docs.chain.link/cre/getting-started/part-4-writing-onchain-go](https://docs.chain.link/cre/getting-started/part-4-writing-onchain-go) — This page guides users through the process of writing data onchain using Chainlink's CRE. It covers generating bindings for a pre-deployed consumer contract, modifying workflow configurations, executing onchain write transactions, and verifying results on the blockchain. Key concepts include using a consumer contract (CalculatorConsumer) and understanding its structure and functions. Important notes include security checks and the need for a forwarder address during contract deployment.. Key details: Consumer contract must be deployed on Sepolia testnet; Use forwarder address for security during contract deployment; Generate ABI for the consumer contract; Verify results by checking transaction and contract state
-- [https://docs.chain.link/cre/getting-started/part-4-writing-onchain-ts](https://docs.chain.link/cre/getting-started/part-4-writing-onchain-ts) — This page guides users through writing data on-chain using the Chainlink CRE framework. It covers the creation of a consumer contract, configuration updates, and the logic for executing on-chain write transactions. Key patterns include using the CalculatorConsumer contract and modifying the workflow configuration in JSON format. Important caveats include ensuring sufficient gas limits for transactions and understanding the contract's security features. The page primarily focuses on TypeScript SDK usage.. Key details: CalculatorConsumer contract deployed on Sepolia testnet; Config file format: config.staging.json; Function signatures: runtime.report(), evmClient.writeReport(); Gas limit configuration is crucial to avoid out of gas errors; Contract security checks via ReceiverTemplate
+# Getting Started
+
+Use this file for CLI installation, account setup, project initialization, or the getting-started tutorial walkthrough.
+
+## Trigger Conditions
+
+- "How do I install the CRE CLI?"
+- "Set up a new CRE project"
+- "Walk me through the CRE getting started tutorial"
+- "How do I create a CRE account?"
+- "How do I log in to the CRE CLI?"
+
+Do not use for workflow-specific code patterns (triggers, HTTP, EVM), SDK API details, or deployment operations.
+
+## CLI Installation
+
+### macOS and Linux
+
+Automatic installation:
+
+```bash
+curl -sSfL https://cre.chain.link/install.sh | bash
+```
+
+Manual installation: Download the binary from the GitHub releases page, verify the SHA-256 checksum, extract, and add to PATH.
+
+On macOS, if Gatekeeper blocks the binary:
+
+```bash
+xattr -d com.apple.quarantine /path/to/cre
+```
+
+### Windows
+
+Automatic installation via PowerShell:
+
+```powershell
+irm https://cre.chain.link/install.ps1 | iex
+```
+
+### Verify Installation
+
+```bash
+cre version
+```
+
+### Updating
+
+```bash
+cre update
+```
+
+## Account Setup
+
+### Creating an Account
+
+1. Go to `https://cre.chain.link` and click "Sign Up"
+2. Choose "Create a new organization" or "Join an existing organization"
+3. Enter your email and verify with the 6-digit code
+4. Set a secure password
+5. Enable two-factor authentication (authenticator app or biometric)
+6. Save the recovery code securely
+
+### CLI Login
+
+```bash
+cre login
+```
+
+This opens a browser window for authentication. Complete 2FA when prompted. On success:
+
+```
+Account details retrieved:
+Email:           [email protected]
+Organization ID: org_AbCdEfGhIjKlMnOp
+```
+
+Check authentication status:
+
+```bash
+cre whoami
+```
+
+### API Key Authentication (CI/CD)
+
+For non-interactive environments (requires Early Access approval):
+
+```bash
+export CRE_API_KEY=your_api_key_here
+```
+
+### Logging Out
+
+```bash
+cre logout
+```
+
+## Project Initialization
+
+### Creating a New Project
+
+```bash
+cre init
+```
+
+The interactive wizard asks for:
+- **Project name** (e.g., `my-project`)
+- **Language**: Go or TypeScript
+- **Template**: Helloworld or other starter template
+- **Workflow name** (e.g., `my-workflow`)
+
+### Generated Project Structure (TypeScript)
+
+```
+my-project/
+├── my-workflow/
+│   ├── config.production.json
+│   ├── config.staging.json
+│   ├── main.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── workflow.yaml
+├── .env
+├── .gitignore
+├── project.yaml
+└── secrets.yaml
+```
+
+### Generated Project Structure (Go)
+
+```
+my-project/
+├── my-workflow/
+│   ├── config.production.json
+│   ├── config.staging.json
+│   ├── main.go
+│   └── workflow.yaml
+├── contracts/
+│   └── evm/
+│       └── src/
+│           └── abi/
+├── .env
+├── .gitignore
+├── go.mod
+├── project.yaml
+└── secrets.yaml
+```
+
+### Key Configuration Files
+
+**project.yaml**: Global project settings shared across all workflows. Contains RPC URLs and environment targets.
+
+**workflow.yaml**: Per-workflow configuration defining the workflow name, entry point, config file path, and secrets file path for each target.
+
+```yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow-staging"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+production-settings:
+  user-workflow:
+    workflow-name: "my-workflow-production"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.production.json"
+    secrets-path: ""
+```
+
+**config.staging.json / config.production.json**: Runtime parameters accessible in your workflow code via `runtime.config` (TypeScript) or the `config` parameter (Go).
+
+**.env**: Private key and environment variables. Never commit this file.
+
+```bash
+CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
+```
+
+### Install Dependencies (TypeScript)
+
+```bash
+cd my-project/my-workflow
+bun install
+cd ..
+```
+
+The `postinstall` script automatically runs `bunx cre-setup` to configure WASM compilation tools.
+
+### Prerequisites
+
+- **Go**: version 1.25.3 or higher
+- **TypeScript**: Bun version 1.2.21 or higher
+- **Funded Sepolia account**: for transaction gas fees (get testnet ETH at `faucets.chain.link`)
+
+## First Simulation
+
+Run from the project root directory:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+This compiles your code to WebAssembly, uses the staging-settings target configuration, and runs a local simulation.
+
+### Minimal TypeScript Workflow (Hello World)
+
+```typescript
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+
+type Config = {
+  schedule: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Hello world! Workflow triggered.")
+  return "Hello world!"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+With `config.staging.json`:
+
+```json
+{
+  "schedule": "*/30 * * * * *"
+}
+```
+
+### Expected Simulation Output
+
+```
+Workflow compiled
+[SIMULATION] Simulator Initialized
+[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+[USER LOG] Hello world! Workflow triggered.
+Workflow Simulation Result:
+ "Hello world!"
+[SIMULATION] Execution finished signal received
+```
+
+## Tutorial Overview
+
+The getting-started tutorial is a 4-part series:
+
+1. **Part 1: Project Setup & Simulation** - Initialize project, explore structure, run first simulation
+2. **Part 2: Fetching Offchain Data** - Add HTTP capability to fetch from an external API with consensus
+3. **Part 3: Reading Onchain Value** - Read from a smart contract using the EVM client
+4. **Part 4: Writing Onchain** - Write data to a consumer contract on the blockchain
+
+Each part builds on the previous one, creating a complete workflow that fetches offchain data, reads onchain state, computes a result, and writes it back onchain.
+
+## Organizations
+
+### Understanding Organizations
+
+CRE organizations allow teams to collaborate on workflow development and deployment.
+
+- **Single Owner model**: One individual with full administrative control
+- **Multiple Members model**: Collaborative workflow management
+- Maximum of 2 linked wallet keys per organization
+- Each wallet address can only be linked to one organization
+
+### Inviting Members
+
+The organization Owner can invite new members:
+1. Navigate to organization settings at `cre.chain.link`
+2. Go to the Members tab
+3. Add member email (must be from a whitelisted domain)
+4. Send invitation
+
+### Linking Wallet Keys
+
+Link a wallet address to your organization for deploying and managing workflows:
+
+```bash
+cre account link-key --target <target-name>
+```
+
+Prerequisites:
+- Logged in via `cre login`
+- `.env` file contains `CRE_ETH_PRIVATE_KEY`
+- Wallet funded with ETH for gas fees
+
+List linked keys:
+
+```bash
+cre account list-key
+```
+
+Unlink a key (destructive, deletes associated workflows):
+
+```bash
+cre account unlink-key --target <target-name>
+```
+
+## Official Documentation
+
+- Account setup: `https://docs.chain.link/cre/account`
+- CLI installation: `https://docs.chain.link/cre/getting-started/cli-installation`
+- Getting started tutorial: `https://docs.chain.link/cre/getting-started/overview`
+- Organization management: `https://docs.chain.link/cre/organization`

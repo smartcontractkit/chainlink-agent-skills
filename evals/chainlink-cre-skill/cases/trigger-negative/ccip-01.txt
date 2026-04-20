@@ -1,0 +1,1 @@
+I need to bridge USDC from Ethereum to Arbitrum using Chainlink CCIP. Can you show me how to set up the cross-chain transfer with the CCIP router?

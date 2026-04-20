@@ -1,0 +1,1 @@
+I need to read the latest price from a Chainlink Data Feed contract in my CRE TypeScript workflow. The contract implements AggregatorV3Interface and is deployed on Ethereum Sepolia. Show me how to call latestRoundData() and decode the result, using the correct block finality level.

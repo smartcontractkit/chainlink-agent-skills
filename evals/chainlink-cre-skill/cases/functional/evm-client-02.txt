@@ -1,0 +1,1 @@
+How do I write a struct with multiple fields to my consumer contract from a CRE TypeScript workflow? The struct has a uint256 price, a uint256 timestamp, and an address source. Show me the complete flow from encoding the data to submitting the report.

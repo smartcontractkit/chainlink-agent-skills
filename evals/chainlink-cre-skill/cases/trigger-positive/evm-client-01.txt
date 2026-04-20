@@ -1,0 +1,1 @@
+How do I read from a smart contract in my CRE workflow and write the result to another contract?

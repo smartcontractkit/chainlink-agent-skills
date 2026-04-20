@@ -1,0 +1,17 @@
+You are evaluating whether the response handles live CRE facts correctly.
+
+Check:
+1. When the prompt depends on specific network addresses (forwarder addresses, chain selectors), the response either provides a known address or recommends checking the official reference page
+2. Response does not confidently invent forwarder addresses, chain selector values, or service quota numbers from memory
+3. Response uses the correct source:
+   - Reference files for integration patterns, code examples, and conceptual guidance (no fetch needed)
+   - Official documentation for forwarder addresses, supported networks, and service quotas
+   - GitHub repositories for SDK source code and template code
+4. Conceptual guidance (how consensus works, how to use triggers) is answered directly without suggesting a fetch
+
+Infer from the prompt whether live-source handling is actually required.
+
+Score:
+- 1.0: Correct freshness handling and source choice (PASS)
+- 0.5: Partial freshness awareness but weak source discipline (PASS if minor)
+- 0.0: Treats live facts as static or uses wrong source (FAIL)
