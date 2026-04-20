@@ -281,39 +281,128 @@ const result = httpClient
   .result()
 ```
 
-## Confidential HTTP Client (Experimental)
+## Confidential HTTP Client
 
-The Confidential HTTP client provides privacy-preserving HTTP requests via enclave execution. Currently available in simulation only.
+The Confidential HTTP client provides privacy-preserving HTTP requests via enclave execution. Secrets are injected into the request inside the enclave using template syntax, never exposed to DON nodes.
 
-### Features
+### Key Differences from Standard HTTP
 
-- Secret injection into request headers/body without exposing to the DON
-- Optional response encryption
-- Enclave-based execution for privacy
+| Aspect | Standard HTTP | Confidential HTTP |
+|--------|--------------|-------------------|
+| Class | `HTTPClientCapability` | `ConfidentialHTTPClient` |
+| Secrets | `runtime.getSecret()` | `{{.secretName}}` template in headers/body |
+| Secret storage | secrets.yaml + env vars | Vault DON (`vaultDonSecrets`) |
+| Execution | DON/Node mode | Enclave execution |
+| Response | Plain | Optional encryption via `encryptOutput` |
 
-### TypeScript
+### How It Works
+
+1. Declare secrets in `vaultDonSecrets` with the secret `key` and the `owner` address
+2. Save the sensitive data (API keys, tokens) to the Vault DON using `cre secrets create`
+3. Reference secrets in request headers or body using `{{.SECRET_NAME}}` template syntax
+4. The enclave resolves templates, executes the request, and returns the result to the DON for consensus
+
+### TypeScript: Minimal Example
 
 ```typescript
-import { ConfidentialHTTPClientCapability } from "@chainlink/cre-sdk"
+import {
+  ConfidentialHTTPClient,
+  ConfidentialHTTPSendRequester,
+  CronCapability,
+  handler,
+  Runner,
+  type Runtime,
+  type CronPayload,
+  ConsensusAggregationByFields,
+  identical,
+} from "@chainlink/cre-sdk"
 
-const confidentialClient = new ConfidentialHTTPClientCapability()
+type Config = {
+  schedule: string
+}
 
-const result = confidentialClient
-  .sendRequest(runtime, {
-    url: "https://api.example.com/sensitive",
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${runtime.getSecret("API_KEY")}`,
+const onTrigger = (runtime: Runtime<Config>, _payload: CronPayload): string => {
+  const confClient = new ConfidentialHTTPClient()
+
+  const result = confClient.sendRequest(
+    runtime,
+    (req: ConfidentialHTTPSendRequester) => {
+      const resp = req.sendRequest({
+        request: {
+          url: 'https://api.anthropic.com/v1/messages',
+          method: 'POST',
+          bodyString: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 300,
+            messages: [{ role: 'user', content: 'Is this vault safe?' }],
+          }),
+          multiHeaders: {
+            'Content-Type': { values: ['application/json'] },
+            'x-api-key': { values: ['{{.ANTHROPIC_API_KEY}}'] },
+            'anthropic-version': { values: ['2023-06-01'] },
+          },
+        },
+        vaultDonSecrets: [
+          { key: 'ANTHROPIC_API_KEY', owner: '0xYourOwnerAddress' },
+        ],
+        encryptOutput: false,
+      }).result()
+
+      const body = JSON.parse(new TextDecoder().decode(resp.body))
+      return { answer: String(body.content?.[0]?.text ?? '') }
     },
-  })
-  .result()
+    ConsensusAggregationByFields<{ answer: string }>({ answer: identical }),
+  ).result()
+
+  runtime.log(`AI says: ${result.answer}`)
+  return JSON.stringify(result)
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
 ```
 
-### Limitations
+### Request Format
 
-- Simulation only (not yet supported in deployed workflows)
-- Limited consensus options
-- Experimental API subject to change
+The `sendRequest` callback receives a `ConfidentialHTTPSendRequester` and must call `req.sendRequest()` with:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `request.url` | `string` | Target URL |
+| `request.method` | `string` | HTTP method (`GET`, `POST`, etc.) |
+| `request.bodyString` | `string` | Request body as a string |
+| `request.multiHeaders` | `Record<string, { values: string[] }>` | Headers with multi-value support |
+| `vaultDonSecrets` | `Array<{ key: string, owner: string }>` | Secrets to resolve from Vault DON |
+| `encryptOutput` | `boolean` | Whether to encrypt the response |
+
+### Secret Template Syntax
+
+Use `{{.SECRET_NAME}}` anywhere in headers or body to inject a Vault DON secret:
+
+```typescript
+multiHeaders: {
+  'Authorization': { values: ['Bearer {{.MY_API_TOKEN}}'] },
+},
+vaultDonSecrets: [
+  { key: 'MY_API_TOKEN', owner: '0xYourOwnerAddress' },
+],
+```
+
+The `key` must match the secret name stored in the Vault DON. The `owner` is the address that created the secret.
+
+### Secrets Setup for Confidential HTTP
+
+1. Define secrets in `secrets.yaml` as usual
+2. Upload to Vault DON: `cre secrets create <workflow-dir> --target <target>`
+3. In the workflow code, reference via `{{.SECRET_NAME}}` in the request (not `runtime.getSecret()`)
+4. Declare each secret in `vaultDonSecrets` so the enclave knows which secrets to fetch
 
 ## Official Documentation
 

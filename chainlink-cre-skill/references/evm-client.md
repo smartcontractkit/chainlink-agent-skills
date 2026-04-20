@@ -350,21 +350,58 @@ A consumer contract receives data written by a CRE workflow. It must implement t
 
 ### IReceiver Interface
 
+The `IReceiver` interface is the minimal contract a consumer must satisfy:
+
 ```solidity
 interface IReceiver {
     function onReport(bytes calldata metadata, bytes calldata report) external;
 }
 ```
 
-### ReceiverTemplate
+Parameters:
+- `metadata`: Contains workflow ID, DON ID, and execution metadata. Use this for access control or audit logging if needed.
+- `report`: ABI-encoded payload matching what `runtime.report()` produces in the workflow code.
 
-Use the `ReceiverTemplate` base contract for easier implementation:
+### Direct IReceiver Implementation
+
+If you need full control over access control, implement `IReceiver` directly:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {ReceiverTemplate} from "@chainlink/cre-contracts/src/ReceiverTemplate.sol";
+import {IReceiver} from "./interfaces/IReceiver.sol";
+
+contract MyConsumer is IReceiver {
+    address public immutable forwarder;
+    uint256 public lastPrice;
+    uint256 public lastTimestamp;
+
+    error UnauthorizedForwarder(address caller);
+
+    constructor(address _forwarder) {
+        forwarder = _forwarder;
+    }
+
+    function onReport(bytes calldata metadata, bytes calldata report) external {
+        if (msg.sender != forwarder) revert UnauthorizedForwarder(msg.sender);
+
+        (uint256 price, uint256 timestamp) = abi.decode(report, (uint256, uint256));
+        lastPrice = price;
+        lastTimestamp = timestamp;
+    }
+}
+```
+
+### ReceiverTemplate (Recommended)
+
+Use the `ReceiverTemplate` base contract for easier implementation. It provides the `onlyForwarder` modifier and handles forwarder address validation:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {ReceiverTemplate} from "./interfaces/ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
     uint256 public lastPrice;
@@ -384,6 +421,14 @@ contract MyConsumer is ReceiverTemplate {
 }
 ```
 
+### Best Practices
+
+- Always validate `msg.sender` against the `KeystoneForwarder` address (use `ReceiverTemplate` or check manually)
+- Keep `onReport` gas-efficient; the workflow's `gasLimit` must cover the full execution
+- Use `abi.decode` with the exact types matching your workflow's `encodeAbiParameters` call
+- Emit events in `onReport` for offchain indexing and monitoring
+- Store the forwarder address as `immutable` to save gas
+
 ### Key Points
 
 - The `onlyForwarder` modifier restricts calls to the `KeystoneForwarder` contract
@@ -393,21 +438,178 @@ contract MyConsumer is ReceiverTemplate {
 
 ### Deployment
 
-Deploy consumer contracts to the same chain as specified in your `workflow.yaml` or `config.json`. Pass the `KeystoneForwarder` address for the target network to the constructor.
+Deploy consumer contracts to the same chain as specified in your `workflow.yaml` or `config.json`. Pass the `KeystoneForwarder` address for the target network to the constructor. Use the simulation forwarder address (`MockKeystoneForwarder`) during local development and the production forwarder address (`KeystoneForwarder`) when deploying. See [references/chain-selectors.md](chain-selectors.md) for addresses per network.
+
+### Using CRE with Foundry
+
+The CRE receiver contracts (`IReceiver`, `IERC165`, `ReceiverTemplate`) are not published as a Forge-installable package. Copy them from the official docs into your project's `src/interfaces/` directory, then install OpenZeppelin for the `Ownable` dependency used by `ReceiverTemplate`:
+
+```bash
+forge install OpenZeppelin/openzeppelin-contracts
+```
+
+Add the remapping in `foundry.toml`:
+
+```toml
+[profile.default]
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+]
+```
+
+Project structure:
+
+```
+contracts/
+├── foundry.toml
+├── src/
+│   ├── interfaces/
+│   │   ├── IERC165.sol
+│   │   ├── IReceiver.sol
+│   │   └── ReceiverTemplate.sol
+│   └── MyConsumer.sol
+└── test/
+    └── MyConsumer.t.sol
+```
+
+Import from the local path in your consumer:
+
+```solidity
+import {ReceiverTemplate} from "./interfaces/ReceiverTemplate.sol";
+```
+
+Get the contract source code from the official docs page: `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts` or open them directly in Remix from the links on that page.
+
+Example test:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {Test} from "forge-std/Test.sol";
+import {MyConsumer} from "../src/MyConsumer.sol";
+
+contract MyConsumerTest is Test {
+    MyConsumer public consumer;
+    address public forwarder = address(0xF0);
+
+    function setUp() public {
+        consumer = new MyConsumer(forwarder);
+    }
+
+    function test_onReport_storesPrice() public {
+        uint256 price = 42000000000;
+        bytes memory report = abi.encode(price);
+        bytes memory metadata = "";
+
+        vm.prank(forwarder);
+        consumer.onReport(metadata, report);
+
+        assertEq(consumer.lastPrice(), price);
+    }
+
+    function test_onReport_revertsIfNotForwarder() public {
+        bytes memory report = abi.encode(uint256(1));
+        bytes memory metadata = "";
+
+        vm.expectRevert();
+        consumer.onReport(metadata, report);
+    }
+}
+```
+
+Run tests:
+
+```bash
+forge test
+```
+
+### Using CRE with Hardhat
+
+The CRE receiver contracts are not published as an npm package. Copy `IReceiver.sol`, `IERC165.sol`, and `ReceiverTemplate.sol` from the official docs into your project's `contracts/interfaces/` directory, then install OpenZeppelin:
+
+```bash
+npm install @openzeppelin/contracts
+```
+
+Project structure:
+
+```
+├── contracts/
+│   ├── interfaces/
+│   │   ├── IERC165.sol
+│   │   ├── IReceiver.sol
+│   │   └── ReceiverTemplate.sol
+│   └── MyConsumer.sol
+├── test/
+│   └── MyConsumer.test.ts
+└── hardhat.config.ts
+```
+
+Import from the local path in your consumer:
+
+```solidity
+import {ReceiverTemplate} from "./interfaces/ReceiverTemplate.sol";
+```
+
+Get the contract source code from the official docs page: `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts`
+
+Example test using Hardhat + ethers:
+
+```typescript
+import { expect } from "chai"
+import { ethers } from "hardhat"
+
+describe("MyConsumer", function () {
+  it("should store price from onReport", async function () {
+    const [deployer, forwarder] = await ethers.getSigners()
+
+    const Consumer = await ethers.getContractFactory("MyConsumer")
+    const consumer = await Consumer.deploy(forwarder.address)
+
+    const price = ethers.parseUnits("42000", 0)
+    const report = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [price])
+    const metadata = "0x"
+
+    await consumer.connect(forwarder).onReport(metadata, report)
+
+    expect(await consumer.lastPrice()).to.equal(price)
+  })
+
+  it("should revert if caller is not forwarder", async function () {
+    const [deployer, forwarder, attacker] = await ethers.getSigners()
+
+    const Consumer = await ethers.getContractFactory("MyConsumer")
+    const consumer = await Consumer.deploy(forwarder.address)
+
+    const report = ethers.AbiCoder.defaultAbiCoder().encode(["uint256"], [1n])
+
+    await expect(
+      consumer.connect(attacker).onReport("0x", report)
+    ).to.be.reverted
+  })
+})
+```
+
+Run tests:
+
+```bash
+npx hardhat test
+```
 
 ## KeystoneForwarder Addresses
 
 The `KeystoneForwarder` is the onchain entry point that validates CRE-signed reports and forwards them to consumer contracts.
 
-### Testnet
+For the full list of production and simulation forwarder addresses per network, see [references/chain-selectors.md](chain-selectors.md). Common production forwarder addresses for testnets:
 
-| Network | Address |
-|---------|---------|
-| Ethereum Sepolia | `0x2cfC062B1B5c97a73BC7Ad4E67d1cd416e4DE71b` |
-| Arbitrum Sepolia | `0x2cfC062B1B5c97a73BC7Ad4E67d1cd416e4DE71b` |
-| Base Sepolia | `0x2cfC062B1B5c97a73BC7Ad4E67d1cd416e4DE71b` |
+| Network | CRE Chain Selector Name | Forwarder Address |
+|---------|------------------------|-------------------|
+| Ethereum Sepolia | `ethereum-testnet-sepolia` | `0xF8344CFd5c43616a4366C34E3EEE75af79a74482` |
+| Arbitrum Sepolia | `ethereum-testnet-sepolia-arbitrum-1` | `0x76c9cf548b4179F8901cda1f8623568b58215E62` |
+| Base Sepolia | `ethereum-testnet-sepolia-base-1` | `0xF8344CFd5c43616a4366C34E3EEE75af79a74482` |
 
-For a full up-to-date list, check the forwarder addresses page in the official documentation.
+Simulation uses different `MockKeystoneForwarder` addresses. Always update the forwarder address in your consumer contract constructor when moving from simulation to production.
 
 ## Solidity/TypeScript Type Mappings
 

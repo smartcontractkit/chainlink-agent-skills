@@ -227,15 +227,28 @@ const data = httpClient.sendRequest(runtime, fetchFn, agg)(url).result()
 
 ### Supported npm Packages
 
-Packages that are pure JavaScript and don't rely on Node.js APIs or native modules generally work. Common compatible packages:
+Packages that are pure JavaScript and don't rely on Node.js APIs or native modules generally work. Before adding any third-party npm package to a CRE TypeScript workflow, verify it does not depend on unsupported Node.js APIs.
 
+**Unsupported Node.js APIs in QuickJS:**
+`fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, `events` (Node.js-specific EventEmitter), `util` (Node.js-specific features like `promisify`), `buffer` (Node.js Buffer; use `ArrayBuffer`/`Uint8Array` instead)
+
+**How to check compatibility:**
+1. Review the package's `package.json` for Node.js-specific dependencies
+2. Check if the package imports any of the unsupported APIs listed above
+3. Consult the QuickJS Node.js compatibility reference: https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html
+4. Test with `cre workflow simulate` to confirm the package works in the WASM runtime
+
+**Known compatible packages:**
 - `zod` (schema validation)
-- `viem` (Ethereum ABI encoding/decoding)
+- `viem` (Ethereum ABI encoding/decoding, type utilities)
 
-Packages that will NOT work:
-- `ethers` (uses Node.js crypto)
-- `axios` (uses Node.js http)
-- Any package requiring native modules
+**Known incompatible packages:**
+- `ethers` (depends on Node.js `crypto`)
+- `axios` (depends on Node.js `http`/`https`)
+- `node-fetch` (depends on Node.js `http`/`stream`)
+- `ws` (depends on Node.js `net`/`http`)
+- `dotenv` (depends on Node.js `fs`/`path`)
+- Any package requiring native/N-API modules
 
 ### Debugging
 

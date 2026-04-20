@@ -204,17 +204,41 @@ Callback receives: `(runtime: Runtime<Config>, event: EVMLogPayload) => T`
 - `blockNumber: bigint`
 - `transactionHash: string`
 
-### ConfidentialHTTPClientCapability
+### ConfidentialHTTPClient
 
 ```typescript
-const client = new ConfidentialHTTPClientCapability()
-client.sendRequest(runtime, {
-  url: string,
-  method: string,
-  headers?: Record<string, string>,
-  body?: string,
-}): { result(): ConfidentialHTTPResponse }
+import {
+  ConfidentialHTTPClient,
+  ConfidentialHTTPSendRequester,
+  ConsensusAggregationByFields,
+  identical,
+} from "@chainlink/cre-sdk"
+
+const confClient = new ConfidentialHTTPClient()
+
+confClient.sendRequest<R>(
+  runtime: Runtime,
+  callback: (req: ConfidentialHTTPSendRequester) => R,
+  aggregation: ConsensusAggregation<R>,
+): { result(): R }
 ```
+
+Inside the callback, use `req.sendRequest()`:
+
+```typescript
+req.sendRequest({
+  request: {
+    url: string,
+    method: string,
+    bodyString?: string,
+    multiHeaders?: Record<string, { values: string[] }>,
+  },
+  vaultDonSecrets: Array<{ key: string, owner: string }>,
+  encryptOutput?: boolean,
+}): { result(): { body: ArrayBuffer } }
+```
+
+Secrets use `{{.SECRET_NAME}}` template syntax in headers/body. See http-client.md for full usage patterns.
 
 ## Go SDK
 
