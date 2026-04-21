@@ -70,6 +70,17 @@ The `eval.yml` workflow runs the smoke tier automatically on PRs that touch skil
 - **Smoke**: After any change to a skill's `SKILL.md` or `references/`, before bumping patch version, when adding new eval cases
 - **Full**: Before releases, after major refactors, or when smoke passes but you want full confidence
 
+### Autonomous improvement (autoimprove)
+
+Read and follow the protocol in `evals/improve-skill.md`. This runs an autonomous loop that iterates on a skill's instructions and references, using eval scores as the objective. The agent modifies the skill, runs smoke evals, keeps improvements, reverts regressions, and loops until stopped. Ask:
+
+```
+Improve chainlink-ccip-skill
+Improve chainlink-data-feeds-skill, tag apr21
+```
+
+Requires either API keys in `.env` (for promptfoo-based evals) or sufficient Cursor subagent budget (for agent-powered evals). Promptfoo is strongly preferred for speed.
+
 ## Conventions
 
 - Do not commit `.env` or secret files.
