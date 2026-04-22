@@ -61,6 +61,32 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  - vars:
+      case_file: cases/functional/workflow-generation-03.txt
+      workflow: workflow-generation
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Project Scaffolding ──────────────────────────────────
+  - vars:
+      case_file: cases/functional/project-scaffolding-01.txt
+      workflow: project-scaffolding
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/project-scaffolding-02.txt
+      workflow: project-scaffolding
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  # ── Functional: Simulation ───────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/simulation-01.txt
+      workflow: simulation
+      requires_live_source: "no"
+    assert: *functional_asserts
+
   # ── Functional: HTTP Client ─────────────────────────────────────────
   - vars:
       case_file: cases/functional/http-client-01.txt

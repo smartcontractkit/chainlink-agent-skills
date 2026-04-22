@@ -1,6 +1,6 @@
 # Operations
 
-Use this file when the user asks about simulating, deploying, monitoring, activating, pausing, updating, or deleting workflows, or about multi-sig wallets.
+Use this file when the user asks about deploying, monitoring, activating, pausing, updating, or deleting workflows, or about multi-sig wallets.
 
 ## Trigger Conditions
 
@@ -9,7 +9,7 @@ Use this file when the user asks about simulating, deploying, monitoring, activa
 - "How do I update a workflow?"
 - "How do I pause or delete a workflow?"
 
-Do not use for workflow code patterns (see workflow-patterns.md), CLI command syntax (see cli-reference.md), or first-time setup (see getting-started.md).
+For simulation, see simulation.md. Do not use for workflow code patterns (see workflow-patterns.md), CLI command syntax (see cli-reference.md), or first-time setup (see getting-started.md).
 
 ## Workflow Lifecycle
 
@@ -23,51 +23,15 @@ Init -> Simulate -> Deploy -> Activate -> (Running)
 
 ## Simulation
 
-### Running a Simulation
+For simulation details including per-trigger-type examples, expected output, common errors, and the `--broadcast` flag, see simulation.md.
+
+Quick reference:
 
 ```bash
 cre workflow simulate <workflow-dir> --target <target-name>
 ```
 
-Example:
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-### What Simulation Does
-
-1. Compiles workflow code to WebAssembly
-2. Runs the workflow locally using the specified target configuration
-3. Simulates trigger events
-4. Executes capability calls against real endpoints (RPC, HTTP APIs)
-5. Displays output including user logs and the workflow result
-
-### Simulation vs Deployment
-
-| Aspect | Simulation | Deployment |
-|--------|-----------|------------|
-| Execution | Local machine | DON nodes |
-| Consensus | Single node (no aggregation) | Multi-node with consensus |
-| Gas costs | None | Real gas costs |
-| Secrets | From `.env` / environment | From Vault DON |
-| RPC calls | Direct to RPC endpoint | Via DON EVM client |
-
-### Testing HTTP Triggers
-
-For HTTP-triggered workflows, simulation starts a local HTTP server:
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-Then in another terminal:
-
-```bash
-curl -X POST http://localhost:8080/trigger \
-  -H "Content-Type: application/json" \
-  -d '{"key": "value"}'
-```
+Always include `--target`. For `cre workflow simulate` only, the CLI can also prompt for HTTP request body (**`--http-payload`**), EVM log source (**`--evm-tx-hash`**, **`--evm-event-index`**), or which handler to run; use **`--non-interactive`** with **`--trigger-index`** when you need zero prompts. See simulation.md and cli-reference.md.
 
 ## Deployment
 
