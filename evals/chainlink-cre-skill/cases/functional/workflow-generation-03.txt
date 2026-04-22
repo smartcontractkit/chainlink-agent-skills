@@ -1,0 +1,1 @@
+I need a CRE TypeScript workflow with 3 different triggers: a cron schedule that runs every 5 minutes, an HTTP webhook for on-demand execution, and an EVM log listener that reacts to Transfer events on an ERC-20 contract on Ethereum Sepolia. Each trigger should call a different callback function. Generate the complete workflow code.

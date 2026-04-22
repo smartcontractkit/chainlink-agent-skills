@@ -1,16 +1,15 @@
 # Getting Started
 
-Use this file for CLI installation, account setup, project initialization, or the getting-started tutorial walkthrough.
+Use this file for CLI installation, account setup, or the getting-started tutorial overview.
 
 ## Trigger Conditions
 
 - "How do I install the CRE CLI?"
-- "Set up a new CRE project"
-- "Walk me through the CRE getting started tutorial"
 - "How do I create a CRE account?"
 - "How do I log in to the CRE CLI?"
+- "Walk me through the CRE getting started tutorial"
 
-Do not use for workflow-specific code patterns (triggers, HTTP, EVM), SDK API details, or deployment operations.
+For project creation and scaffolding, see project-scaffolding.md. For running simulations, see simulation.md. Do not use for workflow-specific code patterns (triggers, HTTP, EVM), SDK API details, or deployment operations.
 
 ## CLI Installation
 
@@ -95,159 +94,6 @@ export CRE_API_KEY=your_api_key_here
 cre logout
 ```
 
-## Project Initialization
-
-### Creating a New Project
-
-```bash
-cre init
-```
-
-The interactive wizard asks for:
-- **Project name** (e.g., `my-project`)
-- **Language**: Go or TypeScript
-- **Template**: Helloworld or other starter template
-- **Workflow name** (e.g., `my-workflow`)
-
-### Generated Project Structure (TypeScript)
-
-```
-my-project/
-├── my-workflow/
-│   ├── config.production.json
-│   ├── config.staging.json
-│   ├── main.ts
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── workflow.yaml
-├── .env
-├── .gitignore
-├── project.yaml
-└── secrets.yaml
-```
-
-### Generated Project Structure (Go)
-
-```
-my-project/
-├── my-workflow/
-│   ├── config.production.json
-│   ├── config.staging.json
-│   ├── main.go
-│   └── workflow.yaml
-├── contracts/
-│   └── evm/
-│       └── src/
-│           └── abi/
-├── .env
-├── .gitignore
-├── go.mod
-├── project.yaml
-└── secrets.yaml
-```
-
-### Key Configuration Files
-
-**project.yaml**: Global project settings shared across all workflows. Contains RPC URLs and environment targets.
-
-**workflow.yaml**: Per-workflow configuration defining the workflow name, entry point, config file path, and secrets file path for each target.
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.json"
-    secrets-path: ""
-production-settings:
-  user-workflow:
-    workflow-name: "my-workflow-production"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.production.json"
-    secrets-path: ""
-```
-
-**config.staging.json / config.production.json**: Runtime parameters accessible in your workflow code via `runtime.config` (TypeScript) or the `config` parameter (Go).
-
-**.env**: Private key and environment variables. Never commit this file.
-
-```bash
-CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
-```
-
-### Install Dependencies (TypeScript)
-
-```bash
-cd my-project/my-workflow
-bun install
-cd ..
-```
-
-The `postinstall` script automatically runs `bunx cre-setup` to configure WASM compilation tools.
-
-### Prerequisites
-
-- **Go**: version 1.25.3 or higher
-- **TypeScript**: Bun version 1.2.21 or higher
-- **Funded Sepolia account**: for transaction gas fees (get testnet ETH at `faucets.chain.link`)
-
-## First Simulation
-
-Run from the project root directory:
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-This compiles your code to WebAssembly, uses the staging-settings target configuration, and runs a local simulation.
-
-### Minimal TypeScript Workflow (Hello World)
-
-```typescript
-import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
-
-type Config = {
-  schedule: string
-}
-
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  runtime.log("Hello world! Workflow triggered.")
-  return "Hello world!"
-}
-
-const initWorkflow = (config: Config) => {
-  const cron = new CronCapability()
-  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
-}
-
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
-```
-
-With `config.staging.json`:
-
-```json
-{
-  "schedule": "*/30 * * * * *"
-}
-```
-
-### Expected Simulation Output
-
-```
-Workflow compiled
-[SIMULATION] Simulator Initialized
-[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-[USER LOG] Hello world! Workflow triggered.
-Workflow Simulation Result:
- "Hello world!"
-[SIMULATION] Execution finished signal received
-```
-
 ## Tutorial Overview
 
 The getting-started tutorial is a 4-part series:
@@ -258,6 +104,8 @@ The getting-started tutorial is a 4-part series:
 4. **Part 4: Writing Onchain** - Write data to a consumer contract on the blockchain
 
 Each part builds on the previous one, creating a complete workflow that fetches offchain data, reads onchain state, computes a result, and writes it back onchain.
+
+For hands-on project setup, see project-scaffolding.md. For running simulations, see simulation.md.
 
 ## Organizations
 

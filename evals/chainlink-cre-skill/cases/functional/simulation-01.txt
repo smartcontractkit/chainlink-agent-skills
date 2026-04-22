@@ -1,0 +1,1 @@
+I have a CRE workflow with both a cron trigger and an HTTP trigger. How do I simulate it? My project has both staging-settings and production-settings targets. I want to test against staging.

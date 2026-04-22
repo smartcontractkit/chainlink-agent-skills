@@ -299,6 +299,118 @@ if err != nil {
 
 Execution is single-threaded. `.Await()` drives the event loop forward until the result is available.
 
+## Best Practices
+
+### One Workflow, Multiple Handlers
+
+If your triggers share the same project context (config, secrets, consumer contracts), register them as multiple handlers in a single `initWorkflow` / `InitWorkflow` function rather than creating separate workflows.
+
+#### TypeScript
+
+```typescript
+import {
+  CronCapability,
+  HTTPCapability,
+  EVMLogCapability,
+  handler,
+  Runner,
+  type Runtime,
+  type HTTPTriggerPayload,
+  type EVMLogPayload,
+} from "@chainlink/cre-sdk"
+
+type Config = {
+  schedule: string
+  contractAddress: string
+  chainSelectorName: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Cron triggered")
+  return "cron-result"
+}
+
+const onHttpTrigger = (runtime: Runtime<Config>, event: HTTPTriggerPayload): string => {
+  runtime.log(`HTTP triggered with body: ${JSON.stringify(event.body)}`)
+  return "http-result"
+}
+
+const onLogTrigger = (runtime: Runtime<Config>, event: EVMLogPayload): string => {
+  runtime.log(`EVM log from ${event.address}`)
+  return "log-result"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  const http = new HTTPCapability()
+  const evmLog = new EVMLogCapability()
+
+  return [
+    handler(cron.trigger({ schedule: config.schedule }), onCronTrigger),
+    handler(http.trigger({ authorizedKeys: [] }), onHttpTrigger),
+    handler(
+      evmLog.trigger({
+        contractAddress: config.contractAddress,
+        chainSelectorName: config.chainSelectorName,
+        eventSignature: "Transfer(address,address,uint256)",
+      }),
+      onLogTrigger,
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+#### Go
+
+```go
+func InitWorkflow(config *Config) []cre.HandlerDefinition {
+    return []cre.HandlerDefinition{
+        cre.Handler(cron.Trigger(cron.Config{Schedule: config.Schedule}), onCronTrigger),
+        cre.Handler(
+            webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: []string{}}),
+            onHTTPTrigger,
+        ),
+        cre.Handler(
+            evmlogtrigger.Trigger(evmlogtrigger.Config{
+                ContractAddress:   config.ContractAddress,
+                ChainSelectorName: config.ChainSelectorName,
+                EventSignature:    "Transfer(address,address,uint256)",
+            }),
+            onLogTrigger,
+        ),
+    }
+}
+```
+
+### When to Use Separate Workflows
+
+Create separate workflows only when:
+- The triggers operate on entirely different chains with no shared config
+- The workflows have different deployment lifecycles (one is stable, the other iterates frequently)
+- The workflows require different secrets namespaces
+- The workflows target different consumer contracts with no logical relationship
+
+### Avoid Duplicating Capability Instances
+
+Instantiate each capability once and share it across handlers:
+
+```typescript
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  const http = new HTTPCapability()
+
+  return [
+    handler(cron.trigger({ schedule: config.schedule }), onScheduledFetch),
+    handler(http.trigger({ authorizedKeys: [] }), onManualFetch),
+  ]
+}
+```
+
 ## Official Documentation
 
 - Secrets management: `https://docs.chain.link/cre/guides/workflow/secrets`

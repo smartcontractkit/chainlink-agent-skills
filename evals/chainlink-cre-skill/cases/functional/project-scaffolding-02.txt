@@ -1,0 +1,1 @@
+Create a new CRE Go project with a cron trigger that logs a message every minute. Set up the full project structure, install dependencies, and show me how to verify it works with a simulation. I need to do this non-interactively.

@@ -1,0 +1,1 @@
+I want to set up a new CRE TypeScript project from scratch. Create the project, install dependencies, and run the first simulation. I'm running this in an automated environment where I can't interact with terminal prompts.
