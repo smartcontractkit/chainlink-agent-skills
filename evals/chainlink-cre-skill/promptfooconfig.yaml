@@ -53,6 +53,10 @@ tests:
       case_file: cases/functional/workflow-generation-01.txt
       workflow: workflow-generation
       requires_live_source: "no"
+    metadata:
+      workflow: workflow-generation
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -92,6 +96,10 @@ tests:
       case_file: cases/functional/http-client-01.txt
       workflow: http-client
       requires_live_source: "no"
+    metadata:
+      workflow: http-client
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -105,6 +113,10 @@ tests:
       case_file: cases/functional/evm-client-01.txt
       workflow: evm-client
       requires_live_source: "no"
+    metadata:
+      workflow: evm-client
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -118,6 +130,10 @@ tests:
       case_file: cases/functional/triggers-01.txt
       workflow: triggers
       requires_live_source: "no"
+    metadata:
+      workflow: triggers
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   # ── Functional: Secrets ─────────────────────────────────────────────
@@ -125,6 +141,10 @@ tests:
       case_file: cases/functional/secrets-01.txt
       workflow: secrets
       requires_live_source: "no"
+    metadata:
+      workflow: secrets
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   # ── Functional: Getting Started ─────────────────────────────────────
@@ -146,6 +166,10 @@ tests:
       case_file: cases/functional/concepts-01.txt
       workflow: concepts
       requires_live_source: "no"
+    metadata:
+      workflow: concepts
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -159,6 +183,10 @@ tests:
       case_file: cases/trigger-positive/workflow-gen-01.txt
       workflow: workflow-generation
       expected_trigger: "yes"
+    metadata:
+      workflow: workflow-generation
+      category: trigger-positive
+      smoke: true
     assert: *trigger_positive_asserts
 
   - vars:
@@ -171,6 +199,10 @@ tests:
       case_file: cases/trigger-positive/evm-client-01.txt
       workflow: evm-client
       expected_trigger: "yes"
+    metadata:
+      workflow: evm-client
+      category: trigger-positive
+      smoke: true
     assert: *trigger_positive_asserts
 
   - vars:
@@ -208,12 +240,20 @@ tests:
       case_file: cases/trigger-negative/ccip-01.txt
       workflow: none
       expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/data-feeds-01.txt
       workflow: none
       expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
     assert: *trigger_negative_asserts
 
   - vars:

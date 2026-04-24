@@ -1,0 +1,137 @@
+name: Skill Evals
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "chainlink-ccip-skill/**"
+      - "chainlink-cre-skill/**"
+      - "chainlink-data-feeds-skill/**"
+      - "evals/**"
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Eval tier to run"
+        type: choice
+        options:
+          - smoke
+          - full
+        default: smoke
+      skill:
+        description: "Skill to evaluate (blank = all)"
+        type: choice
+        options:
+          - all
+          - chainlink-ccip-skill
+          - chainlink-cre-skill
+          - chainlink-data-feeds-skill
+        default: all
+
+permissions:
+  contents: read
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+jobs:
+  detect-skills:
+    runs-on: ubuntu-latest
+    outputs:
+      skills: ${{ steps.resolve.outputs.skills }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve skill matrix
+        id: resolve
+        run: |
+          SKILL="${{ github.event.inputs.skill }}"
+
+          if [ -n "$SKILL" ] && [ "$SKILL" != "all" ]; then
+            echo "skills=[\"$SKILL\"]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          ALL_SKILLS=("chainlink-ccip-skill" "chainlink-cre-skill" "chainlink-data-feeds-skill")
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+            MATCHED=()
+            for skill in "${ALL_SKILLS[@]}"; do
+              if echo "$CHANGED" | grep -qE "^(${skill}|evals/${skill})/"; then
+                MATCHED+=("\"$skill\"")
+              fi
+            done
+            if [ ${#MATCHED[@]} -eq 0 ]; then
+              echo "No skill-specific files changed; skipping evals."
+              echo 'skills=[]' >> "$GITHUB_OUTPUT"
+            else
+              JOINED=$(IFS=,; echo "${MATCHED[*]}")
+              echo "skills=[$JOINED]" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo 'skills=["chainlink-ccip-skill","chainlink-cre-skill","chainlink-data-feeds-skill"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  eval:
+    needs: detect-skills
+    if: ${{ needs.detect-skills.outputs.skills != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJson(needs.detect-skills.outputs.skills) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install promptfoo
+        run: npm install -g promptfoo
+
+      - name: Resolve tier
+        id: tier
+        run: |
+          TIER="${{ github.event.inputs.tier || 'smoke' }}"
+          echo "tier=$TIER" >> "$GITHUB_OUTPUT"
+
+      - name: Run eval
+        working-directory: evals/${{ matrix.skill }}
+        run: |
+          TIER="${{ steps.tier.outputs.tier }}"
+          if [ "$TIER" = "smoke" ]; then
+            promptfoo eval --filter-metadata "smoke=true" --no-cache
+          else
+            promptfoo eval --no-cache
+          fi
+
+      - name: Generate report
+        if: always()
+        working-directory: evals/${{ matrix.skill }}
+        run: |
+          promptfoo export -o results.json || true
+          if [ -f results.json ]; then
+            echo "### ${{ matrix.skill }} eval results" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            promptfoo export -o results.csv || true
+            TOTAL=$(jq '.results.stats.successes + .results.stats.failures' results.json 2>/dev/null || echo "?")
+            PASS=$(jq '.results.stats.successes' results.json 2>/dev/null || echo "?")
+            echo "**Pass rate**: ${PASS}/${TOTAL}" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-${{ matrix.skill }}
+          path: evals/${{ matrix.skill }}/results.*
+          if-no-files-found: ignore

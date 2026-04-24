@@ -103,6 +103,7 @@ tests:
       workflow: cct
       category: functional
       requiresApproval: yes
+      smoke: true
     assert: *functional_asserts
   - description: functional / cct / cct-02
     vars:
@@ -151,6 +152,7 @@ tests:
       workflow: chainlink-local
       category: functional
       requiresApproval: no
+      smoke: true
     assert: *functional_asserts
   - description: functional / chainlink-local / chainlink-local-02
     vars:
@@ -211,6 +213,7 @@ tests:
       workflow: contract-first
       category: functional
       requiresApproval: no
+      smoke: true
     assert: *functional_asserts
   - description: functional / contract-first / contract-first-02
     vars:
@@ -283,6 +286,7 @@ tests:
       workflow: discovery
       category: functional
       requiresApproval: no
+      smoke: true
     assert: *functional_asserts
   - description: functional / discovery / discovery-02
     vars:
@@ -331,6 +335,7 @@ tests:
       workflow: monitoring
       category: functional
       requiresApproval: no
+      smoke: true
     assert: *functional_asserts
   - description: functional / monitoring / monitoring-02
     vars:
@@ -379,6 +384,7 @@ tests:
       workflow: tool-first
       category: functional
       requiresApproval: yes
+      smoke: true
     assert: *functional_asserts
   - description: functional / tool-first / tool-first-02
     vars:
@@ -427,6 +433,7 @@ tests:
       workflow: cct
       category: trigger-negative
       requiresApproval: yes
+      smoke: true
     assert: *trigger_negative_asserts
   - description: trigger-negative / cct / cct-neg-02
     vars:
@@ -571,6 +578,7 @@ tests:
       workflow: cct
       category: trigger-positive
       requiresApproval: yes
+      smoke: true
     assert: *trigger_positive_asserts
   - description: trigger-positive / cct / cct-02
     vars:
@@ -643,6 +651,7 @@ tests:
       workflow: contract-first
       category: trigger-positive
       requiresApproval: no
+      smoke: true
     assert: *trigger_positive_asserts
   - description: trigger-positive / contract-first / contract-first-02
     vars:
@@ -715,6 +724,7 @@ tests:
       workflow: monitoring
       category: trigger-positive
       requiresApproval: no
+      smoke: true
     assert: *trigger_positive_asserts
   - description: trigger-positive / monitoring / monitoring-02
     vars:
@@ -788,6 +798,7 @@ tests:
       workflow: tool-first
       category: functional
       requiresApproval: yes
+      smoke: true
     assert: *functional_asserts
   - description: functional / messy / messy-tool-first-02
     vars:
@@ -873,6 +884,7 @@ tests:
       workflow: tool-first
       category: trigger-negative
       requiresApproval: no
+      smoke: true
     assert: *trigger_negative_asserts
   - description: trigger-negative / near-miss / near-miss-bridge-02
     vars:

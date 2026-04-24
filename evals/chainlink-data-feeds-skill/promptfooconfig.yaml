@@ -53,6 +53,10 @@ tests:
       case_file: cases/functional/reading-price-feeds-01.txt
       workflow: reading-price-feeds
       requires_live_source: "yes"
+    metadata:
+      workflow: reading-price-feeds
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -78,6 +82,10 @@ tests:
       case_file: cases/functional/mvr-feeds-01.txt
       workflow: mvr-feeds
       requires_live_source: "no"
+    metadata:
+      workflow: mvr-feeds
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -91,6 +99,10 @@ tests:
       case_file: cases/functional/svr-feeds-01.txt
       workflow: svr-feeds
       requires_live_source: "no"
+    metadata:
+      workflow: svr-feeds
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   # ── Functional: Feed Types ───────────────────────────────────────────
@@ -105,6 +117,10 @@ tests:
       case_file: cases/functional/multi-chain-01.txt
       workflow: multi-chain
       requires_live_source: "no"
+    metadata:
+      workflow: multi-chain
+      category: functional
+      smoke: true
     assert: *functional_asserts
 
   - vars:
@@ -131,6 +147,10 @@ tests:
       case_file: cases/trigger-positive/reading-price-feeds-01.txt
       workflow: reading-price-feeds
       expected_trigger: "yes"
+    metadata:
+      workflow: reading-price-feeds
+      category: trigger-positive
+      smoke: true
     assert: *trigger_positive_asserts
 
   - vars:
@@ -143,6 +163,10 @@ tests:
       case_file: cases/trigger-positive/mvr-01.txt
       workflow: mvr-feeds
       expected_trigger: "yes"
+    metadata:
+      workflow: mvr-feeds
+      category: trigger-positive
+      smoke: true
     assert: *trigger_positive_asserts
 
   - vars:
@@ -180,12 +204,20 @@ tests:
       case_file: cases/trigger-negative/ccip-01.txt
       workflow: none
       expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/vrf-01.txt
       workflow: none
       expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
     assert: *trigger_negative_asserts
 
   - vars:
