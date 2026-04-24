@@ -1,3 +1,6 @@
 interface:
   display_name: "Chainlink CCIP Skill"
   short_description: "Help with Chainlink CCIP tasks"
+  icon_small: "./assets/chainlink-icon.png"
+  icon_large: "./assets/chainlink-icon.png"
+  brand_color: "#0847F7" # Chainlink Blue
