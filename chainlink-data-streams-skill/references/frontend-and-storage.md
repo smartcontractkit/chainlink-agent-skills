@@ -30,7 +30,7 @@ For candlesticks:
 - aggregate local report data only when the user explicitly wants local candles or the Candlestick API is unavailable
 - choose a common chart library that fits the repo, such as Lightweight Charts, Recharts, or the existing frontend stack
 
-The Candlestick API exposes history endpoints, row/column response formats, symbol/group discovery, and streaming price updates. Fetch the docs before relying on exact parameters.
+The Candlestick API exposes history endpoints, row/column response formats, symbol/group discovery, and streaming price updates. Use [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md) for public endpoint defaults, and fetch the docs before relying on exact parameters.
 
 ## SQLite Persistence
 

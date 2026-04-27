@@ -28,6 +28,8 @@ DATA_STREAMS_WS_URL=
 
 Map these to SDK-specific fields in the generated code. Never commit real secrets.
 
+For public endpoint defaults, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). Keep endpoint values configurable through environment variables even when using documented defaults.
+
 ## SDK Auth Defaults
 
 Prefer official SDKs for Go, Rust, and TypeScript. The SDKs handle REST and WebSocket authentication automatically, so generated code usually should not hand-roll HMAC signing.

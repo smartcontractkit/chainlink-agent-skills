@@ -25,8 +25,9 @@ Route Data Streams requests to the simplest valid path while keeping credentials
 5. Read [references/websocket-sdk.md](references/websocket-sdk.md) only when the user wants Go, Rust, or TypeScript code to stream reports through WebSockets, with or without High Availability mode.
 6. Read [references/onchain-verification.md](references/onchain-verification.md) only when the user wants EVM, Solana, or Stellar code that verifies Data Streams reports onchain, wants Chainlink Local mock testing for Data Streams verification, or wants review/debugging of verification code.
 7. Read [references/frontend-and-storage.md](references/frontend-and-storage.md) only when the user wants a real-time frontend, candlestick display, local SQLite persistence, or local report history tracking.
-8. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live Data Streams facts: current endpoint behavior, feed IDs, schema availability, deprecation status, SDK package versions, verifier addresses, supported networks, or current docs.
-9. Do not load reference files speculatively.
+8. Read [references/public-endpoints-and-addresses.md](references/public-endpoints-and-addresses.md) only when the user needs public REST/WebSocket/candlestick endpoint defaults, supported-network verifier proxy/program IDs, or an offline fallback for those public details.
+9. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live Data Streams facts: current endpoint behavior, feed IDs, schema availability, deprecation status, SDK package versions, verifier addresses, supported networks, or current docs.
+10. Do not load reference files speculatively.
 
 ## Routing
 
@@ -36,11 +37,12 @@ Route Data Streams requests to the simplest valid path while keeping credentials
 4. Use the WebSocket SDK path for low-latency real-time report streaming, reconnect behavior, report gaps, metrics, or High Availability mode.
 5. Use the onchain-verification path for EVM/Solidity, Solana/Rust, or Stellar/Soroban verification contracts/programs, and for Chainlink Local Data Streams simulator tests. Do not apply EVM patterns to Solana or Stellar.
 6. Use the frontend/storage path for charting apps, candlestick views, backend proxy patterns, local SQLite storage, and report tracking over time.
-7. For Streams Trade or Chainlink Automation-heavy requests, use Data Streams guidance for reports and verification, and use other relevant Chainlink or framework capabilities for Automation, CRE, frontend, testing, or repository-specific concerns.
-8. Ask one focused question if the language, target chain, environment, feed ID, schema version, or integration shape is missing and required for the next useful step.
-9. Proceed without approval only for read-only work such as explanation, discovery, code generation, local file edits, and local tests.
-10. Trigger the approval protocol before any action that could deploy contracts, submit transactions, register/configure automation, invoke onchain writes, or otherwise change blockchain state.
-11. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as frontend frameworks, databases, CRE/Automation, Solidity tooling, testing, or repo conventions.
+7. Use the public endpoints/address path when the user asks what REST URL, WebSocket URL, candlestick API URL, verifier proxy, Solana verifier program ID, or Stellar verifier contract to use.
+8. For Streams Trade or Chainlink Automation-heavy requests, use Data Streams guidance for reports and verification, and use other relevant Chainlink or framework capabilities for Automation, CRE, frontend, testing, or repository-specific concerns.
+9. Ask one focused question if the language, target chain, environment, feed ID, schema version, or integration shape is missing and required for the next useful step.
+10. Proceed without approval only for read-only work such as explanation, discovery, code generation, local file edits, and local tests.
+11. Trigger the approval protocol before any action that could deploy contracts, submit transactions, register/configure automation, invoke onchain writes, or otherwise change blockchain state.
+12. Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as frontend frameworks, databases, CRE/Automation, Solidity tooling, testing, or repo conventions.
 
 ## Safety Guardrails
 

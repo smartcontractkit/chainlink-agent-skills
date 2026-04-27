@@ -10,6 +10,8 @@ Use this file when the user wants real-time Data Streams reports over WebSocket,
 4. Backfill missed reports with REST if the application needs a complete time series.
 5. Expose metrics or logs for connection state, reconnects, and deduplication when generating long-running services.
 
+For default WebSocket endpoint domains, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). Keep endpoints configurable because HA support and environment availability can change.
+
 ## Standard Streaming
 
 Standard streaming is appropriate for:

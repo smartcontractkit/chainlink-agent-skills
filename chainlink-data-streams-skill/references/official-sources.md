@@ -57,10 +57,14 @@ URLs:
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api`
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-ws`
 
+Local fallback:
+- `references/public-endpoints-and-addresses.md`
+
 Use for:
 - REST endpoints for latest reports, timestamp lookups, bulk report queries, and paginated report history
 - WebSocket subscription parameters, payloads, and errors
 - testnet and mainnet endpoint domains
+- local public endpoint fallbacks when docs fetching is unavailable
 
 ### SDKs
 
@@ -80,14 +84,20 @@ Use for:
 URLs:
 - `https://docs.chain.link/data-streams/reference/data-streams-api/onchain-verification`
 - `https://docs.chain.link/data-streams/tutorials/evm-onchain-report-verification`
+- `https://docs.chain.link/data-streams/supported-networks`
+- `https://github.com/smartcontractkit/documentation/blob/main/src/features/feeds/data/StreamsNetworksData.ts`
 - `https://docs.chain.link/data-streams/tutorials/solana-onchain-report-verification`
 - `https://docs.chain.link/data-streams/tutorials/solana-offchain-report-verification`
 - `https://docs.chain.link/data-streams/tutorials/stellar-onchain-report-verification`
+
+Local fallback:
+- `references/public-endpoints-and-addresses.md`
 
 Use for:
 - verifier interfaces and current addresses
 - EVM, Solana, and Stellar verification flows
 - code generation and review for verification contracts/programs
+- local public verifier address fallbacks when docs fetching is unavailable
 
 ### Chainlink Local For Data Streams Tests
 
@@ -125,9 +135,9 @@ Use only to redirect users to official Chainlink contact channels. Do not expose
 
 1. For credentials or auth setup, start with the authentication page and prefer SDK-managed auth.
 2. For report decoding or schema properties, start with the report schema overview, then the language SDK docs.
-3. For REST latest/timestamp/history work, use the REST API docs plus the target language SDK.
-4. For WebSocket or HA work, use the WebSocket docs plus the target language SDK.
-5. For onchain verification, use the chain-specific verification tutorial and fetch current verifier addresses.
+3. For REST latest/timestamp/history work, use the REST API docs plus the target language SDK. Use the local public endpoint table only as a fallback or default example.
+4. For WebSocket or HA work, use the WebSocket docs plus the target language SDK. Use the local public endpoint table only as a fallback or default example.
+5. For onchain verification, use the chain-specific verification tutorial and fetch current verifier addresses. Use the local public verifier table only as an offline fallback and tell the user to re-check before deployment or transactions.
 6. For candlestick charts, use the Candlestick API docs and keep Data Streams credentials server-side.
 7. For billing questions, do not speculate. Direct the user to Chainlink.
 

@@ -6,7 +6,7 @@ Use this file when the user wants Go, Rust, or TypeScript code to fetch Data Str
 
 1. Prefer the official SDK for the requested language.
 2. Ask one focused question if the user has not provided language, environment, or feed IDs and the answer depends on them.
-3. Use placeholders for credentials and endpoints.
+3. Use placeholders for credentials and keep endpoint values configurable. If the user asks for public defaults, use [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md).
 4. Keep generated code secret-safe and runnable.
 5. Add a short note about onchain verification when the report will secure value.
 
@@ -28,6 +28,10 @@ TypeScript:
 - Requires Node.js and TypeScript versions compatible with the current SDK docs.
 
 Always check the SDK repository for current package versions and method names before generating production-ready code.
+
+## Public REST Endpoint Defaults
+
+For default REST endpoint domains, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). The local fallback is useful for prototypes and examples, but production code should still keep endpoints in environment variables.
 
 ## REST Use Cases
 

@@ -11,6 +11,7 @@ Code generation and review are allowed. Any deployment, transaction submission, 
 - EVM
 - Minimal Solidity Verification Pattern
 - Chainlink Local Mock Testing
+- Public Verifier Address Fallback
 - Solana
 - Minimal Solana Anchor CPI Pattern
 - Stellar
@@ -23,6 +24,7 @@ Official sources:
 
 - `https://docs.chain.link/data-streams/reference/data-streams-api/onchain-verification`
 - `https://docs.chain.link/data-streams/tutorials/evm-onchain-report-verification`
+- `https://docs.chain.link/data-streams/supported-networks`
 - `https://github.com/smartcontractkit/chainlink-local`
 - `https://www.npmjs.com/package/@chainlink/local`
 
@@ -37,6 +39,8 @@ Expected pattern:
 7. use Chainlink Local for local mock tests before moving verification code to a testnet
 
 Generated Solidity should be minimal, explicit, and conservative. Do not bake in stale verifier addresses unless the user requested a specific network and live docs were checked.
+
+For public verifier proxy/program IDs, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). Treat that table as an offline fallback, not as permission to skip live verification before deployment or transactions.
 
 ### Minimal Solidity Verification Pattern
 
