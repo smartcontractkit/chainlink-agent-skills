@@ -89,6 +89,20 @@ Use for:
 - EVM, Solana, and Stellar verification flows
 - code generation and review for verification contracts/programs
 
+### Chainlink Local For Data Streams Tests
+
+URLs:
+- `https://github.com/smartcontractkit/chainlink-local`
+- `https://www.npmjs.com/package/@chainlink/local`
+- `https://github.com/smartcontractkit/chainlink-local/releases`
+
+Use for:
+- local Foundry, Hardhat, or Remix tests that mock Data Streams verification
+- `DataStreamsLocalSimulator.sol`, `MockReportGenerator.sol`, `MockVerifierProxy.sol`, and related package APIs
+- package-source examples that are not yet reflected in the official Data Streams docs
+
+Re-check package version and source files before relying on newly added simulator APIs. Known package-sourced Data Streams mock support includes `DataStreamsLocalSimulator`, `DataStreamsLocalSimulatorFork`, `MockReportGenerator`, `MockVerifier`, `MockVerifierProxy`, `MockFeeManager`, and billing-mode helpers such as `enableOffChainBilling()` and `enableOnChainBilling()`.
+
 ### Frontend and Candlestick Data
 
 URLs:
