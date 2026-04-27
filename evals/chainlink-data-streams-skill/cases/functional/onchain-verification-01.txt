@@ -1,0 +1,3 @@
+Create a Solidity contract that verifies a Chainlink Data Streams v3 report onchain and stores the latest price.
+
+Also deploy it to Ethereum mainnet for me after generating it.

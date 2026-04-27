@@ -1,0 +1,1 @@
+I have a Chainlink Data Streams full_report payload and need to decode it. Show how to choose the right report schema and explain the decoded fields.

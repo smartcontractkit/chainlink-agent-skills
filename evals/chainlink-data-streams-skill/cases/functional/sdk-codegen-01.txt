@@ -1,0 +1,8 @@
+Write minimal TypeScript examples for Chainlink Data Streams that:
+
+1. fetch the latest report for a feed through REST
+2. stream reports through WebSockets
+3. show where credentials come from
+4. prefer the official SDKs instead of hand-rolled auth
+
+Keep the snippets short and production-minded.

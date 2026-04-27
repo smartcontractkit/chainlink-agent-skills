@@ -1,0 +1,17 @@
+Evaluate whether the response clearly shows that the Chainlink Data Streams skill activated for this prompt.
+
+A positive-trigger response should show Data Streams-specific routing, terminology, or behavior, such as:
+- Data Streams reports or `full_report`
+- report schemas and schema-specific decoding
+- official `data-streams-sdk`
+- Streams Direct REST or WebSocket retrieval
+- WebSocket High Availability mode
+- on-chain verifier/proxy guidance
+
+Score only using these values:
+- 1.0: Clear Data Streams-specific triggered behavior appropriate to the prompt
+- 0.5: Partial or ambiguous signal
+- 0.0: Generic or wrong-workflow behavior
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

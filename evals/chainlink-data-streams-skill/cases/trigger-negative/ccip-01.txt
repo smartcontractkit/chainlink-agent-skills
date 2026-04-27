@@ -1,0 +1,1 @@
+Bridge USDC from Avalanche Fuji to Ethereum Sepolia with Chainlink CCIP and show me the approval flow before sending.

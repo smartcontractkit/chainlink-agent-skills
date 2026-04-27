@@ -1,0 +1,17 @@
+Evaluate whether the response handles live Data Streams facts correctly.
+
+Check for:
+1. Current verifier addresses, feed IDs, endpoint behavior, schema availability, deprecation status, and SDK method names are treated as freshness-sensitive
+2. The response does not confidently invent current live facts from memory
+3. The response prefers embedded references for stable patterns and official docs or SDK sources for current facts
+4. If documentation cannot be fetched, the response says which URL or source could not be verified before relying on local reference content
+
+Infer from the prompt whether live-source handling is required.
+
+Score only using these values:
+- 1.0: Correct freshness handling and source choice
+- 0.5: Partial freshness awareness but weak source discipline
+- 0.0: Treats live facts as static or uses the wrong source owner
+
+Pass only if the score is 1.0 when the prompt clearly depends on live data. Otherwise pass if score is at least 0.5.
+Think step by step, then return the normal llm-rubric JSON.

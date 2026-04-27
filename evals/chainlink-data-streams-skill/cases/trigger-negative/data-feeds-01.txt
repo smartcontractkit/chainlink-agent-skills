@@ -1,0 +1,1 @@
+Build a Solidity consumer for the ETH/USD Chainlink Data Feed on Base. Use AggregatorV3Interface and include the normal staleness and sequencer checks.

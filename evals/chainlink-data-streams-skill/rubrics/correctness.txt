@@ -1,0 +1,19 @@
+Evaluate whether the response routes to and executes the correct Chainlink Data Streams workflow.
+
+Workflow definitions:
+- credentials: access request process, API key setup, authentication, and billing redirection
+- sdk-codegen: REST or WebSocket retrieval with official Go, Rust, or TypeScript SDKs
+- onchain-verification: EVM, Solana, or Stellar verification contracts/programs and Chainlink Local mock tests
+- report-decoding: schema selection, raw report decoding, and field explanation
+- websocket-ha: WebSocket streaming with High Availability mode, deduplication, reconnects, and metrics
+- none: should not trigger Data Streams-specific behavior
+
+Expected workflow: {{workflow}}
+
+Score only using these values:
+- 1.0: Correct workflow with correct execution strategy
+- 0.5: Partially correct workflow or mixed workflow ownership
+- 0.0: Wrong workflow or materially wrong execution path
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.
