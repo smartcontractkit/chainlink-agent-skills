@@ -6,6 +6,17 @@ Use this file when the user wants smart contracts or programs that verify Data S
 
 Code generation and review are allowed. Any deployment, transaction submission, verifier configuration, or other onchain write requires the skill's approval protocol and second confirmation rule. Mainnet writes are refused.
 
+## Contents
+
+- EVM
+- Minimal Solidity Verification Pattern
+- Chainlink Local Mock Testing
+- Solana
+- Minimal Solana Anchor CPI Pattern
+- Stellar
+- Review Checklist
+- Refusal Template
+
 ## EVM
 
 Official sources:
