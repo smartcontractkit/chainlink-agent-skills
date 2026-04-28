@@ -10,6 +10,7 @@ Official Repo for Chainlink skills. Each skill follows the [Agent Skills specifi
 | [chainlink-cre-skill](chainlink-cre-skill/) | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations |
 | [chainlink-ccip-skill](chainlink-ccip-skill/) | CCIP sends, contracts, local testing, monitoring, discovery, and CCT workflows |
 | [chainlink-data-feeds-skill](chainlink-data-feeds-skill/) | Data Feeds contracts, multi-chain Data Feeds integration |
+| [chainlink-data-streams-skill](chainlink-data-streams-skill/) | Data Streams REST/WebSocket SDKs, report decoding, on-chain verification, and real-time frontend apps |
 
 
 ## Install
@@ -33,6 +34,7 @@ Note the use of `--skill` to specify which specific skill to install.
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-cre-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-ccip-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-data-feeds-skill -g
+npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-data-streams-skill -g
 ```
 
 ## Use

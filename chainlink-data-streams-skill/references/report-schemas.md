@@ -61,7 +61,7 @@ Basic benchmark-price report with validity and fee fields.
 | `nativeFee` | `uint192` | Native-token verification fee. |
 | `linkFee` | `uint192` | LINK verification fee. |
 | `expiresAt` | `uint32` | Expiration timestamp in seconds. |
-| `benchmarkPrice` | `int192` | Consensus benchmark price. |
+| `benchmarkPrice` / `price` / `benchmark_price` | `int192` | Consensus benchmark price. Use `benchmarkPrice` / `BenchmarkPrice` in Go, `price` in TypeScript, and `benchmark_price` in Rust. |
 
 ### v3
 
@@ -75,7 +75,7 @@ Crypto Advanced report.
 | `nativeFee` | `uint192` | Native-token verification fee. |
 | `linkFee` | `uint192` | LINK verification fee. |
 | `expiresAt` | `uint32` | Expiration timestamp in seconds. |
-| `benchmarkPrice` | `int192` | Consensus benchmark price. |
+| `benchmarkPrice` / `price` / `benchmark_price` | `int192` | Consensus benchmark price. Use `benchmarkPrice` / `BenchmarkPrice` in Go, `price` in TypeScript, docs, and EVM examples, and `benchmark_price` in Rust. |
 | `bid` | `int192` | Bid-side price estimate. |
 | `ask` | `int192` | Ask-side price estimate. |
 
@@ -91,7 +91,7 @@ Benchmark-price report with market status.
 | `nativeFee` | `uint192` | Native-token verification fee. |
 | `linkFee` | `uint192` | LINK verification fee. |
 | `expiresAt` | `uint32` | Expiration timestamp in seconds. |
-| `benchmarkPrice` | `int192` | Consensus benchmark price. |
+| `benchmarkPrice` / `price` | `int192` | Consensus benchmark price. Use `benchmarkPrice` / `BenchmarkPrice` in Go and `price` in TypeScript, docs, Rust, and EVM examples. |
 | `marketStatus` | `uint32` | Market state signal. |
 
 ### v5
