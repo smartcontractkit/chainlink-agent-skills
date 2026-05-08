@@ -1,6 +1,6 @@
 # Chainlink Agent Skills
 
-Official Repo for Chainlink skills. Each skill follows the [Agent Skills specification](https://agentskills.io/specification).
+Official Repo for Chainlink coding skills. Each skill follows the [Agent Skills specification](https://agentskills.io/specification).
 
 ## Available Skills
 
@@ -22,7 +22,7 @@ npx skills add smartcontractkit/chainlink-agent-skills
 ```
 
 <p align="center">
-<img width="75%" alt="npx skills add" src="https://github.com/user-attachments/assets/4edcf29c-f34a-4e56-90de-ec5e92deee1a" />
+<img width="75%" alt="npx skills add smartcontractkit/chainlink-agent-skills" src="https://github.com/user-attachments/assets/6345c13f-e0c1-43e9-a039-a188027f4746" />
 </p>
 
 But if you want to install globally (at the user level) then add the `-g` flag.
@@ -42,30 +42,17 @@ npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-vrf-ski
 
 When your agent supports Agent Skills, it will discover and activate these skills based on the task. **However** we recommend that you explicitly invoke the skill in your agent chat sessions as follows:
 
-```text
-Using the /chainlink-data-feeds-skill, develop a Solidity contract that:
 
-- reads the ETH/USD Chainlink price feed on Ethereum mainnet
-- is structured as a Foundry project
-- handles required package installation and project setup
-- includes proper validation
-- follows security best practices
+```text
+Using /chainlink-data-feeds-skill, /chainlink-cre-skill, and /chainlink-ccip-skill, build a tokenized fund project that:
+
+- delivers data (NAV, yields and ESG attestations) securely on-chain
+- mints fund tokens representing shares in a tokenized investment fund
+- uses Chainlink Proof of Reserve by CRE for real-time verification of reserved assets
+- can be traded and settled seamlessly across multiple public and private chains
+- has a clean, modern UI dashboard
+
+Create a development plan. Include steps for testing on testnets. Make sure README has instructions on how to run local CRE simulations and how to monitor status of cross-chain transfers using the CCIP CLI.
 
 Any questions before you start?
 ```
-
-## Evaluate And Improve Skills
-
-This repo includes two local eval paths:
-
-- `evals/run-agent-eval.md` runs smoke/full evals through agent subagents without API keys.
-- `evals/run-agent-ab-test.md` compares baseline responses against skill-enabled responses using subagents, then aggregates wins, ties, regressions, and recommended skill changes.
-
-For example:
-
-```text
-Run an agent A/B test for chainlink-cre-skill using mixed-chainlink
-Improve chainlink-cre-skill using agent A/B tests
-```
-
-The A/B workflow is useful in Cursor, Codex, Gemini CLI, and similar tools because it spends local agent/subagent budget instead of external model API keys.
