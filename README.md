@@ -44,7 +44,8 @@ When your agent supports Agent Skills, it will discover and activate these skill
 
 
 ```text
-Using /chainlink-data-feeds-skill, /chainlink-cre-skill, and /chainlink-ccip-skill, build a tokenized fund project that:
+Using /chainlink-data-feeds-skill, /chainlink-cre-skill, and /chainlink-ccip-skill, 
+build a tokenized fund project that:
 
 - delivers data (NAV, yields and ESG attestations) securely on-chain
 - mints fund tokens representing shares in a tokenized investment fund
@@ -52,7 +53,9 @@ Using /chainlink-data-feeds-skill, /chainlink-cre-skill, and /chainlink-ccip-ski
 - can be traded and settled seamlessly across multiple public and private chains
 - has a clean, modern UI dashboard
 
-Create a development plan. Include steps for testing on testnets. Make sure README has instructions on how to run local CRE simulations and how to monitor status of cross-chain transfers using the CCIP CLI.
+Create a development plan. Include steps for testing on testnets. 
+Make sure README has instructions on how to run local CRE simulations and 
+how to monitor status of cross-chain transfers using the CCIP CLI.
 
 Any questions before you start?
 ```
