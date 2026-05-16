@@ -1,4 +1,4 @@
-# Chainlink Agent Skills
+# Chainlink Developer Agent Skills
 
 Official Repo for Chainlink coding skills. Each skill follows the [Agent Skills specification](https://agentskills.io/specification).
 
@@ -22,7 +22,7 @@ npx skills add smartcontractkit/chainlink-agent-skills
 ```
 
 <p align="center">
-<img width="75%" alt="npx skills add smartcontractkit/chainlink-agent-skills" src="https://github.com/user-attachments/assets/6345c13f-e0c1-43e9-a039-a188027f4746" />
+<img width="75%" alt="npx skills add smartcontractkit/chainlink-agent-skills" src="https://github.com/user-attachments/assets/2f4fbecb-be53-47d6-9f5a-7cb32979eb72" />
 </p>
 
 But if you want to install globally (at the user level) then add the `-g` flag.
