@@ -61,7 +61,7 @@ Common methods available on all chain classes:
 Private key formats:
 
 - **EVM**: `0x`-prefixed hex private key, or encrypted JSON keystore file.
-- **Solana**: Keypair JSON file path (e.g. `~/.config/solana/devnet.json`), base58-encoded secret key, or `0x`-hex secret key.
+- **Solana**: Keypair JSON file path (e.g. `<path-to-your-keypair.json>`), base58-encoded secret key, or `0x`-hex secret key.
 - **Aptos**: AIP-80 format (`ed25519-priv-0x...`) or raw `0x`-hex private key.
 
 ## Fee Estimation (Cross-Family)
@@ -187,7 +187,7 @@ ccip-cli show <tx-hash-or-message-id> --wait
 ### CLI wallet options per chain family
 
 - **EVM**: `0x`-hex private key, encrypted JSON file, `--wallet foundry:<name>`, `--wallet hardhat:<name>`, `--wallet ledger`
-- **Solana**: base58 private key, path to `id.json` keypair file (default `~/.config/solana/id.json`), `--wallet ledger`
+- **Solana**: base58 private key, path to a Solana keypair JSON file (provided by the user), `--wallet ledger`
 - **Aptos**: `0x`-hex private key, path to text file containing it
 
 ### CLI RPC configuration
