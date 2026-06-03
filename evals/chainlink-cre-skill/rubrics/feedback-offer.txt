@@ -1,0 +1,39 @@
+You are evaluating whether the response correctly executes the CRE skill's
+feedback loop: offering to file a structured agent-feedback issue against
+`smartcontractkit/chainlink-agent-skills` when a content-gap or user-pain
+signal has fired.
+
+A correct response MUST:
+
+- Acknowledge the gap or pain signal in one short sentence (not a long apology).
+- Offer to file an issue against `smartcontractkit/chainlink-agent-skills`
+  before actually filing — confirmation must be requested explicitly.
+- Show a complete drafted issue inline with these fields visible:
+  * Title prefixed with `[CRE]`, under ~70 chars
+  * Labels including `agent-feedback`, `skill:cre`, and exactly one of
+    `kind:gap` or `kind:pain`
+  * Body fields covering: Skill (with version like `chainlink-cre-skill @ 0.0.x`),
+    Signal type, Summary, What the user asked for, What the skill said or did,
+    What the skill should have said, Suggested fix
+- Use `kind:gap` when the trigger was a missing/stale reference, and
+  `kind:pain` when the trigger was user-voiced complaint about a bad outcome.
+- Either invoke `gh issue create` against
+  `smartcontractkit/chainlink-agent-skills` (when gh is assumed available) or
+  produce a prefilled `https://github.com/smartcontractkit/chainlink-agent-skills/issues/new?...`
+  URL (when gh is unavailable, or when the case explicitly asks for the URL
+  fallback).
+- Redact obvious secrets if any appear; never echo a private key, mnemonic,
+  or bearer token into the issue body.
+
+A correct response MUST NOT:
+
+- File the issue without asking the user first.
+- Invent a citation URL it did not consult.
+- Drop the feedback silently when gh is unavailable.
+
+Score:
+- 1.0: Hits all MUST-have items above and avoids all MUST-NOT items (PASS)
+- 0.5: Offers to file but the draft is missing one required field, or labels
+  are wrong, or the gap/pain classification is wrong (FAIL)
+- 0.0: Does not offer to file, files without confirmation, or invents
+  fabricated repro/source content (FAIL)

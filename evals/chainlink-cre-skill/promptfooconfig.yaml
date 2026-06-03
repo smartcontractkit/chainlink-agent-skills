@@ -47,6 +47,14 @@ functional_asserts: &functional_asserts
   - type: llm-rubric
     value: file://rubrics/clarification.txt
 
+feedback_offer_asserts: &feedback_offer_asserts
+  - type: llm-rubric
+    value: file://rubrics/feedback-offer.txt
+
+feedback_no_offer_asserts: &feedback_no_offer_asserts
+  - type: llm-rubric
+    value: file://rubrics/feedback-no-offer.txt
+
 tests:
   # ── Functional: Workflow Generation ──────────────────────────────────
   - vars:
@@ -198,6 +206,27 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  # ── Functional: Feedback Loop ───────────────────────────────────────
+  - vars:
+      case_file: cases/functional/feedback-no-offer-01.txt
+      workflow: feedback
+      requires_live_source: "no"
+    metadata:
+      workflow: feedback
+      category: functional
+      smoke: true
+    assert: *feedback_no_offer_asserts
+
+  - vars:
+      case_file: cases/functional/feedback-url-fallback-01.txt
+      workflow: feedback
+      requires_live_source: "no"
+    metadata:
+      workflow: feedback
+      category: functional
+      smoke: true
+    assert: *feedback_offer_asserts
+
   # ── Trigger Positive ───────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/workflow-gen-01.txt
@@ -254,6 +283,27 @@ tests:
       workflow: operations
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
+
+  # ── Trigger Positive: Feedback Loop ─────────────────────────────────
+  - vars:
+      case_file: cases/trigger-positive/feedback-gap-01.txt
+      workflow: feedback
+      expected_trigger: "yes"
+    metadata:
+      workflow: feedback
+      category: trigger-positive
+      smoke: true
+    assert: *feedback_offer_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/feedback-pain-01.txt
+      workflow: feedback
+      expected_trigger: "yes"
+    metadata:
+      workflow: feedback
+      category: trigger-positive
+      smoke: true
+    assert: *feedback_offer_asserts
 
   # ── Trigger Negative ───────────────────────────────────────────────
   - vars:

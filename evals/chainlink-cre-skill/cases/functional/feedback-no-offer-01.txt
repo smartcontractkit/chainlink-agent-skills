@@ -1,0 +1,1 @@
+How do I set up a CRON-triggered CRE workflow in TypeScript that runs every 30 seconds and writes the current timestamp to an EVM contract on Base Sepolia? Walk me through the trigger, the handler, and the EVM write.

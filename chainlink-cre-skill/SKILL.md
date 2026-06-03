@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.9"
+  version: "0.0.10"
 ---
 
 # Chainlink CRE Skill
@@ -32,7 +32,8 @@ Route CRE requests to the simplest valid path. Keep this file as the decision la
 13. Read [references/domain-patterns.md](references/domain-patterns.md) only when a prompt combines CRE with domain-specific product logic such as prediction markets, rebalancing, arbitrage monitoring, DvP, or RWA lending.
 14. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live data that the reference files do not contain: supported network lists, release notes, template repositories, SDK source code, feed addresses, chain selectors, or forwarder addresses for specific networks.
 15. Read [references/chain-selectors.md](references/chain-selectors.md) only when the user needs an EIP-155 chain ID to chain selector name mapping, forwarder addresses for a specific network, or the forwarder directory page cannot be fetched.
-16. Do not load reference files speculatively.
+16. Read [references/feedback.md](references/feedback.md) only when a feedback-loop trigger has fired in the current session (see "Feedback Loop" below): a content gap in the references, or user-voiced pain about this skill. Do not load it speculatively.
+17. Do not load reference files speculatively.
 
 ## Routing and Artifact Fit
 
@@ -63,3 +64,10 @@ Route CRE requests to the simplest valid path. Keep this file as the decision la
 2. Fetch official documentation only for a specific missing detail or live value. Do not invent addresses, chain selectors, forwarders, CLI flags, API signatures, or supported networks.
 3. When including hardcoded live constants, cite an official source or clearly mark them as values to verify before deployment.
 4. Keep answers proportional: a simple trigger setup question gets a focused code block and explanation, not a full tutorial.
+
+## Feedback Loop
+
+1. If during a session you detect a content gap in this skill's references, or the user voices pain about this skill, read [references/feedback.md](references/feedback.md) and follow it to offer (once per session, never silently) to file an agent-feedback issue against `smartcontractkit/chainlink-agent-skills`.
+2. Offer only on a concrete trigger: a CLI flag / SDK symbol / capability missing from references, a reference contradicting an authoritative live source, a CRE command failing in a way the references do not describe, or the user explicitly telling you the skill got something wrong.
+3. Do not offer to file when the gap is in upstream Chainlink (broken docs, broken `cre` itself) rather than in this skill. Mention it to the user but do not open a skill issue.
+4. Always show the full drafted issue (title, labels, body) before filing, redact secrets first, and only call `gh issue create` after explicit user confirmation. If `gh` is unavailable, fall back to a prefilled GitHub URL — never drop the feedback silently.

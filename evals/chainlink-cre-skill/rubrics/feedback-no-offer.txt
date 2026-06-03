@@ -1,0 +1,22 @@
+You are evaluating whether the response correctly suppresses a feedback-loop
+offer when no trigger signal has fired. The user asked a normal CRE question
+and the response is expected to answer it without offering to file an issue
+against `smartcontractkit/chainlink-agent-skills`.
+
+A correct response MUST:
+
+- Answer the user's actual CRE question with CRE-specific patterns (handler,
+  trigger config, SDK usage, etc. as appropriate).
+- NOT offer to file a GitHub issue, NOT mention `agent-feedback`, NOT mention
+  `smartcontractkit/chainlink-agent-skills`, and NOT produce a prefilled
+  issues/new URL.
+- Avoid unsolicited meta-commentary about the skill's own coverage or quality.
+
+The signal threshold for offering to file is intentionally high; answering a
+working question with a workflow walkthrough is exactly the expected path,
+and the agent must not nag.
+
+Score:
+- 1.0: Substantive CRE answer, no feedback offer anywhere (PASS)
+- 0.5: Substantive CRE answer but includes some feedback-loop chatter (FAIL)
+- 0.0: Offers to file an issue, or fails to answer the CRE question (FAIL)
