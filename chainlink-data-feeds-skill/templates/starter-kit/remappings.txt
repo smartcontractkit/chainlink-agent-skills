@@ -1,0 +1,2 @@
+@chainlink/=lib/chainlink-evm/
+forge-std/=lib/forge-std/src/
