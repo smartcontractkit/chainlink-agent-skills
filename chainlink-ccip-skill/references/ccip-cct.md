@@ -20,7 +20,7 @@ Do not use this workflow for generic sender/receiver contracts, plain route disc
 2. If the user wants the fastest no-code or low-code path, prefer Token Manager first.
 3. If the user is already in a Hardhat or Foundry repo, stay in that framework and use the matching official tutorial path.
 4. If no framework is established and the user wants a code path, default to the simplest official registration tutorial path.
-5. Require explicit approval before every state-changing step.
+5. Prepare each state-changing step as a user-run artifact. Do not execute, sign, broadcast, deploy, register, configure, approve, mint, or burn from agent tools.
 
 Reference points:
 
@@ -34,7 +34,7 @@ Reference points:
 
 ## Core Decisions
 
-Clarify these before proposing execution:
+Clarify these before preparing user-run artifacts:
 
 1. Is the token new or existing?
 2. Does the user want a no-code or low-code path through Token Manager, or a repo-based code path?
@@ -67,9 +67,9 @@ Ask only the missing questions needed for the next safe step.
 
 ### Step 4: Register and configure
 
-1. Break the workflow into separate user-approved steps.
-2. Present one preflight summary per state-changing step.
-3. After each step, verify the result before proposing the next step.
+1. Break the workflow into separate user-run steps.
+2. Present one non-custodial preflight package per state-changing step.
+3. After the user runs each step, verify the result before preparing the next step.
 4. Treat rate-limit changes as a distinct administrative step, not as a silent default.
 5. Treat additional-network configuration as a distinct step, not as a silent default.
 
@@ -94,4 +94,4 @@ Ask only the missing questions needed for the next safe step.
 2. Refuse to collapse multiple CCT admin steps into a single implicit action.
 3. Refuse to guess burn-and-mint vs lock-and-mint when the token control model is unclear.
 4. Refuse to proceed when required ownership or admin permissions are not established.
-
+5. Refuse to execute state-changing CCT actions or handle wallet credentials from agent tools.

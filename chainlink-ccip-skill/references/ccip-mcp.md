@@ -12,7 +12,7 @@ Use this workflow for requests like:
 - "Read my CCIP token balance on this chain."
 - "Get the fee estimate for this transfer using the SDK."
 
-Do not use this workflow when the MCP server is not connected. Fall back to direct CLI or SDK usage from [ccip-tools.md](ccip-tools.md) instead.
+Do not use this workflow when the MCP server is not connected. Fall back to read-only direct CLI or SDK guidance from [ccip-tools.md](ccip-tools.md) instead.
 
 ## MCP Server
 
@@ -22,7 +22,7 @@ Do not use this workflow when the MCP server is not connected. Fall back to dire
 
 ## ccip_sdk Tool
 
-Unified CCIP SDK tool. For message status lookups, use the `messageId` or `sourceTxHash` shortcut fields — these bypass `target`/`method` dispatch and always return a standardized response. For all other operations, use `target='api'` for `CCIPAPIClient` calls (lane latency, discovery) or `target='chain'` for on-chain reads via RPC (balances, fees). Provide method name and args array. For chain calls, include `family` and `rpcUrl`. Use strings for large integers (chain selectors) to avoid precision loss. Set `listMethods=true` to discover available methods.
+Unified CCIP SDK tool. Use it only for read-only operations. For message status lookups, use the `messageId` or `sourceTxHash` shortcut fields; these bypass `target`/`method` dispatch and always return a standardized response. For all other operations, use `target='api'` for `CCIPAPIClient` calls (lane latency, discovery) or `target='chain'` for on-chain reads via RPC (balances, fees). Provide method name and args array. For chain calls, include `family` and `rpcUrl`. Use strings for large integers (chain selectors) to avoid precision loss. Set `listMethods=true` to discover available methods.
 
 ### Parameters
 
@@ -155,7 +155,7 @@ Use `target='chain'` with the chain family and an RPC URL. Discover methods firs
 3. Use `target='api'` for lane latency, discovery, and other API-backed queries.
 4. Use `target='chain'` for on-chain reads such as balances, fees, and contract state.
 5. Pass chain selectors as strings to avoid precision loss on large integers.
-6. If MCP is not connected or a call fails with a connection error, fall back to direct CLI or SDK invocation and follow [ccip-tools.md](ccip-tools.md).
+6. If MCP is not connected or a call fails with a connection error, fall back to read-only CLI/SDK guidance and follow [ccip-tools.md](ccip-tools.md).
 
 ## Error Handling
 
@@ -163,7 +163,7 @@ Use `target='chain'` with the chain family and an RPC URL. Discover methods firs
 
 If the `ccip_sdk` tool is not available or returns a connection error:
 1. Confirm the MCP server providing the `ccip_sdk` tool is connected in the host environment.
-2. Fall back to direct CLI or SDK usage from [ccip-tools.md](ccip-tools.md).
+2. Fall back to read-only CLI/SDK guidance from [ccip-tools.md](ccip-tools.md).
 
 ### Invalid parameters
 
@@ -196,7 +196,7 @@ When a user asks about non-EVM CCIP operations through MCP:
 
 ## Refusal Rules
 
-1. All safety guardrails, approval protocols, and mainnet-write restrictions from the main skill file still apply when using MCP tools.
-2. Do not treat MCP tool availability as a bypass for the approval or second-confirmation requirements.
-3. If the MCP tool would execute a side-effecting action, require the same approval flow as direct CLI or SDK execution.
-
+1. All safety guardrails, non-custodial action protocols, and mainnet-write restrictions from the main skill file still apply when using MCP tools.
+2. Do not treat MCP tool availability as a bypass for the non-custodial execution boundary.
+3. If the MCP tool method would execute a side-effecting action, do not call it. Offer a command template, unsigned transaction data, tests, or code for the user to run outside the agent runtime.
+4. Do not pass wallet credentials, wallet file paths, keystore data, signing material, or secret environment values to MCP tools.

@@ -1,6 +1,6 @@
 # CCIP SDK Examples
 
-Use this file for tool-first workflows that involve the CCIP TypeScript SDK (`@chainlink/ccip-sdk`). These examples are based on the official SDK documentation and the [ccip-sdk-examples](https://github.com/smartcontractkit/ccip-sdk-examples) repo.
+Use this file for tool-first workflows that involve the CCIP TypeScript SDK (`@chainlink/ccip-sdk`). These examples are based on the official SDK documentation and the [ccip-sdk-examples](https://github.com/smartcontractkit/ccip-sdk-examples) repo. Keep signing and broadcasting outside the agent runtime.
 
 When documentation-fetching tools are available, verify these patterns against the latest SDK docs at `https://docs.chain.link/ccip/tools/sdk/`. When they are not, use these as the authoritative starting point.
 
@@ -92,16 +92,14 @@ const fee = await source.getFee({
 });
 ```
 
-## Send a Cross-Chain Message
+## Prepare a Cross-Chain Message
 
-Send a message with optional token transfers. Requires a wallet.
+Prepare a message with optional token transfers. Signing and broadcasting require a user-controlled wallet outside the agent runtime.
 
 ```typescript
 import { EVMChain, networkInfo } from "@chainlink/ccip-sdk";
-import { Wallet } from "ethers";
 
 const source = await EVMChain.fromUrl("https://ethereum-sepolia-rpc.publicnode.com");
-const wallet = new Wallet("YOUR_PRIVATE_KEY", source.provider);
 
 const router = "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59";
 const destChainSelector = networkInfo("ethereum-testnet-sepolia-base-1").chainSelector;
@@ -116,7 +114,8 @@ const fee = await source.getFee({
   },
 });
 
-const request = await source.sendMessage({
+const unsignedTx = await source.generateUnsignedSendMessage({
+  sender: "0xYourWalletAddress",
   router,
   destChainSelector,
   message: {
@@ -125,11 +124,9 @@ const request = await source.sendMessage({
     extraArgs: { gasLimit: 200_000n, allowOutOfOrderExecution: true },
     fee,
   },
-  wallet,
 });
 
-console.log("Transaction hash:", request.tx.hash);
-console.log("Message ID:", request.message.messageId);
+console.log("Unsigned transaction data:", unsignedTx);
 ```
 
 ## Track a Message from a Transaction
@@ -224,9 +221,15 @@ if (tokenConfig.tokenPool) {
 
 | Chain | Wallet Type | Example |
 |-------|-------------|---------|
-| EVM | `ethers.Signer` | `new Wallet(privateKey, provider)` |
-| Solana | `anchor.Wallet` | `new Wallet(Keypair.fromSecretKey(...))` |
-| Aptos | `aptos.Account` | `Account.fromPrivateKey(...)` |
+| EVM | User-controlled signer | Browser wallet, hardware wallet, or external signer |
+| Solana | User-controlled signer | Wallet adapter, hardware wallet, or external signer |
+| Aptos | User-controlled signer | Wallet adapter, hardware wallet, or external signer |
+
+Credential handling rules:
+
+1. Do not ask the user to paste wallet credentials, signing material, or wallet JSON.
+2. Do not read local credential files or secret environment variables.
+3. Prefer unsigned transaction generation, browser wallets, hardware wallets, or external signers.
 
 ## Unsigned Transactions
 
@@ -244,8 +247,8 @@ const unsignedTx = await source.generateUnsignedSendMessage({
 // Solana: iterate unsignedTx.instructions
 // Aptos: iterate unsignedTx.transactions (BCS-encoded)
 for (const tx of unsignedTx.transactions) {
-  const signed = await customSigner.sign(tx);
-  await customSender.broadcast(signed);
+  // Sign and broadcast outside the agent runtime with a user-controlled wallet.
+  await handOffToUserControlledSigner(tx);
 }
 ```
 
@@ -299,16 +302,17 @@ const result = await withRetry(() => apiClient.getMessageById(messageId), {
 });
 ```
 
-## Workflow: Complete Token Transfer
+## Workflow: Prepare Token Transfer
 
-Full sequence from fee check through send and status verification:
+Non-custodial sequence from fee check through user-run execution and status verification:
 
 1. `chain.getFee(...)` -- estimate cost and present to user
-2. `chain.sendMessage(...)` -- execute the transfer (SDK handles token approval internally)
-3. `chain.getMessagesInTx(tx.hash)` -- extract message ID from the transaction
-4. `CCIPAPIClient.getMessageById(messageId)` -- poll destination for delivery status
+2. `chain.generateUnsignedSendMessage(...)` -- prepare unsigned transaction data for the user
+3. User signs and broadcasts from their own wallet-controlled environment
+4. `chain.getMessagesInTx(tx.hash)` -- extract message ID from the user-provided transaction hash
+5. `CCIPAPIClient.getMessageById(messageId)` -- poll destination for delivery status
 
-Each step should complete before starting the next. Present the fee to the user before proceeding to execution.
+Each step should complete before starting the next. Present the fee and unsigned/user-run artifact to the user; do not execute the transfer from agent tools.
 
 ## Quick Reference
 
@@ -317,10 +321,10 @@ Each step should complete before starting the next. Present the fee to the user 
 | Connect to chain | `EVMChain.fromUrl(rpcUrl)` |
 | Get chain selector | `networkInfo(networkId).chainSelector` |
 | Estimate fee | `chain.getFee({ router, destChainSelector, message })` |
-| Send message | `chain.sendMessage({ router, destChainSelector, message, wallet })` |
+| Prepare message | `chain.generateUnsignedSendMessage({ sender, router, destChainSelector, message })` |
 | Track from tx | `chain.getMessagesInTx(txHash)` |
 | Check status | `new CCIPAPIClient().getMessageById(messageId)` |
-| Manual execution | `dest.execute({ messageId, wallet })` |
+| Manual execution | Prepare user-run instructions only |
 | Lane features | `chain.getLaneFeatures({ router, destChainSelector })` |
 | List tokens | `chain.getSupportedTokens(registryAddress)` |
 | Token info | `chain.getTokenInfo(tokenAddress)` |

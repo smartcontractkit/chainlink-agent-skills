@@ -1,6 +1,6 @@
 # CCIP Non-EVM Chains
 
-Use this file when the user wants to work with CCIP on Solana, Aptos, Sui, TON, or any non-EVM chain family. This covers SDK usage, CLI operations, wallet setup, architectural differences, and official tutorial links.
+Use this file when the user wants to work with CCIP on Solana, Aptos, Sui, TON, or any non-EVM chain family. This covers SDK usage, CLI command templates, non-custodial wallet guidance, architectural differences, and official tutorial links.
 
 Do not apply EVM-specific patterns (Solidity contracts, Foundry/Hardhat setup, Chainlink Local, OpenZeppelin imports) to non-EVM chains. Contract development on non-EVM chains uses chain-native languages and tooling.
 
@@ -42,27 +42,31 @@ Common methods available on all chain classes:
 | Method | Description |
 |--------|-------------|
 | `chain.getFee(...)` | Estimate transfer fee |
-| `chain.sendMessage(...)` | Send cross-chain message |
+| `chain.generateUnsignedSendMessage(...)` | Prepare unsigned message transaction data |
+| `chain.sendMessage(...)` | Send cross-chain message; user-controlled runtime only, not agent tools |
 | `chain.getMessagesInTx(...)` | Extract CCIP messages from a transaction |
 | `chain.getTokenInfo(...)` | Get token metadata (symbol, decimals) |
 | `chain.getBalance(...)` | Get native or token balance |
 | `chain.getSupportedTokens(...)` | List registered tokens |
 | `chain.getTokenAdminRegistryFor(...)` | Get token registry address |
-| `chain.execute(...)` | Manually execute a message |
+| `chain.execute(...)` | Manually execute a message; user-controlled runtime only, not agent tools |
 
-## Wallet Setup by Chain Family
+## Non-Custodial Wallet Guidance
+
+Wallets and signing must stay outside the agent runtime. The agent can explain supported signer types, generate unsigned transaction data, and prepare command templates, but must not read wallet credential files, signing material, keystores, or secret environment files. Do not reproduce default local credential paths from external docs; use placeholders such as `<path-to-user-managed-wallet>` when a file path is unavoidable.
 
 | Chain | Wallet Type | Source | Example |
 |-------|-------------|--------|---------|
-| EVM | `ethers.Signer` | ethers.js v6 | `new Wallet(privateKey, provider)` |
-| Solana | `anchor.Wallet` | @coral-xyz/anchor | `new Wallet(Keypair.fromSecretKey(...))` |
-| Aptos | `aptos.Account` | @aptos-labs/ts-sdk | `Account.fromPrivateKey(...)` |
+| EVM | User-controlled signer | ethers.js v6 or browser wallet | Browser wallet, hardware wallet, or external signer |
+| Solana | User-controlled signer | wallet adapter, Anchor, or hardware wallet | Wallet adapter, hardware wallet, or external signer |
+| Aptos | User-controlled signer | Aptos wallet adapter or hardware wallet | Wallet adapter, hardware wallet, or external signer |
 
-Private key formats:
+Credential handling rules:
 
-- **EVM**: `0x`-prefixed hex private key, or encrypted JSON keystore file.
-- **Solana**: Keypair JSON file path (e.g. `<path-to-your-keypair.json>`), base58-encoded secret key, or `0x`-hex secret key.
-- **Aptos**: AIP-80 format (`ed25519-priv-0x...`) or raw `0x`-hex private key.
+- Do not ask the user to paste wallet credentials, signing material, or wallet JSON.
+- Do not read local credential files or secret environment variables, even if the user provides a path.
+- Prefer browser wallets, hardware wallets, or unsigned transaction generation.
+- If a CLI requires a wallet path or key argument, provide only a placeholder and tell the user to fill it in outside the agent.
 
 ## Fee Estimation (Cross-Family)
 
@@ -85,7 +89,9 @@ const fee = await source.getFee({
 });
 ```
 
-## Sending Cross-Chain Messages
+## Preparing Cross-Chain Messages
+
+Use unsigned transaction generation for agent-produced examples. The user signs and broadcasts from their own wallet-controlled environment.
 
 ### Solana to EVM
 
@@ -95,7 +101,8 @@ import { SolanaChain, networkInfo } from "@chainlink/ccip-sdk";
 const source = await SolanaChain.fromUrl("https://api.devnet.solana.com");
 const destSelector = networkInfo("ethereum-testnet-sepolia").chainSelector;
 
-const request = await source.sendMessage({
+const unsignedTx = await source.generateUnsignedSendMessage({
+  sender: "<user-solana-wallet-address>",
   router: "<solana-router-address>",
   destChainSelector: destSelector,
   message: {
@@ -104,10 +111,9 @@ const request = await source.sendMessage({
     extraArgs: { gasLimit: 0n },
     fee,
   },
-  wallet: solanaWallet,
 });
 
-console.log("Message ID:", request.message.messageId);
+console.log("Unsigned transaction data:", unsignedTx);
 ```
 
 ### Aptos to EVM
@@ -118,7 +124,8 @@ import { AptosChain, networkInfo } from "@chainlink/ccip-sdk";
 const source = await AptosChain.fromUrl("https://api.testnet.aptoslabs.com/v1");
 const destSelector = networkInfo("ethereum-testnet-sepolia").chainSelector;
 
-const request = await source.sendMessage({
+const unsignedTx = await source.generateUnsignedSendMessage({
+  sender: "<user-aptos-account-address>",
   router: "<aptos-router-address>",
   destChainSelector: destSelector,
   message: {
@@ -127,8 +134,9 @@ const request = await source.sendMessage({
     extraArgs: { gasLimit: 0n },
     fee,
   },
-  wallet: aptosAccount,
 });
+
+console.log("Unsigned transaction data:", unsignedTx);
 ```
 
 ## Unsigned Transactions
@@ -153,9 +161,9 @@ const unsignedTx = await source.generateUnsignedSendMessage({
 
 ## CLI Usage with Non-EVM Chains
 
-The CCIP CLI (`@chainlink/ccip-cli`) supports non-EVM chains natively. Chain names and selectors work the same way.
+The CCIP CLI (`@chainlink/ccip-cli`) supports non-EVM chains natively. Chain names and selectors work the same way. The following commands are user-run templates; the agent must not execute commands that sign or broadcast transactions.
 
-### Send from Solana
+### User-Run Send from Solana
 
 ```bash
 ccip-cli send \
@@ -166,7 +174,7 @@ ccip-cli send \
   --transfer-tokens <token>=0.001
 ```
 
-### Send from Aptos
+### User-Run Send from Aptos
 
 ```bash
 ccip-cli send \
@@ -184,11 +192,11 @@ ccip-cli show <tx-hash-or-message-id>
 ccip-cli show <tx-hash-or-message-id> --wait
 ```
 
-### CLI wallet options per chain family
+### CLI Wallet Options per Chain Family
 
-- **EVM**: `0x`-hex private key, encrypted JSON file, `--wallet foundry:<name>`, `--wallet hardhat:<name>`, `--wallet ledger`
-- **Solana**: base58 private key, path to a Solana keypair JSON file (provided by the user), `--wallet ledger`
-- **Aptos**: `0x`-hex private key, path to text file containing it
+- Prefer hardware-wallet, browser-wallet, or external-signer modes when available.
+- If a file-backed wallet is required, use a placeholder such as `<path-to-user-managed-wallet>` and instruct the user to supply it outside the agent.
+- Do not inspect, validate, print, or transform wallet credential files or signing-material strings.
 
 ### CLI RPC configuration
 
