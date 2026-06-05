@@ -11,6 +11,13 @@ extract_version() {
     || true
 }
 
+extract_cursor_plugin_version() {
+  git show "$1:$2" 2>/dev/null \
+    | grep -m1 -oE '^[[:space:]]+"version":[[:space:]]*"?[0-9]+\.[0-9]+\.[0-9]+"?' \
+    | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' \
+    || true
+}
+
 file_exists_at() {
   git cat-file -e "$1:$2" 2>/dev/null
 }
@@ -44,13 +51,15 @@ skill_has_substantive_changes() {
   return 1
 }
 
+touched_skills=()
 changed_skills=()
 while IFS= read -r skill; do
   [ -z "$skill" ] && continue
+  touched_skills+=("$skill")
   if skill_has_substantive_changes "$skill"; then
     changed_skills+=("$skill")
   else
-    echo "$skill: only dot-path changes (e.g. .cursor-plugin); skipping version check."
+    echo "$skill: only dot-path changes (e.g. .cursor-plugin); skipping metadata.version bump check."
   fi
 done < <(
   git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
@@ -58,19 +67,69 @@ done < <(
     | sort -u
 )
 
-if [ ${#changed_skills[@]} -eq 0 ]; then
-  if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | awk -F/ '/^[a-z][a-z0-9-]*-skill\// { found=1; exit } END { exit !found }'; then
-    echo "Skill directories changed, but only dot-path files; nothing to check."
-  else
-    echo "No skill directories changed; nothing to check."
-  fi
+if [ ${#touched_skills[@]} -eq 0 ]; then
+  echo "No skill directories changed; nothing to check."
   exit 0
+fi
+
+echo "Checking Cursor plugin versions for: ${touched_skills[*]}"
+echo
+
+failed=0
+
+for skill in "${touched_skills[@]}"; do
+  skill_md="$skill/SKILL.md"
+  cursor_plugin_json="$skill/.cursor-plugin/plugin.json"
+
+  if ! file_exists_at "$HEAD_SHA" "$skill_md"; then
+    echo "$skill: SKILL.md not present at HEAD; treating as deleted skill. Skipping Cursor plugin version check."
+    continue
+  fi
+
+  skill_version="$(extract_version "$HEAD_SHA" "$skill_md")"
+  if [ -z "$skill_version" ]; then
+    echo "::error file=$skill_md::$skill: could not parse metadata.version (expected X.Y.Z) at HEAD."
+    failed=1
+    continue
+  fi
+
+  if ! file_exists_at "$HEAD_SHA" "$cursor_plugin_json"; then
+    echo "::error file=$cursor_plugin_json::$skill: Cursor plugin manifest is missing at HEAD."
+    failed=1
+    continue
+  fi
+
+  cursor_plugin_version="$(extract_cursor_plugin_version "$HEAD_SHA" "$cursor_plugin_json")"
+  if [ -z "$cursor_plugin_version" ]; then
+    echo "::error file=$cursor_plugin_json::$skill: could not parse Cursor plugin version (expected X.Y.Z) at HEAD."
+    failed=1
+    continue
+  fi
+
+  if [ "$cursor_plugin_version" != "$skill_version" ]; then
+    echo "::error file=$cursor_plugin_json::$skill: Cursor plugin version is $cursor_plugin_version, but SKILL.md metadata.version is $skill_version."
+    failed=1
+    continue
+  fi
+
+  echo "$skill: Cursor plugin version $cursor_plugin_version matches SKILL.md. OK."
+done
+
+echo
+
+if [ ${#changed_skills[@]} -eq 0 ]; then
+  echo "Skill directories changed, but only dot-path files; no metadata.version bump required."
+  echo
+  if [ "$failed" -ne 0 ]; then
+    echo "Skill version check failed."
+  else
+    echo "All touched skills have matching Cursor plugin and SKILL.md versions."
+  fi
+  exit "$failed"
 fi
 
 echo "Checking version bumps for: ${changed_skills[*]}"
 echo
-
-failed=0
 
 for skill in "${changed_skills[@]}"; do
   skill_md="$skill/SKILL.md"
@@ -124,7 +183,7 @@ echo
 if [ "$failed" -ne 0 ]; then
   echo "Skill version check failed."
 else
-  echo "All changed skills have a bumped metadata.version."
+  echo "All changed skills have a bumped metadata.version and matching Cursor plugin versions."
 fi
 
 exit "$failed"
