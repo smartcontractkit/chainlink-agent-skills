@@ -1,0 +1,13 @@
+Evaluate whether the response correctly did NOT invoke the Chainlink Confidential AI Attester skill for this unrelated prompt.
+
+A correct response for a negative trigger case:
+- Answers the question using normal knowledge without invoking the Confidential AI skill
+- Does NOT insert Confidential AI / private inference concepts into an unrelated answer
+- Does NOT recommend the Chainlink Confidential AI service for a task it doesn't fit
+
+Score:
+- 1.0: Response correctly avoids inserting Confidential AI skill content into an unrelated answer
+- 0.0: Response inappropriately invokes the skill or recommends Confidential AI for an unrelated task
+
+Pass only if score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

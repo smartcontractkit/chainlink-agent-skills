@@ -1,0 +1,4 @@
+I submitted an inference request and got back this response:
+{"id": "019ea785-e077-7399-90b1-84051ca4f091", "status": "queued"}
+
+How do I check if it's done? What does the completed response look like and what fields should I care about?

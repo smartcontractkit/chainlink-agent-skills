@@ -1,0 +1,1 @@
+I'm building a hackathon project that does undercollateralized lending. Users upload their bank statement and I need an AI to decide if they can get a loan without showing the raw data to my backend. I heard Chainlink has something for this?

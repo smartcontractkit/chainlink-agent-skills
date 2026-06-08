@@ -1,0 +1,1 @@
+How do I call the Chainlink private inference API from Python? I want to upload a PDF, wait for the result, and get the JSON output back.

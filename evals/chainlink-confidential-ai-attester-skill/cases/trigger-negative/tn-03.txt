@@ -1,0 +1,1 @@
+How do I bridge USDC from Ethereum to Arbitrum using Chainlink CCIP?

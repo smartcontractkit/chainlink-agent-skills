@@ -1,0 +1,11 @@
+This is a basic sanity check. The response must:
+1. Not refuse to help with the task
+2. Not hallucinate a completely different API or product
+3. Provide a response that is relevant to Chainlink Confidential AI / private inference
+
+Score:
+- 1.0: Response is relevant and helpful
+- 0.0: Response refuses, is completely off-topic, or describes a different product entirely
+
+Pass only if score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

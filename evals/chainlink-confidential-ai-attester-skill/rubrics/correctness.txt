@@ -1,0 +1,19 @@
+Evaluate whether the response gives technically correct guidance for the Chainlink Confidential AI Attester API.
+
+Check specifically:
+- The POST endpoint is /v1/inference (not any other path)
+- The GET polling endpoint is /v1/inference/{id}
+- The callback field is cre_callback: { url: "..." } — NOT callback_url: "..."
+- HTTP 202 is the success response for POST
+- API key is passed as Authorization: Bearer $API_KEY
+- Documents are attached via the resources array with filename, content_type, content_base64 fields
+- Polling should happen every 2-5 seconds until status is "completed" or "failed"
+- The output field on a completed response contains the LLM response text
+
+Score using these values:
+- 1.0: All mentioned technical details are correct
+- 0.5: Mostly correct but has one factual error (e.g., wrong field name, wrong status code)
+- 0.0: Multiple factual errors or fundamentally wrong API shape
+
+Pass only if score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.
