@@ -14,7 +14,7 @@ Runs LLM inference inside Trusted Execution Environment (TEE). Documents go in, 
 
 **Beta product for the EthGlobal NYC hackathon.** Get an API key at the **Chainlink booth** or via the **#partner-chainlink channel in the EthGlobal Discord**.
 
-Playground UI: `http://localhost:8888/playground` — easiest way to try it. Everything there maps 1:1 to the API calls below.
+Playground UI: `https://confidential-ai-dev-preview.cldev.cloud/playground` — easiest way to try it. Everything there maps 1:1 to the API calls below.
 
 ---
 

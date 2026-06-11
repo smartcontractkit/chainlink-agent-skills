@@ -1,1 +1,1 @@
-how do i use the private inference playground at localhost:8888? i uploaded a pdf but not sure what the request JSON should look like
+how do i use the private inference playground at confidential-ai-dev-preview.cldev.cloud? i uploaded a pdf but not sure what the request JSON should look like

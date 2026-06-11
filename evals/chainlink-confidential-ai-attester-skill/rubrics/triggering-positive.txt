@@ -3,7 +3,7 @@ Evaluate whether the response demonstrates that the Chainlink Confidential AI At
 Signs the skill was used:
 - Mentions the POST /v1/inference endpoint
 - Mentions GET /v1/inference/{id} for polling
-- References the playground UI at localhost:8888/playground
+- References the playground UI at confidential-ai-dev-preview.cldev.cloud/playground
 - Mentions cre_callback for callbacks
 - Mentions gemma4 or qwen3.6 as available models
 - Mentions API key obtained from Chainlink booth or EthGlobal Discord

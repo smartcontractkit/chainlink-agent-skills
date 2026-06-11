@@ -3,7 +3,7 @@
 ## curl: submit + poll
 
 ```bash
-export BASE_URL="http://localhost:8888"
+export BASE_URL="https://confidential-ai-dev-preview.cldev.cloud"
 export API_KEY="your-api-key"
 
 # Base64-encode your document

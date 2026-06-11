@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8888
+https://confidential-ai-dev-preview.cldev.cloud
 ```
 
 Auth on every request: `Authorization: Bearer $API_KEY`
