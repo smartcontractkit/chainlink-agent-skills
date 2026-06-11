@@ -1,0 +1,1 @@
+I'm using AWS Bedrock to run LLM inference in a Nitro Enclave. How do I set up the attestation document verification on the client side?

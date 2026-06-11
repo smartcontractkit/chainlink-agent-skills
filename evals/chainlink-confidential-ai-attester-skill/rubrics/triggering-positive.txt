@@ -1,0 +1,22 @@
+Evaluate whether the response demonstrates that the Chainlink Confidential AI Attester skill was activated and used to answer this question.
+
+Signs the skill was used:
+- Mentions the POST /v1/inference endpoint
+- Mentions GET /v1/inference/{id} for polling
+- References the playground UI at confidential-ai-dev-preview.cldev.cloud/playground
+- Mentions cre_callback for callbacks
+- Mentions gemma4 or qwen3.6 as available models
+- Mentions API key obtained from Chainlink booth or EthGlobal Discord
+- Uses correct technical vocabulary: TEE, Nitro Enclave, private inference
+
+Signs the skill was NOT used (baseline response):
+- Generic LLM API advice not specific to this product
+- References to OpenAI, Anthropic API, or other providers in place of this product
+- No mention of the specific endpoints or field names above
+
+Score:
+- 1.0: Clear evidence the skill content was used to answer the question
+- 0.0: Response appears to come from general training data without skill-specific details
+
+Pass only if score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

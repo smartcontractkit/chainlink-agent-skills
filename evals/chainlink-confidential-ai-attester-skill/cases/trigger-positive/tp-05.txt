@@ -1,0 +1,1 @@
+I need private attested AI inference for a KYC use case at EthGlobal. What's the Chainlink Confidential AI product and how do I call the API?

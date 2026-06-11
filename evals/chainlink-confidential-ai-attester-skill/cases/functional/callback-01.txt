@@ -1,0 +1,1 @@
+I'm building a backend that needs to know when a private inference job finishes, but I don't want to keep a polling loop open. I have an ngrok URL at https://abc123.ngrok-free.dev that points to my server. How do I use the callback feature when submitting to /v1/inference?

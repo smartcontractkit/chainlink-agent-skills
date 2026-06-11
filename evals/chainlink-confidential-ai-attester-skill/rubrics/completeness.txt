@@ -1,0 +1,13 @@
+Evaluate whether the response answers all parts of what the user asked.
+
+For workflow questions: does the response cover both submitting the request AND retrieving the result?
+For code generation: is the code runnable without significant gaps the user would have to fill in themselves?
+For use-case questions: does the response include both the prompt template and the expected JSON output schema?
+
+Score using these values:
+- 1.0: Response fully addresses what the user asked — no significant gaps
+- 0.5: Response addresses the main question but omits one important piece (e.g., covers POST but not polling)
+- 0.0: Response is missing major components needed to accomplish the user's goal
+
+Pass only if score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

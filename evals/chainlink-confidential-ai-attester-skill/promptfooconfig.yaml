@@ -1,0 +1,189 @@
+description: Promptfoo eval suite for chainlink-confidential-ai-attester-skill
+commandLineOptions:
+  maxConcurrency: 2
+providers:
+  - id: '{{ env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+    label: baseline
+    prompts:
+      - baseline_prompt
+    config:
+      temperature: 0
+      max_tokens: 4096
+  - id: '{{ env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+    label: with-skill
+    prompts:
+      - with_skill_prompt
+    config:
+      temperature: 0
+      max_tokens: 4096
+
+defaultTest:
+  assert:
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: must-pass
+      value: file://rubrics/must-pass.txt
+
+x-assertions:
+  trigger_positive_asserts: &trigger_positive_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: triggering
+      value: file://rubrics/triggering-positive.txt
+  trigger_negative_asserts: &trigger_negative_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: triggering
+      value: file://rubrics/triggering-negative.txt
+  functional_asserts: &functional_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: correctness
+      value: file://rubrics/correctness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: completeness
+      value: file://rubrics/completeness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      metric: safety
+      value: file://rubrics/safety.txt
+
+prompts:
+  - id: file://prompts/baseline.js
+    label: baseline_prompt
+  - id: file://prompts/with-skill.js
+    label: with_skill_prompt
+
+tests:
+  # --- Functional ---
+  - description: functional / submit-pdf
+    vars:
+      case_file: cases/functional/submit-pdf-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / poll-status
+    vars:
+      case_file: cases/functional/poll-status-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / callback
+    vars:
+      case_file: cases/functional/callback-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / prompt-design
+    vars:
+      case_file: cases/functional/prompt-design-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / get-api-key
+    vars:
+      case_file: cases/functional/get-api-key-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / python-integration
+    vars:
+      case_file: cases/functional/python-integration-01.txt
+      expected_trigger: "yes"
+    metadata:
+      category: functional
+    assert: *functional_asserts
+
+  # --- Trigger Positive ---
+  - description: trigger-positive / tp-01
+    vars:
+      case_file: cases/trigger-positive/tp-01.txt
+    metadata:
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
+  - description: trigger-positive / tp-02
+    vars:
+      case_file: cases/trigger-positive/tp-02.txt
+    metadata:
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
+  - description: trigger-positive / tp-03
+    vars:
+      case_file: cases/trigger-positive/tp-03.txt
+    metadata:
+      category: trigger-positive
+    assert: *trigger_positive_asserts
+
+  - description: trigger-positive / tp-04
+    vars:
+      case_file: cases/trigger-positive/tp-04.txt
+    metadata:
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
+  - description: trigger-positive / tp-05
+    vars:
+      case_file: cases/trigger-positive/tp-05.txt
+    metadata:
+      category: trigger-positive
+    assert: *trigger_positive_asserts
+
+  # --- Trigger Negative ---
+  - description: trigger-negative / tn-01
+    vars:
+      case_file: cases/trigger-negative/tn-01.txt
+    metadata:
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts
+
+  - description: trigger-negative / tn-02
+    vars:
+      case_file: cases/trigger-negative/tn-02.txt
+    metadata:
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts
+
+  - description: trigger-negative / tn-03
+    vars:
+      case_file: cases/trigger-negative/tn-03.txt
+    metadata:
+      category: trigger-negative
+    assert: *trigger_negative_asserts
+
+  - description: trigger-negative / tn-04
+    vars:
+      case_file: cases/trigger-negative/tn-04.txt
+    metadata:
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts
+
+  - description: trigger-negative / tn-05
+    vars:
+      case_file: cases/trigger-negative/tn-05.txt
+    metadata:
+      category: trigger-negative
+    assert: *trigger_negative_asserts

@@ -1,0 +1,1 @@
+I need to run LLM inference privately on-chain. Can I use a zkML approach for this instead of a TEE?

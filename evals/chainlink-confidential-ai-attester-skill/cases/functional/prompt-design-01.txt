@@ -1,0 +1,1 @@
+I want to use the private inference service to check whether a bank statement shows someone is eligible for a $200,000 undercollateralized loan. What should my system_prompt and prompt look like to get a reliable JSON output I can parse programmatically?
