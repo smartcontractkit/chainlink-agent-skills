@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:registry.npmjs.org)",
       "WebSearch",
-      "WebFetch(domain:skills.sh)"
+      "WebFetch(domain:skills.sh)",
+      "Bash(bash .github/scripts/check-urls.sh)"
     ]
   }
 }

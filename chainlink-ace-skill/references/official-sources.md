@@ -14,7 +14,6 @@ Use this file when an answer depends on current ACE repository facts, source cod
 ## Repository
 
 - Main repository: `https://github.com/smartcontractkit/chainlink-ace`
-- Raw base: `https://raw.githubusercontent.com/smartcontractkit/chainlink-ace/main/`
 
 ## ACE Product Docs
 
@@ -79,7 +78,7 @@ Use this file when an answer depends on current ACE repository facts, source cod
 | Tokens package | `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens` |
 | ERC-20 compliance token | `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens/erc-20` |
 | ERC-3643 compliance token | `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens/erc-3643` |
-| Deploy scripts | `https://github.com/smartcontractkit/chainlink-ace/tree/main/script` |
+| Deploy scripts | `https://github.com/smartcontractkit/chainlink-ace/tree/main/scripts` |
 
 ## Practical Selection Rules
 
