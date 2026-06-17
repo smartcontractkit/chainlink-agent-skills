@@ -14,9 +14,9 @@ Do not use for CLI installation or account setup (see getting-started.md), simul
 
 ## Project Creation
 
-Prefer `cre init` with `--non-interactive` and explicit flags. This generates the correct project structure without requiring human input. Fall back to manual scaffolding from the templates below only if `cre init` is unavailable or fails.
+Always use `cre init` with `--non-interactive` and explicit flags to create new projects. This generates the correct project structure without requiring human input. Never hand-write the project structure, config, or boilerplate yourself; the manual templates below are a last-resort fallback only if `cre init` is unavailable or fails.
 
-### Using `cre init` (Preferred)
+### Using `cre init`
 
 `cre init` supports non-interactive mode via the `--non-interactive` flag. Always use this mode when running as an agent.
 
