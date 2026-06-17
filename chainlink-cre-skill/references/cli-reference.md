@@ -30,7 +30,7 @@ Key rules:
 
 ### `cre login`
 
-Authenticate with the CRE platform. Opens a browser for interactive login with 2FA.
+Authenticate with the CRE platform. Opens a browser for interactive login (password, plus 2FA if enabled). The agent can run this command, but the user must complete the browser-based sign-in themselves; the agent continues once the command returns.
 
 ```bash
 cre login

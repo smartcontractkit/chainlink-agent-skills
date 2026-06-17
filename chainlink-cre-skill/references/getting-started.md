@@ -51,7 +51,11 @@ cre update
 
 ## Account Setup
 
+> **Some steps need the user's browser.** Account creation is a browser-only flow (email verification, password, 2FA, recovery code) the user must do themselves. For login, the agent can run `cre login`, but the command opens a browser where the user completes the interactive sign-in by entering their password (and 2FA if enabled); once they finish and the command returns, the agent can continue its task.
+
 ### Creating an Account
+
+The user must complete these steps themselves in a web browser:
 
 1. Go to `https://cre.chain.link` and click "Sign Up"
 2. Choose "Create a new organization" or "Join an existing organization"
@@ -62,11 +66,13 @@ cre update
 
 ### CLI Login
 
+The agent can run this command:
+
 ```bash
 cre login
 ```
 
-This opens a browser window for authentication. Complete 2FA when prompted. On success:
+This opens a browser window for authentication, where the user must interactively sign in by entering their password (and 2FA if enabled) — the agent cannot do that part for them. Run the command, tell the user to finish logging in in their browser, and continue once it returns. On success:
 
 ```
 Account details retrieved:
