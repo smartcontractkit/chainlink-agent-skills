@@ -1,0 +1,1 @@
+That last answer was wrong — you told me to call `runtime.getSecret()` synchronously but in the actual CRE TypeScript SDK that returns a Promise and I have to await it. This is the second time the skill has tripped me up on async/Promise behavior in CRE. The skill should know this. Please file an issue against the chainlink-agent-skills repo so it gets fixed.

@@ -1,0 +1,1 @@
+The skill's references for `cre workflow deploy` are missing a flag I just hit — `--operator-address`. I'd like to file an issue against the chainlink-agent-skills repo so this gets added. I don't have the `gh` CLI installed and I'm not going to install it. How can I still get this filed? Show me the exact draft issue body and the GitHub URL I should click.
