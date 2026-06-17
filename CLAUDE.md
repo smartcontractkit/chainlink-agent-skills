@@ -90,5 +90,6 @@ Requires either API keys in `.env` (for promptfoo-based evals) or sufficient sub
 ## Conventions
 
 - Do not commit `.env` or secret files.
+- All PRs, including agent-authored PRs, must use `.github/PULL_REQUEST_TEMPLATE.md` and complete its Description and Justification sections.
 - Reference docs in `references/` should be kept factual and up to date with the latest Chainlink documentation.
 - Eval cases go in `evals/<skill-name>/cases/` organized by category (`functional/`, `trigger-positive/`, `trigger-negative/`).
