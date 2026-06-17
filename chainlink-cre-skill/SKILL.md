@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.8"
+  version: "0.0.9"
 ---
 
 # Chainlink CRE Skill
@@ -55,6 +55,7 @@ Route CRE requests to the simplest valid path. Keep this file as the decision la
 7. Preserve user-specified schedules, thresholds, units, decimals, chain identifiers, addresses, resource IDs, and secret names across code, config, README, tests, and simulation examples.
 8. Keep secrets as references. Do not put real credentials, private keys, bearer tokens, webhook URLs, or API keys in config, README examples, or tests.
 9. If a workflow depends on a contract, API, relay, database, queue, notification endpoint, or operator action, include the minimal interface, mock, adapter, or boundary needed to make the artifact coherent.
+10. Account creation is a browser-only flow (email verification, password, 2FA, recovery code) that only the user can complete. Do not attempt to automate it; instruct the user to sign up at `https://cre.chain.link` themselves. For login, the agent may run `cre login`, but it opens a browser where the user must complete the interactive sign-in (entering their password, plus 2FA if enabled on their account). Run the command, tell the user to finish logging in in their browser, then continue the task once the command returns / the user confirms (e.g., via `cre whoami`).
 
 ## Documentation and Freshness
 
