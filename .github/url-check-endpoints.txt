@@ -1,0 +1,12 @@
+# Reachability-only URLs for check-urls.sh.
+#
+# These are API / RPC / WebSocket endpoints that do NOT serve a browseable page,
+# so a plain GET returns 404/403/405 even though the host is perfectly alive.
+# For any URL matching a pattern below, the checker passes it as long as the
+# server completes a connection and returns ANY HTTP status; only a true
+# connection failure (DNS/TCP/TLS error, code 000) is reported as broken.
+#
+# One substring per line. Lines starting with '#' and blank lines are ignored.
+# Keep this list tight — anything here is exempt from normal 404 detection.
+
+svr-bid-endpoint.chain.link

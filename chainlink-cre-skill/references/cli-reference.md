@@ -305,4 +305,4 @@ cre version
 ## Official Documentation
 
 - CLI installation: `https://docs.chain.link/cre/getting-started/cli-installation.md`
-- CLI reference: `https://docs.chain.link/cre/reference/cre-cli`
+- CLI reference: `https://docs.chain.link/cre/reference/cli.md`

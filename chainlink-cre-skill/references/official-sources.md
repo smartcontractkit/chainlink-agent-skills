@@ -69,7 +69,7 @@ Do not use for workflow code patterns, CLI usage, or conceptual questions that a
 | CRE SDK TypeScript | `https://github.com/smartcontractkit/cre-sdk-typescript` | TypeScript SDK source |
 | CRE SDK Go | `https://github.com/smartcontractkit/cre-sdk-go` | Go SDK source |
 | CRE CLI | `https://github.com/smartcontractkit/cre-cli` | CLI source and releases |
-| Prediction Market Demo | `https://github.com/smartcontractkit/cre-prediction-market-demo` | Example prediction market workflow |
+| Prediction Market Demo | `https://github.com/smartcontractkit/cre-gcp-prediction-market-demo` | Example prediction market workflow |
 
 ## Release Notes and Migration
 
