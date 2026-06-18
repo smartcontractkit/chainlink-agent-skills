@@ -1,0 +1,1 @@
+Scaffold a Foundry starter kit for reading the ETH/USD price feed on Sepolia, including a deploy script and tests I can run with `forge test`.

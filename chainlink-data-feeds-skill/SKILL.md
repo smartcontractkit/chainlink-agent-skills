@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink Data Feeds developer assistance and reference
-  version: "0.0.3"
+  version: "0.0.4"
 ---
 
 # Chainlink Data Feeds Skill
@@ -19,24 +19,26 @@ Route Data Feed requests to the simplest valid path. Generate working code on fi
 
 1. Keep this file as the default guide.
 2. Read [references/reading-price-feeds.md](references/reading-price-feeds.md) only when the user wants to read a price feed on EVM, write a consumer contract, read off-chain, look up AggregatorV3Interface, or debug a price feed integration.
-3. Read [references/mvr-feeds.md](references/mvr-feeds.md) only when the user asks about Multiple-Variable Response feeds, bundle feeds, or BundleAggregatorProxy.
-4. Read [references/svr-feeds.md](references/svr-feeds.md) only when the user asks about Smart Value Recapture, OEV recapture, or searcher onboarding.
-5. Read [references/feed-types.md](references/feed-types.md) only when the user asks about feed categories, SmartData/RWA, rates/volatility, tokenized equity feeds, or needs help choosing a feed type.
-6. Read [references/multi-chain.md](references/multi-chain.md) only when the user targets Solana, StarkNet, Aptos, or Tron.
-7. Read [references/feed-operations.md](references/feed-operations.md) only when the user asks about L2 sequencer uptime checks, feed deprecation, contract registry, developer responsibilities, or data sources.
-8. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live data that the reference files do not contain — feed addresses for a specific chain, current deprecation schedules, specific network parameters.
-9. Read [references/source-code.md](references/source-code.md) only when debugging interface mismatches or the user needs to inspect contract source code on GitHub.
-10. Do not load reference files speculatively.
+3. Read [templates/starter-kit/README.md](templates/starter-kit/README.md) and the files in [templates/starter-kit](templates/starter-kit) when the user asks for a working example project, Foundry starter kit, runnable Data Feeds example, or says something like "give me a working example of a data feeds project." Use this starter-kit template instead of inventing project scaffolding.
+4. Read [references/mvr-feeds.md](references/mvr-feeds.md) only when the user asks about Multiple-Variable Response feeds, bundle feeds, or BundleAggregatorProxy.
+5. Read [references/svr-feeds.md](references/svr-feeds.md) only when the user asks about Smart Value Recapture, OEV recapture, or searcher onboarding.
+6. Read [references/feed-types.md](references/feed-types.md) only when the user asks about feed categories, SmartData/RWA, rates/volatility, tokenized equity feeds, or needs help choosing a feed type.
+7. Read [references/multi-chain.md](references/multi-chain.md) only when the user targets Solana, StarkNet, Aptos, or Tron.
+8. Read [references/feed-operations.md](references/feed-operations.md) only when the user asks about L2 sequencer uptime checks, feed deprecation, contract registry, developer responsibilities, or data sources.
+9. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live data that the reference files do not contain -- feed addresses for a specific chain, current deprecation schedules, specific network parameters.
+10. Read [references/source-code.md](references/source-code.md) only when debugging interface mismatches or the user needs to inspect contract source code on GitHub.
+11. Do not load reference files speculatively.
 
 ## Routing
 
 1. Use reading-price-feeds.md as the default for any EVM price feed request — this covers the vast majority of Data Feeds use cases.
-2. Route to the chain-specific section of multi-chain.md for non-EVM chains (Solana, Aptos, StarkNet, Tron).
-3. Route to mvr-feeds.md for bundle or multi-variable feed requests.
-4. Route to svr-feeds.md for OEV or MEV recapture requests.
-5. Route to feed-operations.md for operational concerns (L2 sequencer checks, deprecation, monitoring).
-6. Ask one focused question if the chain, feed type, or integration method is unclear.
-7. Proceed without asking for read-only work: explanations, code generation, debugging.
+2. Use templates/starter-kit for project-level example requests, especially Foundry starter requests. Return a concise file tree, the relevant template files, install/test commands, and the Sepolia ETH/USD feed configuration unless the user asks for another chain.
+3. Route to the chain-specific section of multi-chain.md for non-EVM chains (Solana, Aptos, StarkNet, Tron).
+4. Route to mvr-feeds.md for bundle or multi-variable feed requests.
+5. Route to svr-feeds.md for OEV or MEV recapture requests.
+6. Route to feed-operations.md for operational concerns (L2 sequencer checks, deprecation, monitoring).
+7. Ask one focused question if the chain, feed type, or integration method is unclear.
+8. Proceed without asking for read-only work: explanations, code generation, debugging.
 
 ## Safety Defaults
 
@@ -68,3 +70,4 @@ This skill references official Data Feeds documentation URLs throughout its refe
 4. Keep answers proportional — a simple "read a price feed" question gets a code block and brief explanation, not a full tutorial.
 5. Generate code only when code is actually needed.
 6. Keep unsupported or out-of-scope features out of the answer rather than speculating.
+7. When using the starter-kit template, preserve its Foundry layout and contract names unless the user asks for a different framework. The template is based on the Chainlink Foundry Starter Kit `PriceFeedConsumer.sol` example, with the required Data Feeds validation added for safer generated code.
