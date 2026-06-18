@@ -1,0 +1,13 @@
+You are evaluating whether the response scaffolds the Data Feeds Foundry starter-kit faithfully when the user asks for a working example, runnable project, or Foundry starter kit.
+
+A correct starter-kit response should:
+1. Scaffold a complete Foundry project rather than an isolated snippet — a `PriceFeedConsumer` contract, a `MockV3Aggregator` mock, a deploy script, tests, and project config (`foundry.toml` / `remappings.txt`).
+2. Preserve the template's validation in the consumer: round-completion check, staleness check against a threshold, and a positive-answer (answer bounds) check, with decimals read via `decimals()` rather than hardcoded.
+3. Provide install and run commands — installing `forge-std` and the Chainlink contracts dependency, then `forge test` (and the deploy `forge script` command).
+4. Default to the Sepolia ETH/USD feed (`0x694AA1769357215DE4FAC081bf1f309aDC325306`) unless the user asks for another chain, and tell the user to verify feed addresses against the official Chainlink docs (and add an L2 Sequencer Uptime check before production on L2 networks).
+5. Keep the template's Foundry layout and contract names unless the user asks for a different framework, and note that the example code is unaudited and should be reviewed before production use.
+
+Score:
+- 1.0: Faithful, complete starter-kit scaffold with validation and run/verify guidance (PASS)
+- 0.5: Partial scaffold — missing some template files, validation, or commands (FAIL)
+- 0.0: Returns only a snippet, invents unrelated scaffolding, or omits the required validation (FAIL)

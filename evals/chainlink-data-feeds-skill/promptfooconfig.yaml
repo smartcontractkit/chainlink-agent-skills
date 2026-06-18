@@ -47,6 +47,20 @@ functional_asserts: &functional_asserts
   - type: llm-rubric
     value: file://rubrics/clarification.txt
 
+starter_kit_asserts: &starter_kit_asserts
+  - type: llm-rubric
+    value: file://rubrics/correctness.txt
+  - type: llm-rubric
+    value: file://rubrics/completeness.txt
+  - type: llm-rubric
+    value: file://rubrics/safety.txt
+  - type: llm-rubric
+    value: file://rubrics/freshness.txt
+  - type: llm-rubric
+    value: file://rubrics/clarification.txt
+  - type: llm-rubric
+    value: file://rubrics/starter-kit.txt
+
 tests:
   # ── Functional: Reading Price Feeds ──────────────────────────────────
   - vars:
@@ -142,6 +156,23 @@ tests:
       requires_live_source: "yes"
     assert: *functional_asserts
 
+  # ── Functional: Starter Kit ──────────────────────────────────────────
+  - vars:
+      case_file: cases/functional/starter-kit-01.txt
+      workflow: starter-kit
+      requires_live_source: "no"
+    metadata:
+      workflow: starter-kit
+      category: functional
+      smoke: true
+    assert: *starter_kit_asserts
+
+  - vars:
+      case_file: cases/functional/starter-kit-02.txt
+      workflow: starter-kit
+      requires_live_source: "no"
+    assert: *starter_kit_asserts
+
   # ── Trigger Positive ─────────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/reading-price-feeds-01.txt
@@ -197,6 +228,16 @@ tests:
       case_file: cases/trigger-positive/debugging-01.txt
       workflow: reading-price-feeds
       expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/starter-kit-01.txt
+      workflow: starter-kit
+      expected_trigger: "yes"
+    metadata:
+      workflow: starter-kit
+      category: trigger-positive
+      smoke: true
     assert: *trigger_positive_asserts
 
   # ── Trigger Negative ─────────────────────────────────────────────────

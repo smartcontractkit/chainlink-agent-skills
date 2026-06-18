@@ -7,6 +7,7 @@ Workflow definitions:
 - feed-types: choosing a feed type, understanding SmartData/RWA, rates/volatility, or tokenized equity feeds
 - multi-chain: reading data feeds on Solana, Aptos, StarkNet, or Tron
 - feed-operations: L2 sequencer checks, feed deprecation, contract registry, developer responsibilities, data sources
+- starter-kit: scaffolding a complete, runnable Foundry project (PriceFeedConsumer contract, mock aggregator, deploy script, tests, and project config) from the starter-kit template when the user asks for a working example or Foundry starter kit
 
 The expected workflow is: {{workflow}}
 

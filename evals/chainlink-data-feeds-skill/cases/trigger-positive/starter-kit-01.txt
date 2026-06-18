@@ -1,0 +1,1 @@
+Can you set me up with a runnable Foundry project for reading Chainlink price feeds?

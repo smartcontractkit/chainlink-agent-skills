@@ -28,8 +28,8 @@ npx promptfoo eval --filter-pattern "reading-price-feeds-01"
 
 ## Test Categories
 
-- **Functional** (12 cases): End-to-end workflow tests covering reading-price-feeds, mvr-feeds, svr-feeds, feed-types, multi-chain, and feed-operations
-- **Trigger Positive** (8 cases): Verify the skill activates for data-feeds-specific prompts
+- **Functional** (14 cases): End-to-end workflow tests covering reading-price-feeds, mvr-feeds, svr-feeds, feed-types, multi-chain, feed-operations, and starter-kit scaffolding
+- **Trigger Positive** (9 cases): Verify the skill activates for data-feeds-specific prompts
 - **Trigger Negative** (6 cases): Verify the skill does not over-trigger for CCIP, VRF, Automation, Data Streams, Functions, or generic Solidity requests
 
 ## Rubrics
