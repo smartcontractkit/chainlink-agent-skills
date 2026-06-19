@@ -19,6 +19,7 @@ Route VRF requests to the simplest valid path while keeping side effects and cre
 
 1. Keep this file as the default guide.
 2. Read [references/subscription.md](references/subscription.md) only when the user wants to build a subscription-based consumer, manage a subscription, use `VRFConsumerBaseV2Plus`, call `requestRandomWords`, or handle the `fulfillRandomWords` callback.
+   2a. Read [templates/starter-kit/README.md](templates/starter-kit/README.md) and the files in [templates/starter-kit](templates/starter-kit) when the user asks for a working example project, Foundry starter kit, runnable VRF example, or says something like "give me a working VRF project I can build and test." Use this starter-kit template instead of inventing project scaffolding.
 3. Read [references/direct-funding.md](references/direct-funding.md) only when the user wants direct funding (no subscription), uses `VRFV2PlusWrapperConsumerBase`, or asks about a one-off randomness request.
 4. Read [references/migration-from-v2.md](references/migration-from-v2.md) when you detect V1 or V2 patterns in user-supplied code (`VRFConsumerBaseV2`, `VRFConsumerBase`, positional `requestRandomWords`, `uint64` subscription IDs, `VRFV2WrapperConsumerBase`, or `memory` randomWords in a subscription consumer) or when the user asks how to migrate.
 5. Read [references/billing.md](references/billing.md) only when the user asks about costs, LINK vs native payment, subscription funding, or premium percentages.
@@ -30,6 +31,7 @@ Route VRF requests to the simplest valid path while keeping side effects and cre
 ## Routing
 
 1. **Subscription (default)**: Use for recurring randomness, games, lotteries, any contract that requests randomness more than once. Route to `subscription.md`.
+   1a. **Starter kit / runnable project**: For project-level example requests, especially Foundry starter requests, use `templates/starter-kit`. Return a concise file tree, the relevant template files, install/test commands, and the Sepolia VRF v2.5 coordinator + key hash configuration unless the user asks for another chain. Preserve the template's Foundry layout and `VRFConsumerV2Plus` (v2.5) contract unless the user asks for a different framework.
 2. **Direct funding**: Use for one-off requests or when the user explicitly does not want a subscription. Route to `direct-funding.md`.
 3. **Migration**: Detect legacy patterns (see Progressive Disclosure rule 4). Refuse to generate V2 code; load `migration-from-v2.md` and offer a v2.5 upgrade.
 4. **Network lookup**: When an address or key hash is needed, load `supported-networks.md`. Never invent coordinator or wrapper addresses.

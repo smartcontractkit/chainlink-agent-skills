@@ -1,6 +1,6 @@
 # Chainlink VRF Skill Evals
 
-Evaluation suite for `chainlink-vrf-skill`. All 7 cases are smoke-tagged and run in CI.
+Evaluation suite for `chainlink-vrf-skill`. 10 cases total; 9 are smoke-tagged and run in CI.
 
 ## Running Evals
 
@@ -16,8 +16,8 @@ Run agent evals for chainlink-vrf-skill
 
 ```bash
 source ../../.env
-npx promptfoo eval --filter-metadata "smoke=true"   # smoke tier (all 7 cases)
-npx promptfoo eval                                    # full suite (same for now)
+npx promptfoo eval --filter-metadata "smoke=true"   # smoke tier (9 cases)
+npx promptfoo eval                                    # full suite (10 cases)
 npx promptfoo view
 ```
 
@@ -29,8 +29,11 @@ npx promptfoo view
 | `functional/subscription-02.txt` | functional | Add LINK-paid path to existing subscription consumer |
 | `functional/direct-funding-01.txt` | functional | Direct funding consumer on Arbitrum, native payment |
 | `functional/migration-01.txt` | functional | V2 → v2.5 migration, all breaking changes applied |
+| `functional/starter-kit-01.txt` | functional | Scaffolds the v2.5 Foundry starter-kit project (build + test locally) |
+| `functional/starter-kit-02.txt` | functional | Scaffolds the starter kit for Sepolia with deploy script and tests |
 | `trigger-positive/subscription-01.txt` | trigger+ | Generic randomness question triggers VRF skill |
 | `trigger-positive/legacy-trap-01.txt` | trigger+ | V2 code triggers skill + migration warning |
+| `trigger-positive/starter-kit-01.txt` | trigger+ | Runnable Foundry project request triggers VRF skill |
 | `trigger-negative/data-feeds-01.txt` | trigger- | Price feed question does NOT trigger VRF skill |
 
 ## Key Assertions (must-pass.txt)
