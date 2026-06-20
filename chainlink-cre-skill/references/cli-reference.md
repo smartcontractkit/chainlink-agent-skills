@@ -18,6 +18,12 @@ When running CRE CLI commands from an automated agent or script, always provide 
 Key rules:
 - **Always pass `--target`** on every `cre workflow` and `cre secrets` command. Omitting it triggers a "Select a target" interactive prompt.
 - **Always pass `--non-interactive`** with `cre init` plus the required flags (`--project-name`, `--template`). Without `--non-interactive`, the command prompts for input.
+- **Request JSON output whenever the command supports it** so you can parse results reliably instead of scraping human-formatted text. The flag differs by command:
+  - `cre templates list --json`
+  - `cre workflow list --output json`
+  - `cre workflow supported-chains --output json`
+
+  These are the only commands that currently support JSON output. Note the flag style differs: `templates list` uses the boolean `--json`, while `workflow list` and `workflow supported-chains` use `--output json`. Do not pass `--json` to commands that don't list it (it will error).
 
 ## Global Flags
 
@@ -212,12 +218,41 @@ List all workflows associated with the current account.
 cre workflow list --target <target-name>
 ```
 
+| Flag | Description |
+|------|-------------|
+| `--output json` | Print the workflow list as a JSON array to stdout. Use this when running as an agent so the output can be parsed. |
+| `--include-deleted` | Include workflows in `DELETED` status |
+
+Agent example (machine-readable output):
+
+```bash
+cre workflow list --target <target-name> --output json
+```
+
 ### `cre workflow show`
 
 Show details of a specific deployed workflow.
 
 ```bash
 cre workflow show <workflow-dir> --target <target-name>
+```
+
+### `cre workflow supported-chains`
+
+List chains and mock forwarder addresses available for your tenant.
+
+```bash
+cre workflow supported-chains --target <target-name>
+```
+
+| Flag | Description |
+|------|-------------|
+| `--output json` | Print the supported chains as a JSON array to stdout. Use this when running as an agent so the output can be parsed. |
+
+Agent example (machine-readable output):
+
+```bash
+cre workflow supported-chains --target <target-name> --output json
 ```
 
 ## Account Commands
@@ -282,6 +317,43 @@ List secret namespaces for the current account.
 
 ```bash
 cre secrets list --target <target-name>
+```
+
+## Templates Commands
+
+### `cre templates list`
+
+List all templates available from the configured repository sources. These can be installed with `cre init`.
+
+```bash
+cre templates list
+```
+
+| Flag | Description |
+|------|-------------|
+| `--json` | Output the template list as JSON. Use this when running as an agent so the output can be parsed. |
+| `--refresh` | Bypass the cache and fetch fresh data from the source repositories |
+
+Agent example (machine-readable output):
+
+```bash
+cre templates list --json
+```
+
+### `cre templates add`
+
+Add a template repository source.
+
+```bash
+cre templates add <repository-source>
+```
+
+### `cre templates remove`
+
+Remove a template repository source.
+
+```bash
+cre templates remove <repository-source>
 ```
 
 ## Utility Commands

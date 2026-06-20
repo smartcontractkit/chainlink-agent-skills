@@ -33,7 +33,7 @@ Built-in templates (available offline, no GitHub fetch needed):
 - `hello-world-go` - Go hello world with cron trigger
 - `hello-world-ts` - TypeScript hello world with cron trigger
 
-Run `cre templates list` to see all available templates including those from GitHub.
+Run `cre templates list` to see all available templates including those from GitHub. When running as an agent, add the `--json` flag (`cre templates list --json`) to receive machine-readable output for reliable parsing.
 
 #### TypeScript project:
 
