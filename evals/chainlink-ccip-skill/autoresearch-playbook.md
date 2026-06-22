@@ -74,7 +74,7 @@ Keep a change only if:
 Prefer commit messages like:
 
 - `fix: tighten monitoring vs discovery routing`
-- `fix: require second confirmation before testnet send`
+- `fix: deliver testnet send as a user-run artifact instead of executing it`
 - `fix: prefer CCIP Directory over simulator defaults in fork tests`
 
 Avoid commit messages that hide multiple behavioral changes in one patch.
