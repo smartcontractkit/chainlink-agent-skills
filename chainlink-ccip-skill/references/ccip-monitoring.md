@@ -20,7 +20,7 @@ Do not use this workflow for contract generation or direct send/bridge execution
 2. Prefer the CCIP API docs for monitoring and query workflows when MCP is not connected.
 3. Use the CCIP CLI when the user wants direct command-line tracking, search, lane latency, or failed-message debugging.
 4. If the MCP tool, API, or CLI path does not return a result or returns an error, fall back to the CCIP Explorer (`https://ccip.chain.link/`). The Explorer is the most reliable interactive surface for message status today.
-5. Do not switch to side-effecting remediation unless the user explicitly asks for it.
+5. Do not execute side-effecting remediation. If the user asks for remediation, prepare a user-run plan or command template instead.
 
 Reference points:
 
@@ -62,7 +62,7 @@ Prefer the CLI for:
 4. `parse` for error and revert decoding
 5. failed-message debugging workflows
 
-Treat `manual-exec` as a separate side-effecting operation, not as a default monitoring action.
+Treat `manual-exec` as a separate side-effecting operation, not as a default monitoring action. The agent may explain or prepare a user-run template for it, but must not execute it.
 
 ## Monitoring Workflow
 
@@ -96,7 +96,7 @@ If log parsing is not practical, the transaction hash itself can be used with th
 
 1. Start with a read-only diagnosis path.
 2. Use CLI `show` and `parse`, plus API retrieval, to explain the current failed or pending state.
-3. If the user asks for remediation and the operation would be side-effecting, hand back to the approval protocol before any action.
+3. If the user asks for remediation and the operation would be side-effecting, prepare a non-custodial user-run artifact instead of executing it.
 4. Refuse mainnet remediation in this version.
 
 ## Freshness Rules
@@ -112,5 +112,4 @@ If log parsing is not practical, the transaction hash itself can be used with th
 1. Keep default monitoring flows read-only.
 2. Refuse to treat `manual-exec` as a normal monitoring step.
 3. Refuse mainnet side-effecting remediation in this version.
-4. If the user wants write remediation, require the same approval and second-confirmation guardrails as other on-chain actions.
-
+4. If the user wants write remediation, refuse agent-side execution and offer a command template, unsigned transaction data, or code for the user to run in their own wallet-controlled environment.

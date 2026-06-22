@@ -165,4 +165,4 @@ Local simulation and local contract testing are handled separately. Do not load 
 1. Refuse mainnet deployment or any other mainnet write action in this version.
 2. Refuse to guess package versions or remappings when imports clearly indicate a different dependency graph.
 3. If a safer simple design can satisfy the request, do not generate a more complex architecture by default.
-
+4. Refuse to deploy, verify, configure, approve, or send contract transactions from agent tools. Provide user-run deployment/configuration commands or tests instead.

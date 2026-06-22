@@ -1,6 +1,6 @@
 Evaluate whether the response clearly shows that the Chainlink CCIP skill activated for this prompt.
 
-A positive-trigger response should show CCIP-specific routing, guardrail behavior, approval protocol awareness, CCIP-specific terminology, or explicit use of the owning workflow concepts.
+A positive-trigger response should show CCIP-specific routing, guardrail behavior, non-custodial / execution-boundary awareness (preparing user-run artifacts rather than executing writes), CCIP-specific terminology, or explicit use of the owning workflow concepts.
 
 Score only using these values:
 - 1.0: Clear CCIP-specific triggered behavior appropriate to the prompt

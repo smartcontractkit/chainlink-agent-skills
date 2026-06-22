@@ -2,31 +2,32 @@
 
 Use this file when you need a concrete reference for what a good response looks like. These examples show the expected shape and tone, not the only valid answer.
 
-## Example 1: Preflight Summary for a Testnet Token Bridge
+## Example 1: Non-Custodial Preflight for a Testnet Token Bridge
 
 User asks: "Bridge 1 CCIP-BnM from Ethereum Sepolia to Base Sepolia using CCIP."
 
 Good response shape:
 
 ```text
-Proposed on-chain action:
+Prepared on-chain action for user-run execution:
 - Action: Token transfer via CCIP
 - Network: Testnet
 - Source chain: Ethereum Sepolia
 - Destination chain: Base Sepolia
-- Route/lane: Ethereum Sepolia → Base Sepolia
+- Route/lane: Ethereum Sepolia to Base Sepolia
 - Token/amount: 1 CCIP-BnM
 - Payload: Tokens only (no data)
 - Contracts: N/A (tool-first path, no custom contracts)
-- Method: CCIP CLI `send` command
+- Method: CCIP CLI `send` command template
 - Expected effect: 1 CCIP-BnM debited on Sepolia, credited on Base Sepolia after lane finality
+- User-run artifact: Command template with public route/token/amount fields filled in
 
-Do you want me to execute this?
+Review this carefully and execute it only from your own wallet-controlled environment.
 ```
 
-After the user approves, ask the second confirmation immediately before the actual send:
+If the user asks the agent to execute it, refuse that step and provide the user-run alternative:
 
-> "This will send 1 CCIP-BnM from Ethereum Sepolia to Base Sepolia. This is a testnet transaction. Confirm to proceed."
+> "I can prepare the command and verify the route, but I cannot sign or broadcast the transfer from agent tools. Run it from your own wallet-controlled environment after reviewing the details."
 
 ## Example 2: Monitoring Response with Lifecycle Explanation
 

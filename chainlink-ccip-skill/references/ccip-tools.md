@@ -9,7 +9,7 @@ Use this workflow for requests like:
 - "Send a CCIP message for me."
 - "Bridge USDC from one chain to another using CCIP."
 - "Move funds with CCIP without writing contracts."
-- "Estimate the fee and send the transfer."
+- "Estimate the fee and prepare the transfer command."
 
 Do not use this workflow when the user clearly wants custom sender or receiver contracts.
 
@@ -29,7 +29,7 @@ If the route or network is missing, ask for it. Do not assume a lane.
 ## Default Path
 
 1. When the `ccip_sdk` MCP tool is available, prefer it for programmatic SDK and API operations such as fee estimation, message status, lane latency, and on-chain reads. See [ccip-mcp.md](ccip-mcp.md) for tool parameters and workflow patterns.
-2. Prefer the CCIP CLI for side-effecting on-chain actions such as sending, token support checks, and manual execution when MCP is not connected or the action is not supported by the MCP tool.
+2. Use the CCIP CLI as a documentation target for user-run command templates. Do not run CLI commands that sign, broadcast, send, bridge, deploy, approve, or manually execute transactions.
 3. Use the CCIP SDK directly only when the user asks for a programmatic integration, code sample, or MCP is not available.
 4. Route read-only monitoring, querying, searching, lane-latency checks, and message-status workflows to [ccip-monitoring.md](ccip-monitoring.md).
 5. Do not switch to contract generation unless the user asks for it or the tool-first path cannot satisfy the goal.
@@ -59,10 +59,12 @@ The SDK, CLI, and API support multiple blockchain families:
 
 For non-EVM-specific workflow guidance (SDK chain classes, CLI options, wallet setup, tutorials), see [ccip-non-evm.md](ccip-non-evm.md).
 
-### Non-EVM CLI Examples
+### Non-EVM CLI Command Templates
+
+These are user-run templates. The agent may help fill placeholders from public, non-secret inputs, but must not run commands that would sign or broadcast transactions.
 
 ```bash
-# Send from Solana to EVM
+# User-run: send from Solana to EVM
 ccip-cli send \
   --source solana-devnet \
   --dest ethereum-testnet-sepolia \
@@ -70,7 +72,7 @@ ccip-cli send \
   --receiver 0xYourEVMAddress \
   --transfer-tokens <token>=0.001
 
-# Send from Aptos to EVM
+# User-run: send from Aptos to EVM
 ccip-cli send \
   --source aptos-testnet \
   --dest ethereum-testnet-sepolia \
@@ -78,10 +80,10 @@ ccip-cli send \
   --receiver 0xYourEVMAddress \
   --transfer-tokens <token>=0.001
 
-# Track any message (works for all chain families)
+# Read-only: track any message (works for all chain families)
 ccip-cli show <tx-hash-or-message-id> --wait
 
-# Check lane latency
+# Read-only: check lane latency
 ccip-cli lane-latency solana-devnet ethereum-testnet-sepolia
 ```
 
@@ -94,28 +96,26 @@ For testnet flows, the standard test token is **CCIP-BnM** (burn-and-mint). It i
 ### For token transfers
 
 1. Verify that the route exists and the token is supported on that route.
-2. Estimate the fee before proposing execution.
-3. Present the on-chain preflight summary.
-4. Ask for explicit approval.
-5. Ask for a second confirmation immediately before execution.
-6. Execute the transfer only after both confirmations.
-7. If the user wants follow-up tracking, route that request to [ccip-monitoring.md](ccip-monitoring.md).
+2. Estimate the fee before preparing the user-run artifact.
+3. Present the non-custodial preflight package from the main skill file.
+4. Provide a command template, unsigned transaction data, or integration code for the user to run in their own wallet-controlled environment.
+5. Do not execute the transfer, sign a transaction, broadcast a transaction, or read wallet material.
+6. If the user wants follow-up tracking after they execute it, route that request to [ccip-monitoring.md](ccip-monitoring.md).
 
 ### For data-only message sends
 
 1. Verify that the route exists.
-2. Estimate the fee before proposing execution.
-3. Present the on-chain preflight summary.
-4. Ask for explicit approval.
-5. Ask for a second confirmation immediately before execution.
-6. Execute the send only after both confirmations.
-7. If the user wants follow-up tracking, route that request to [ccip-monitoring.md](ccip-monitoring.md).
+2. Estimate the fee before preparing the user-run artifact.
+3. Present the non-custodial preflight package from the main skill file.
+4. Provide a command template, unsigned transaction data, or integration code for the user to run in their own wallet-controlled environment.
+5. Do not execute the send, sign a transaction, broadcast a transaction, or read wallet material.
+6. If the user wants follow-up tracking after they execute it, route that request to [ccip-monitoring.md](ccip-monitoring.md).
 
 ## Freshness Rules
 
 1. Read [official-sources.md](official-sources.md) before answering route or token questions.
 2. Use the CCIP Directory for route and token availability.
-3. Use CLI docs for side-effecting command behavior.
+3. Use CLI docs for user-run command behavior.
 4. Use SDK docs for programmatic integration behavior.
 5. Do not hardcode live routes, lane counts, router assumptions, or token support.
 
@@ -123,6 +123,6 @@ For testnet flows, the standard test token is **CCIP-BnM** (burn-and-mint). It i
 
 1. Refuse all mainnet write actions in this version.
 2. Refuse to execute if the route, network, recipient, or transfer details are still ambiguous.
-3. Refuse to skip the fee-estimation and approval steps for side-effecting actions.
-4. If the user asks for unsupported behavior, explain the limit and offer the closest safe alternative.
-
+3. Refuse to execute, sign, broadcast, deploy, approve, bridge, transfer, or manually execute any on-chain transaction from agent tools.
+4. Refuse to read wallet credential files, signing-material files, keystores, or secret environment files.
+5. If the user asks for unsupported behavior, explain the limit and offer the closest safe alternative.

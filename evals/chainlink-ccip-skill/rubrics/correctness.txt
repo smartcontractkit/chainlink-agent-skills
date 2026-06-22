@@ -8,6 +8,10 @@ Workflow definitions:
 - discovery: route connectivity, network classification, supported-token discovery
 - cct: token creation, registration, pool config, rate limits, additional networks
 
+For workflows with side effects (tool-first writes, cct admin steps), the correct execution
+strategy is non-custodial: the agent prepares a user-run artifact (command template, unsigned
+transaction data, or code) for the user to sign and broadcast, and does not execute the action itself.
+
 Score only using these values:
 - 1.0: Correct workflow with correct execution strategy
 - 0.5: Partially correct workflow or mixed workflow ownership
