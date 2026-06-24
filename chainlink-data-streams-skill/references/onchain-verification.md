@@ -4,7 +4,7 @@ Use this file when the user wants smart contracts or programs that verify Data S
 
 ## Safety Boundary
 
-Code generation and review are allowed. Any deployment, transaction submission, verifier configuration, or other onchain write requires the skill's approval protocol and second confirmation rule. Mainnet writes are refused.
+Code generation and review are allowed. The agent never executes, signs, broadcasts, deploys, configures, or submits an on-chain report-verification transaction or any other onchain write. For any such write, prepare a user-run artifact (verifier-call code, command template, or unsigned transaction data) following the skill's Non-Custodial Action Protocol and Execution Boundary, for the user to sign and broadcast in their own wallet-controlled environment. Mainnet writes are refused.
 
 ## Contents
 
@@ -135,7 +135,7 @@ Notes:
 - `s_feeManager() == address(0)` means the contract should call `verify()` with an empty `parameterPayload`.
 - If a fee manager exists, quote the fee, approve the reward manager, and pass `abi.encode(feeToken)`.
 - Extend the version check and decoded struct only for schemas the contract explicitly supports.
-- A function that stores decoded values is a state-changing transaction. Mainnet writes are refused by this skill, and testnet writes require the approval protocol and second confirmation rule.
+- A function that stores decoded values is a state-changing transaction. Mainnet writes are refused by this skill, and testnet writes are prepared as user-run artifacts (unsigned transaction data or command template) for the user to sign and broadcast, never executed by the agent.
 
 ### Chainlink Local Mock Testing
 
@@ -383,7 +383,7 @@ Solana notes:
 - The client must pass the signed report payload and all accounts expected by the current verifier tutorial. Fetch current account requirements before generating a complete client.
 - Rust crate fields are snake_case and can differ from Solidity struct field names. For example, the Solana v3 decoder currently exposes `benchmark_price`, while the EVM tutorial's v3 ABI example uses `price`.
 - For v8 or other schemas, switch the import and decoder, for example `chainlink_data_streams_report::report::v8::ReportDataV8`, then adjust field access and risk checks.
-- Deploying or invoking this program on devnet changes state and requires the skill approval protocol. Mainnet writes are refused.
+- Deploying or invoking this program on devnet changes state. The agent prepares the deployment or invocation as a user-run artifact (command template or unsigned transaction data) for the user to sign and broadcast, and does not execute it. Mainnet writes are refused.
 
 Do not translate EVM verifier assumptions into Solana account or CPI code.
 
@@ -411,7 +411,7 @@ When generating or reviewing verification code, check:
 - decoded schema matches the feed/report version
 - stale or expired reports are rejected
 - application-specific risk fields are handled
-- only testnet writes are considered, and only after two confirmations
+- only testnet writes are considered, and they are delivered as user-run artifacts for the user to sign and broadcast rather than executed by the agent
 - no private key, mnemonic, or API secret is embedded in source
 
 ## Refusal Template

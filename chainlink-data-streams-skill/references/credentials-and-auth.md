@@ -58,8 +58,10 @@ For GET requests and WebSocket connections, use the empty body hash. The timesta
 
 ## Secret Handling
 
-1. Never print API secrets in logs.
-2. Never store real credentials in generated source files.
-3. Use `.env.example` placeholders, not `.env` with real values.
-4. For browser apps, keep Data Streams credentials in a backend process and stream sanitized data to the frontend.
-5. If the user pastes real credentials, avoid repeating them and recommend rotating them if they may have been exposed.
+1. Never read, open, print, copy, summarize, or infer contents from API secrets, API keys, private keys, mnemonics, wallet material, keystores, signing-material files, or secret environment files.
+2. Never ask the user to paste API secrets, API keys, private keys, wallet material, or keystore contents into chat or into files the agent can read. Keep credentials in environment variables or a backend process only.
+3. Never print API secrets in logs.
+4. Never store real credentials in generated source files.
+5. Use `.env.example` placeholders, not `.env` with real values.
+6. For browser apps, keep Data Streams credentials in a backend process and stream sanitized data to the frontend.
+7. If the user pastes real credentials, avoid repeating them and recommend rotating them if they may have been exposed.
