@@ -7,6 +7,7 @@ A positive-trigger response should show Data Streams-specific routing, terminolo
 - Streams Direct REST or WebSocket retrieval
 - WebSocket High Availability mode
 - on-chain verifier/proxy guidance
+- non-custodial / execution-boundary awareness (preparing user-run artifacts rather than executing writes)
 
 Score only using these values:
 - 1.0: Clear Data Streams-specific triggered behavior appropriate to the prompt
