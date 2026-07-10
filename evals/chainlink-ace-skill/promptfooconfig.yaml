@@ -51,6 +51,9 @@ tests:
       case_file: cases/functional/repo-scope-01.txt
       workflow: repo-scope
       requires_live_source: "no"
+      reference_files:
+        - references/getting-started-and-scope.md
+        - references/onchain-contracts.md
     metadata:
       workflow: repo-scope
       category: functional
@@ -61,6 +64,9 @@ tests:
       case_file: cases/functional/platform-beta-mainnet-01.txt
       workflow: platform-beta
       requires_live_source: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/official-sources.md
     metadata:
       workflow: platform-beta
       category: functional
@@ -71,6 +77,9 @@ tests:
       case_file: cases/functional/reporting-api-audit-01.txt
       workflow: platform-reporting
       requires_live_source: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/official-sources.md
     metadata:
       workflow: platform-reporting
       category: functional
@@ -81,6 +90,9 @@ tests:
       case_file: cases/functional/coordinator-vs-reporting-01.txt
       workflow: platform-apis
       requires_live_source: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/official-sources.md
     metadata:
       workflow: platform-apis
       category: functional
@@ -91,6 +103,10 @@ tests:
       case_file: cases/functional/platform-credential-mode-01.txt
       workflow: platform-identity
       requires_live_source: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/cross-chain-identity.md
+        - references/official-sources.md
     metadata:
       workflow: platform-identity
       category: functional
@@ -101,6 +117,9 @@ tests:
       case_file: cases/functional/foundry-platform-visibility-01.txt
       workflow: platform-visibility
       requires_live_source: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/official-sources.md
     metadata:
       workflow: platform-visibility
       category: functional
@@ -111,6 +130,9 @@ tests:
       case_file: cases/functional/onchain-contracts-01.txt
       workflow: onchain-contracts
       requires_live_source: "no"
+      reference_files:
+        - references/onchain-contracts.md
+        - references/policy-management.md
     metadata:
       workflow: onchain-contracts
       category: functional
@@ -121,6 +143,10 @@ tests:
       case_file: cases/functional/upgrade-01.txt
       workflow: upgrade
       requires_live_source: "no"
+      reference_files:
+        - references/onchain-contracts.md
+        - references/policy-management.md
+        - references/contracts-and-source.md
     metadata:
       workflow: upgrade
       category: functional
@@ -131,6 +157,10 @@ tests:
       case_file: cases/functional/policy-chain-01.txt
       workflow: policy-management
       requires_live_source: "no"
+      reference_files:
+        - references/policy-management.md
+        - references/policy-library.md
+        - references/cross-chain-identity.md
     metadata:
       workflow: policy-management
       category: functional
@@ -141,6 +171,8 @@ tests:
       case_file: cases/functional/cross-chain-identity-01.txt
       workflow: cross-chain-identity
       requires_live_source: "no"
+      reference_files:
+        - references/cross-chain-identity.md
     metadata:
       workflow: cross-chain-identity
       category: functional
@@ -151,6 +183,9 @@ tests:
       case_file: cases/functional/secure-mint-01.txt
       workflow: policy-library
       requires_live_source: "yes"
+      reference_files:
+        - references/policy-library.md
+        - references/official-sources.md
     metadata:
       workflow: policy-library
       category: functional
@@ -161,6 +196,9 @@ tests:
       case_file: cases/functional/token-examples-01.txt
       workflow: token-examples
       requires_live_source: "no"
+      reference_files:
+        - references/contracts-and-source.md
+        - references/onchain-contracts.md
     metadata:
       workflow: token-examples
       category: functional
@@ -171,6 +209,9 @@ tests:
       case_file: cases/trigger-positive/ace-overview-01.txt
       workflow: repo-scope
       expected_trigger: "yes"
+      reference_files:
+        - references/getting-started-and-scope.md
+        - references/onchain-contracts.md
     metadata:
       workflow: repo-scope
       category: trigger-positive
@@ -181,6 +222,9 @@ tests:
       case_file: cases/trigger-positive/ace-platform-01.txt
       workflow: platform-beta
       expected_trigger: "yes"
+      reference_files:
+        - references/platform-and-beta.md
+        - references/official-sources.md
     metadata:
       workflow: platform-beta
       category: trigger-positive
@@ -191,6 +235,8 @@ tests:
       case_file: cases/trigger-positive/policy-engine-01.txt
       workflow: policy-management
       expected_trigger: "yes"
+      reference_files:
+        - references/policy-management.md
     metadata:
       workflow: policy-management
       category: trigger-positive
@@ -201,6 +247,8 @@ tests:
       case_file: cases/trigger-positive/ccid-01.txt
       workflow: cross-chain-identity
       expected_trigger: "yes"
+      reference_files:
+        - references/cross-chain-identity.md
     metadata:
       workflow: cross-chain-identity
       category: trigger-positive
@@ -211,6 +259,10 @@ tests:
       case_file: cases/trigger-positive/chainlink-ace-repo-01.txt
       workflow: onchain-contracts
       expected_trigger: "yes"
+      reference_files:
+        - references/onchain-contracts.md
+        - references/policy-management.md
+        - references/contracts-and-source.md
     metadata:
       workflow: onchain-contracts
       category: trigger-positive
@@ -221,6 +273,7 @@ tests:
       case_file: cases/trigger-negative/ccip-01.txt
       workflow: none
       expected_trigger: "no"
+      reference_files: []
     metadata:
       workflow: none
       category: trigger-negative
@@ -231,6 +284,7 @@ tests:
       case_file: cases/trigger-negative/cre-01.txt
       workflow: none
       expected_trigger: "no"
+      reference_files: []
     metadata:
       workflow: none
       category: trigger-negative
@@ -241,6 +295,7 @@ tests:
       case_file: cases/trigger-negative/data-feeds-01.txt
       workflow: none
       expected_trigger: "no"
+      reference_files: []
     metadata:
       workflow: none
       category: trigger-negative
@@ -251,6 +306,7 @@ tests:
       case_file: cases/trigger-negative/generic-solidity-01.txt
       workflow: none
       expected_trigger: "no"
+      reference_files: []
     metadata:
       workflow: none
       category: trigger-negative

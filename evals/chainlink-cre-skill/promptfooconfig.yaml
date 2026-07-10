@@ -59,6 +59,12 @@ tests:
   # ── Functional: Workflow Generation ──────────────────────────────────
   - vars:
       case_file: cases/functional/workflow-generation-01.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/triggers.md
+        - references/http-client.md
+        - references/evm-client.md
+        - references/workflow-patterns.md
       workflow: workflow-generation
       requires_live_source: "no"
     metadata:
@@ -69,18 +75,33 @@ tests:
 
   - vars:
       case_file: cases/functional/workflow-generation-02.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/triggers.md
+        - references/evm-client.md
       workflow: workflow-generation
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/workflow-generation-03.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/workflow-patterns.md
+        - references/triggers.md
+        - references/evm-client.md
       workflow: workflow-generation
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/workflow-generation-04.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/triggers.md
+        - references/http-client.md
+        - references/evm-client.md
+        - references/workflow-patterns.md
       workflow: workflow-generation
       requires_live_source: "no"
     metadata:
@@ -91,6 +112,11 @@ tests:
 
   - vars:
       case_file: cases/functional/workflow-generation-05.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/evm-client.md
+        - references/workflow-patterns.md
+        - references/simulation.md
       workflow: workflow-generation
       requires_live_source: "no"
     metadata:
@@ -102,12 +128,19 @@ tests:
   # ── Functional: Project Scaffolding ──────────────────────────────────
   - vars:
       case_file: cases/functional/project-scaffolding-01.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/simulation.md
       workflow: project-scaffolding
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/project-scaffolding-02.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/triggers.md
+        - references/simulation.md
       workflow: project-scaffolding
       requires_live_source: "no"
     assert: *functional_asserts
@@ -115,6 +148,8 @@ tests:
   # ── Functional: Simulation ───────────────────────────────────────────
   - vars:
       case_file: cases/functional/simulation-01.txt
+      reference_files:
+        - references/simulation.md
       workflow: simulation
       requires_live_source: "no"
     assert: *functional_asserts
@@ -122,6 +157,10 @@ tests:
   # ── Functional: HTTP Client ─────────────────────────────────────────
   - vars:
       case_file: cases/functional/http-client-01.txt
+      reference_files:
+        - references/http-client.md
+        - references/workflow-patterns.md
+        - references/concepts.md
       workflow: http-client
       requires_live_source: "no"
     metadata:
@@ -132,6 +171,8 @@ tests:
 
   - vars:
       case_file: cases/functional/http-client-02.txt
+      reference_files:
+        - references/http-client.md
       workflow: http-client
       requires_live_source: "no"
     assert: *functional_asserts
@@ -139,6 +180,9 @@ tests:
   # ── Functional: EVM Client ──────────────────────────────────────────
   - vars:
       case_file: cases/functional/evm-client-01.txt
+      reference_files:
+        - references/evm-client.md
+        - references/concepts.md
       workflow: evm-client
       requires_live_source: "no"
     metadata:
@@ -149,6 +193,8 @@ tests:
 
   - vars:
       case_file: cases/functional/evm-client-02.txt
+      reference_files:
+        - references/evm-client.md
       workflow: evm-client
       requires_live_source: "no"
     assert: *functional_asserts
@@ -156,6 +202,9 @@ tests:
   # ── Functional: Triggers ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/triggers-01.txt
+      reference_files:
+        - references/triggers.md
+        - references/workflow-patterns.md
       workflow: triggers
       requires_live_source: "no"
     metadata:
@@ -167,6 +216,10 @@ tests:
   # ── Functional: Secrets ─────────────────────────────────────────────
   - vars:
       case_file: cases/functional/secrets-01.txt
+      reference_files:
+        - references/workflow-patterns.md
+        - references/simulation.md
+        - references/operations.md
       workflow: secrets
       requires_live_source: "no"
     metadata:
@@ -178,6 +231,11 @@ tests:
   # ── Functional: Getting Started ─────────────────────────────────────
   - vars:
       case_file: cases/functional/getting-started-01.txt
+      reference_files:
+        - references/getting-started.md
+        - references/cli-reference.md
+        - references/project-scaffolding.md
+        - references/simulation.md
       workflow: getting-started
       requires_live_source: "no"
     assert: *functional_asserts
@@ -185,6 +243,8 @@ tests:
   # ── Functional: Operations ──────────────────────────────────────────
   - vars:
       case_file: cases/functional/operations-01.txt
+      reference_files:
+        - references/operations.md
       workflow: operations
       requires_live_source: "no"
     assert: *functional_asserts
@@ -192,6 +252,9 @@ tests:
   # ── Functional: Concepts ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/concepts-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/http-client.md
       workflow: concepts
       requires_live_source: "no"
     metadata:
@@ -202,6 +265,9 @@ tests:
 
   - vars:
       case_file: cases/functional/concepts-02.txt
+      reference_files:
+        - references/concepts.md
+        - references/workflow-patterns.md
       workflow: concepts
       requires_live_source: "no"
     assert: *functional_asserts
@@ -209,6 +275,10 @@ tests:
   # ── Functional: Feedback Loop ───────────────────────────────────────
   - vars:
       case_file: cases/functional/feedback-no-offer-01.txt
+      reference_files:
+        - references/triggers.md
+        - references/workflow-patterns.md
+        - references/evm-client.md
       workflow: feedback
       requires_live_source: "no"
     metadata:
@@ -219,6 +289,10 @@ tests:
 
   - vars:
       case_file: cases/functional/feedback-url-fallback-01.txt
+      reference_files:
+        - references/feedback.md
+        - references/cli-reference.md
+        - references/operations.md
       workflow: feedback
       requires_live_source: "no"
     metadata:
@@ -230,6 +304,10 @@ tests:
   # ── Trigger Positive ───────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/workflow-gen-01.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/http-client.md
+        - references/evm-client.md
       workflow: workflow-generation
       expected_trigger: "yes"
     metadata:
@@ -240,12 +318,17 @@ tests:
 
   - vars:
       case_file: cases/trigger-positive/http-client-01.txt
+      reference_files:
+        - references/http-client.md
+        - references/concepts.md
       workflow: http-client
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/evm-client-01.txt
+      reference_files:
+        - references/evm-client.md
       workflow: evm-client
       expected_trigger: "yes"
     metadata:
@@ -256,30 +339,43 @@ tests:
 
   - vars:
       case_file: cases/trigger-positive/triggers-01.txt
+      reference_files:
+        - references/triggers.md
       workflow: triggers
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/cli-01.txt
+      reference_files:
+        - references/getting-started.md
+        - references/cli-reference.md
+        - references/project-scaffolding.md
       workflow: cli
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/secrets-01.txt
+      reference_files:
+        - references/workflow-patterns.md
       workflow: secrets
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/concepts-01.txt
+      reference_files:
+        - references/concepts.md
       workflow: concepts
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/operations-01.txt
+      reference_files:
+        - references/operations.md
+        - references/simulation.md
       workflow: operations
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
@@ -287,6 +383,10 @@ tests:
   # ── Trigger Positive: Feedback Loop ─────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/feedback-gap-01.txt
+      reference_files:
+        - references/feedback.md
+        - references/cli-reference.md
+        - references/simulation.md
       workflow: feedback
       expected_trigger: "yes"
     metadata:
@@ -297,6 +397,9 @@ tests:
 
   - vars:
       case_file: cases/trigger-positive/feedback-pain-01.txt
+      reference_files:
+        - references/feedback.md
+        - references/workflow-patterns.md
       workflow: feedback
       expected_trigger: "yes"
     metadata:
@@ -308,6 +411,7 @@ tests:
   # ── Trigger Negative ───────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-negative/ccip-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     metadata:
@@ -318,6 +422,7 @@ tests:
 
   - vars:
       case_file: cases/trigger-negative/data-feeds-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     metadata:
@@ -328,30 +433,35 @@ tests:
 
   - vars:
       case_file: cases/trigger-negative/vrf-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/automation-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/functions-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/generic-solidity-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/neutral-monitoring-agent-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     metadata:

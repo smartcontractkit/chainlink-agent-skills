@@ -65,6 +65,9 @@ tests:
   # ── Functional: Reading Price Feeds ──────────────────────────────────
   - vars:
       case_file: cases/functional/reading-price-feeds-01.txt
+      reference_files:
+        - references/reading-price-feeds.md
+        - references/official-sources.md
       workflow: reading-price-feeds
       requires_live_source: "yes"
     metadata:
@@ -75,18 +78,25 @@ tests:
 
   - vars:
       case_file: cases/functional/reading-price-feeds-02.txt
+      reference_files:
+        - references/reading-price-feeds.md
       workflow: reading-price-feeds
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/reading-price-feeds-03.txt
+      reference_files:
+        - references/reading-price-feeds.md
+        - references/feed-operations.md
       workflow: reading-price-feeds
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/reading-price-feeds-04.txt
+      reference_files:
+        - references/reading-price-feeds.md
       workflow: reading-price-feeds
       requires_live_source: "no"
     assert: *functional_asserts
@@ -94,6 +104,8 @@ tests:
   # ── Functional: MVR Feeds ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/mvr-feeds-01.txt
+      reference_files:
+        - references/mvr-feeds.md
       workflow: mvr-feeds
       requires_live_source: "no"
     metadata:
@@ -104,6 +116,8 @@ tests:
 
   - vars:
       case_file: cases/functional/mvr-feeds-02.txt
+      reference_files:
+        - references/mvr-feeds.md
       workflow: mvr-feeds
       requires_live_source: "no"
     assert: *functional_asserts
@@ -111,6 +125,8 @@ tests:
   # ── Functional: SVR Feeds ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/svr-feeds-01.txt
+      reference_files:
+        - references/svr-feeds.md
       workflow: svr-feeds
       requires_live_source: "no"
     metadata:
@@ -122,6 +138,8 @@ tests:
   # ── Functional: Feed Types ───────────────────────────────────────────
   - vars:
       case_file: cases/functional/feed-types-01.txt
+      reference_files:
+        - references/feed-types.md
       workflow: feed-types
       requires_live_source: "no"
     assert: *functional_asserts
@@ -129,6 +147,8 @@ tests:
   # ── Functional: Multi-Chain ──────────────────────────────────────────
   - vars:
       case_file: cases/functional/multi-chain-01.txt
+      reference_files:
+        - references/multi-chain.md
       workflow: multi-chain
       requires_live_source: "no"
     metadata:
@@ -139,6 +159,8 @@ tests:
 
   - vars:
       case_file: cases/functional/multi-chain-02.txt
+      reference_files:
+        - references/multi-chain.md
       workflow: multi-chain
       requires_live_source: "no"
     assert: *functional_asserts
@@ -146,12 +168,18 @@ tests:
   # ── Functional: Feed Operations ──────────────────────────────────────
   - vars:
       case_file: cases/functional/feed-operations-01.txt
+      reference_files:
+        - references/feed-operations.md
+        - references/reading-price-feeds.md
       workflow: feed-operations
       requires_live_source: "no"
     assert: *functional_asserts
 
   - vars:
       case_file: cases/functional/feed-operations-02.txt
+      reference_files:
+        - references/feed-operations.md
+        - references/official-sources.md
       workflow: feed-operations
       requires_live_source: "yes"
     assert: *functional_asserts
@@ -159,6 +187,14 @@ tests:
   # ── Functional: Starter Kit ──────────────────────────────────────────
   - vars:
       case_file: cases/functional/starter-kit-01.txt
+      reference_files:
+        - templates/starter-kit/README.md
+        - templates/starter-kit/foundry.toml
+        - templates/starter-kit/remappings.txt
+        - templates/starter-kit/src/PriceFeedConsumer.sol
+        - templates/starter-kit/script/PriceFeedConsumer.s.sol
+        - templates/starter-kit/test/PriceFeedConsumer.t.sol
+        - templates/starter-kit/test/mocks/MockV3Aggregator.sol
       workflow: starter-kit
       requires_live_source: "no"
     metadata:
@@ -169,6 +205,14 @@ tests:
 
   - vars:
       case_file: cases/functional/starter-kit-02.txt
+      reference_files:
+        - templates/starter-kit/README.md
+        - templates/starter-kit/foundry.toml
+        - templates/starter-kit/remappings.txt
+        - templates/starter-kit/src/PriceFeedConsumer.sol
+        - templates/starter-kit/script/PriceFeedConsumer.s.sol
+        - templates/starter-kit/test/PriceFeedConsumer.t.sol
+        - templates/starter-kit/test/mocks/MockV3Aggregator.sol
       workflow: starter-kit
       requires_live_source: "no"
     assert: *starter_kit_asserts
@@ -176,6 +220,8 @@ tests:
   # ── Trigger Positive ─────────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/reading-price-feeds-01.txt
+      reference_files:
+        - references/reading-price-feeds.md
       workflow: reading-price-feeds
       expected_trigger: "yes"
     metadata:
@@ -186,12 +232,16 @@ tests:
 
   - vars:
       case_file: cases/trigger-positive/reading-price-feeds-02.txt
+      reference_files:
+        - references/reading-price-feeds.md
       workflow: reading-price-feeds
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/mvr-01.txt
+      reference_files:
+        - references/mvr-feeds.md
       workflow: mvr-feeds
       expected_trigger: "yes"
     metadata:
@@ -202,36 +252,56 @@ tests:
 
   - vars:
       case_file: cases/trigger-positive/svr-01.txt
+      reference_files:
+        - references/svr-feeds.md
       workflow: svr-feeds
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/multi-chain-01.txt
+      reference_files:
+        - references/multi-chain.md
       workflow: multi-chain
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/feed-ops-01.txt
+      reference_files:
+        - references/feed-operations.md
+        - references/reading-price-feeds.md
       workflow: feed-operations
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/feed-types-01.txt
+      reference_files:
+        - references/feed-types.md
       workflow: feed-types
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/debugging-01.txt
+      reference_files:
+        - references/reading-price-feeds.md
+        - references/feed-operations.md
       workflow: reading-price-feeds
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
   - vars:
       case_file: cases/trigger-positive/starter-kit-01.txt
+      reference_files:
+        - templates/starter-kit/README.md
+        - templates/starter-kit/foundry.toml
+        - templates/starter-kit/remappings.txt
+        - templates/starter-kit/src/PriceFeedConsumer.sol
+        - templates/starter-kit/script/PriceFeedConsumer.s.sol
+        - templates/starter-kit/test/PriceFeedConsumer.t.sol
+        - templates/starter-kit/test/mocks/MockV3Aggregator.sol
       workflow: starter-kit
       expected_trigger: "yes"
     metadata:
@@ -243,6 +313,7 @@ tests:
   # ── Trigger Negative ─────────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-negative/ccip-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     metadata:
@@ -253,6 +324,7 @@ tests:
 
   - vars:
       case_file: cases/trigger-negative/vrf-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     metadata:
@@ -263,24 +335,28 @@ tests:
 
   - vars:
       case_file: cases/trigger-negative/automation-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/data-streams-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/functions-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
 
   - vars:
       case_file: cases/trigger-negative/generic-solidity-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts

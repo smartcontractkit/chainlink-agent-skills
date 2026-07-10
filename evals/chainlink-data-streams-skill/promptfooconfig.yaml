@@ -91,6 +91,9 @@ tests:
   - description: functional / credentials / credentials-01
     vars:
       case_file: cases/functional/credentials-01.txt
+      reference_files:
+        - references/credentials-and-auth.md
+        - references/official-sources.md
       workflow: credentials
       expected_trigger: "yes"
       requires_live_source: "yes"
@@ -103,6 +106,11 @@ tests:
   - description: functional / sdk-codegen / sdk-codegen-01
     vars:
       case_file: cases/functional/sdk-codegen-01.txt
+      reference_files:
+        - references/rest-sdk.md
+        - references/websocket-sdk.md
+        - references/credentials-and-auth.md
+        - references/official-sources.md
       workflow: sdk-codegen
       expected_trigger: "yes"
       requires_live_source: "yes"
@@ -115,6 +123,10 @@ tests:
   - description: functional / onchain-verification / onchain-verification-01
     vars:
       case_file: cases/functional/onchain-verification-01.txt
+      reference_files:
+        - references/onchain-verification.md
+        - references/public-endpoints-and-addresses.md
+        - references/official-sources.md
       workflow: onchain-verification
       expected_trigger: "yes"
       requires_live_source: "yes"
@@ -127,6 +139,8 @@ tests:
   - description: trigger-positive / report-decoding / report-decoding-01
     vars:
       case_file: cases/trigger-positive/report-decoding-01.txt
+      reference_files:
+        - references/report-schemas.md
       workflow: report-decoding
       expected_trigger: "yes"
       requires_live_source: "no"
@@ -139,6 +153,8 @@ tests:
   - description: trigger-positive / websocket-ha / websocket-ha-01
     vars:
       case_file: cases/trigger-positive/websocket-ha-01.txt
+      reference_files:
+        - references/websocket-sdk.md
       workflow: websocket-ha
       expected_trigger: "yes"
       requires_live_source: "no"
@@ -151,6 +167,7 @@ tests:
   - description: trigger-negative / data-feeds / data-feeds-01
     vars:
       case_file: cases/trigger-negative/data-feeds-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
       requires_live_source: "no"
@@ -163,6 +180,7 @@ tests:
   - description: trigger-negative / ccip / ccip-01
     vars:
       case_file: cases/trigger-negative/ccip-01.txt
+      reference_files: []
       workflow: none
       expected_trigger: "no"
       requires_live_source: "yes"
