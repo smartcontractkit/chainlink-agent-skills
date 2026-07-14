@@ -101,6 +101,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: functional
@@ -114,6 +117,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: functional
@@ -126,6 +132,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: functional
@@ -138,6 +147,10 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: functional
@@ -150,6 +163,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: chainlink-local
       category: functional
@@ -163,6 +179,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: chainlink-local
       category: functional
@@ -175,6 +194,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: chainlink-local
       category: functional
@@ -187,6 +209,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: chainlink-local
       category: functional
@@ -199,6 +224,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/official-sources.md
     metadata:
       workflow: chainlink-local
       category: functional
@@ -211,6 +239,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -224,6 +255,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -236,6 +270,8 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
     metadata:
       workflow: contract-first
       category: functional
@@ -248,6 +284,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -260,6 +299,8 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
     metadata:
       workflow: contract-first
       category: functional
@@ -272,6 +313,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -284,6 +328,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: functional
@@ -297,6 +344,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: functional
@@ -309,6 +359,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: functional
@@ -321,6 +374,10 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: functional
@@ -333,6 +390,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: functional
@@ -346,6 +406,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: functional
@@ -358,6 +421,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: functional
@@ -370,6 +436,10 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: functional
@@ -382,6 +452,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -395,6 +468,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -407,6 +483,10 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -419,6 +499,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -431,6 +514,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files: []
     metadata:
       workflow: cct
       category: trigger-negative
@@ -444,6 +528,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files: []
     metadata:
       workflow: cct
       category: trigger-negative
@@ -456,6 +541,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: chainlink-local
       category: trigger-negative
@@ -468,6 +554,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: chainlink-local
       category: trigger-negative
@@ -480,6 +567,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: contract-first
       category: trigger-negative
@@ -492,6 +580,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: contract-first
       category: trigger-negative
@@ -504,6 +593,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: discovery
       category: trigger-negative
@@ -516,6 +606,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: discovery
       category: trigger-negative
@@ -528,6 +619,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: monitoring
       category: trigger-negative
@@ -540,6 +632,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: monitoring
       category: trigger-negative
@@ -552,6 +645,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative
@@ -564,6 +658,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative
@@ -576,6 +671,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: trigger-positive
@@ -589,6 +687,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: trigger-positive
@@ -601,6 +702,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
     metadata:
       workflow: cct
       category: trigger-positive
@@ -613,6 +717,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: chainlink-local
       category: trigger-positive
@@ -625,6 +732,8 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
     metadata:
       workflow: chainlink-local
       category: trigger-positive
@@ -637,6 +746,8 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
     metadata:
       workflow: chainlink-local
       category: trigger-positive
@@ -649,6 +760,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: trigger-positive
@@ -662,6 +776,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: trigger-positive
@@ -674,6 +791,8 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
     metadata:
       workflow: contract-first
       category: trigger-positive
@@ -686,6 +805,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: trigger-positive
@@ -698,6 +820,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: trigger-positive
@@ -710,6 +835,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: trigger-positive
@@ -722,6 +850,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: trigger-positive
@@ -735,6 +866,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: trigger-positive
@@ -747,6 +881,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: trigger-positive
@@ -759,6 +896,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: trigger-positive
@@ -771,6 +911,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: trigger-positive
@@ -783,6 +926,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: trigger-positive
@@ -796,6 +942,10 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -809,6 +959,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "yes"
+      reference_files:
+        - references/ccip-tools.md
+        - references/official-sources.md
     metadata:
       workflow: tool-first
       category: functional
@@ -821,6 +974,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -833,6 +989,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -845,6 +1004,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-monitoring.md
+        - references/official-sources.md
     metadata:
       workflow: monitoring
       category: functional
@@ -857,6 +1019,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "yes"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-discovery.md
+        - references/official-sources.md
     metadata:
       workflow: discovery
       category: functional
@@ -869,6 +1034,9 @@ tests:
       expected_trigger: "yes"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-solidity-examples.md
     metadata:
       workflow: contract-first
       category: functional
@@ -882,6 +1050,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative
@@ -895,6 +1064,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative
@@ -907,6 +1077,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: contract-first
       category: trigger-negative
@@ -919,6 +1090,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative
@@ -931,6 +1103,7 @@ tests:
       expected_trigger: "no"
       requires_live_source: "no"
       requires_approval: "no"
+      reference_files: []
     metadata:
       workflow: tool-first
       category: trigger-negative

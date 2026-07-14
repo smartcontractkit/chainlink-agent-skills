@@ -72,16 +72,19 @@ Read the promptfoo config at `evals/<skill>/promptfooconfig.yaml` to get the ful
 - If tier is `full`, select all tests.
 - Apply any category, workflow, or case filter on top.
 
-The case file path is in `vars.case_file` relative to the `evals/<skill>/` directory. The workflow is in `vars.workflow`.
+The case file path is in `vars.case_file` relative to the `evals/<skill>/` directory. The workflow is in `vars.workflow`. For every non-confidential test, `vars.reference_files` is an array of paths relative to the matching skill directory; it is the exact activated-skill reference context for that case.
 
 ### Step 4: Generate responses (default model)
 
 For each case file, launch a subagent that:
 
 1. Reads `<skill>/SKILL.md` in full (this is the system prompt).
-2. Reads the case file content (this is the user prompt).
-3. Generates a response as if it were an agent with that skill activated.
-4. Returns the full response text.
+2. Reads only the files listed in that test's `vars.reference_files`, resolving each path inside `<skill>/`, and appends their contents to the system prompt with a `# Reference: <path>` header.
+3. Reads the case file content (this is the user prompt).
+4. Generates a response as if it were an agent with that skill activated.
+5. Returns the full response text.
+
+Fail the run before generation if `reference_files` is absent, is not an array, contains a path outside `<skill>/`, or names a missing file. Do not load references speculatively.
 
 Use the host's default general-purpose subagent with no explicit model override for generation when possible. This evaluates the skill instructions against the user's primary selected model, reflecting real-world performance.
 

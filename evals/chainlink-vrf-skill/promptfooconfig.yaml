@@ -53,6 +53,11 @@ tests:
       case_file: cases/functional/subscription-01.txt
       workflow: subscription
       requires_live_source: "yes"
+      reference_files:
+        - references/subscription.md
+        - references/supported-networks.md
+        - references/security-and-best-practices.md
+        - references/official-sources.md
     metadata:
       workflow: subscription
       category: functional
@@ -63,6 +68,9 @@ tests:
       case_file: cases/functional/subscription-02.txt
       workflow: subscription
       requires_live_source: "no"
+      reference_files:
+        - references/subscription.md
+        - references/billing.md
     metadata:
       workflow: subscription
       category: functional
@@ -74,6 +82,11 @@ tests:
       case_file: cases/functional/direct-funding-01.txt
       workflow: direct-funding
       requires_live_source: "yes"
+      reference_files:
+        - references/direct-funding.md
+        - references/supported-networks.md
+        - references/security-and-best-practices.md
+        - references/official-sources.md
     metadata:
       workflow: direct-funding
       category: functional
@@ -85,6 +98,10 @@ tests:
       case_file: cases/functional/migration-01.txt
       workflow: migration
       requires_live_source: "no"
+      reference_files:
+        - references/migration-from-v2.md
+        - references/subscription.md
+        - references/supported-networks.md
     metadata:
       workflow: migration
       category: functional
@@ -96,6 +113,9 @@ tests:
       case_file: cases/trigger-positive/subscription-01.txt
       workflow: subscription
       expected_trigger: "yes"
+      reference_files:
+        - references/subscription.md
+        - references/security-and-best-practices.md
     metadata:
       workflow: subscription
       category: trigger-positive
@@ -106,6 +126,9 @@ tests:
       case_file: cases/trigger-positive/legacy-trap-01.txt
       workflow: migration
       expected_trigger: "yes"
+      reference_files:
+        - references/migration-from-v2.md
+        - references/supported-networks.md
     metadata:
       workflow: migration
       category: trigger-positive
@@ -117,6 +140,7 @@ tests:
       case_file: cases/trigger-negative/data-feeds-01.txt
       workflow: none
       expected_trigger: "no"
+      reference_files: []
     metadata:
       workflow: none
       category: trigger-negative
