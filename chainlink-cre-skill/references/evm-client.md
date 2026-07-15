@@ -185,11 +185,36 @@ const encoded = encodeAbiParameters(
 
 ### TypeScript: Encoding Structs
 
+Report timestamps must derive from DON Time (`runtime.now()`), never the local JavaScript clock (`Date.now()`/`new Date()`), which is non-deterministic across DON nodes. See [workflow-patterns.md](workflow-patterns.md) for the DON Time source of truth.
+
 ```typescript
-const encoded = encodeAbiParameters(
-  parseAbiParameters("(uint256 price, uint256 timestamp)"),
-  [{ price: 42000000000n, timestamp: BigInt(Math.floor(Date.now() / 1000)) }]
-)
+import {
+  CronCapability,
+  handler,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+import { encodeAbiParameters, parseAbiParameters } from "viem"
+
+type Config = {
+  schedule: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const price = 42000000000n
+  // DON Time is consensus-derived; convert ms -> seconds, then to bigint for ABI encoding
+  const timestamp = BigInt(Math.floor(runtime.now().getTime() / 1000))
+
+  const encoded = encodeAbiParameters(
+    parseAbiParameters("(uint256 price, uint256 timestamp)"),
+    [{ price, timestamp }]
+  )
+  return encoded
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
 ```
 
 ### TypeScript: Encoding Arrays

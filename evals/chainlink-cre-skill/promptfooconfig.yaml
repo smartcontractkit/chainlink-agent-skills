@@ -198,6 +198,19 @@ tests:
       workflow: evm-client
       requires_live_source: "no"
     assert: *functional_asserts
+  - vars:
+      case_file: cases/functional/evm-client-03.txt
+      reference_files:
+        - references/evm-client.md
+        - references/workflow-patterns.md
+      workflow: evm-client
+      requires_live_source: "no"
+    metadata:
+      workflow: evm-client
+      category: functional
+      smoke: true
+      auditFinding: date-now-timestamp
+    assert: *functional_asserts
 
   # ── Functional: Triggers ────────────────────────────────────────────
   - vars:
