@@ -86,6 +86,16 @@ Check authentication status:
 cre whoami
 ```
 
+### Requesting Deployment Access
+
+Deployment requires CRE Early Access approval. After logging in, run:
+
+```bash
+cre account access
+```
+
+The command checks the organization's deployment access. If access is not enabled, it prompts for a brief use-case description and submits the Early Access request. The Chainlink team follows up by email.
+
 ### API Key Authentication (CI/CD)
 
 For non-interactive environments (requires Early Access approval):
