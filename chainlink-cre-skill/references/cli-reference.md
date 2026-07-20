@@ -29,9 +29,13 @@ Key rules:
 
 | Flag | Description |
 |------|-------------|
-| `--help`, `-h` | Show help for any command |
-| `--version`, `-v` | Show CLI version |
-
+| `-h`, `--help` | Show help for any command |
+| `-e`, `--env <path>` | Specify the `.env` file path (default: `.env`) |
+| `-E`, `--public-env <path>` | Specify the shared, non-sensitive `.env.public` file path |
+| `-T`, `--target <name>` | Set the target environment from the project configuration |
+| `-R`, `--project-root <path>` | Specify the project root directory |
+| `-v`, `--verbose` | Enable debug logging |
+| `--non-interactive` | Fail instead of prompting; provide required inputs through flags or environment variables |
 ## Authentication Commands
 
 ### `cre login`
@@ -176,7 +180,7 @@ Prerequisites:
 - Logged in (`cre login`)
 - Wallet linked (`cre account link-key`)
 - Wallet funded with ETH for gas
-- Early Access approval
+- Early Access approval (request it with `cre account access`)
 
 ### `cre workflow activate`
 
@@ -256,6 +260,18 @@ cre workflow supported-chains --target <target-name> --output json
 ```
 
 ## Account Commands
+
+### `cre account access`
+
+Check whether the organization has deployment access. If access is not enabled, submit an Early Access request from the CLI.
+
+```bash
+cre account access
+```
+
+Requires an authenticated CLI session. Run `cre login` first. The interactive request asks for a brief description of the use case, then confirms that the request was submitted. The Chainlink team follows up by email.
+
+This command has no command-specific flags. The global flags listed above apply.
 
 ### `cre account link-key`
 

@@ -37,7 +37,7 @@ Always include `--target`. For `cre workflow simulate` only, the CLI can also pr
 
 ### Prerequisites
 
-1. **Early Access approval**: Deployment requires being approved for the CRE Early Access program
+1. **Early Access approval**: Deployment requires approval for the CRE Early Access program. After logging in, request access with `cre account access`; it reports the organization's status and prompts for a use-case description when access is not enabled.
 2. **Authentication**: Run `cre login`; it opens a browser where the user completes the interactive sign-in (password, plus 2FA if enabled), then the agent continues
 3. **Linked wallet**: Run `cre account link-key --target <target>` to link a funded wallet
 4. **Funded wallet**: Wallet needs ETH on the target chain for gas fees
