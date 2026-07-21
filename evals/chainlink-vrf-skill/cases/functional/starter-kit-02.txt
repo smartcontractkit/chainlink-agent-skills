@@ -1,0 +1,1 @@
+Scaffold a Foundry starter kit for requesting random words on Sepolia with Chainlink VRF, including a deploy script and tests I can run with `forge test`.

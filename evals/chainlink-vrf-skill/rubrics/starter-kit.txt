@@ -1,0 +1,13 @@
+You are evaluating whether the response scaffolds the VRF Foundry starter-kit faithfully when the user asks for a working example, runnable project, or Foundry starter kit.
+
+A correct starter-kit response should:
+1. Scaffold a complete Foundry project rather than an isolated snippet — a VRF consumer contract, a deploy script, tests, and project config (`foundry.toml` / `remappings.txt`). It is correct to rely on the `VRFCoordinatorV2_5Mock` shipped with `@chainlink/contracts` for tests/local deploy rather than vendoring a custom mock.
+2. Use VRF v2.5 throughout: the consumer inherits `VRFConsumerBaseV2Plus`, requests randomness via the `VRFV2PlusClient.RandomWordsRequest` struct with `extraArgs`, uses a `uint256` subscription ID, and implements `fulfillRandomWords` with `calldata` random words. It must NOT use the legacy `VRFConsumerBaseV2` base, `uint64` subscription IDs, or positional `requestRandomWords` arguments.
+3. Provide install and run commands — installing `forge-std` and the Chainlink contracts dependency, then `forge test` (and the deploy `forge script` command).
+4. Default to Ethereum Sepolia VRF v2.5 (coordinator `0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B`, 500 gwei key hash) unless the user asks for another chain, and tell the user to verify coordinator addresses and key hashes against the official Chainlink docs. It should note that a funded subscription (created at vrf.chain.link) is required and the consumer must be added to it.
+5. Keep the template's Foundry layout and `VRFConsumerV2Plus` contract name unless the user asks for a different framework, and note that the example code is unaudited and should be reviewed before production use.
+
+Score:
+- 1.0: Faithful, complete starter-kit scaffold using VRF v2.5 with run/verify guidance (PASS)
+- 0.5: Partial scaffold — missing some template files, commands, or v2.5 details (FAIL)
+- 0.0: Returns only a snippet, invents unrelated scaffolding, or emits legacy V2 patterns (FAIL)
