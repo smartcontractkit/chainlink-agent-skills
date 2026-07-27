@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink Data Feeds developer assistance and reference
-  version: "0.0.4"
+  version: "0.0.5"
 ---
 
 # Chainlink Data Feeds Skill
@@ -70,4 +70,4 @@ This skill references official Data Feeds documentation URLs throughout its refe
 4. Keep answers proportional — a simple "read a price feed" question gets a code block and brief explanation, not a full tutorial.
 5. Generate code only when code is actually needed.
 6. Keep unsupported or out-of-scope features out of the answer rather than speculating.
-7. When using the starter-kit template, preserve its Foundry layout and contract names unless the user asks for a different framework. The template is based on the Chainlink Foundry Starter Kit `PriceFeedConsumer.sol` example, with the required Data Feeds validation added for safer generated code.
+7. When using the starter-kit template, preserve its Foundry layout unless the user asks for a different framework. The template is based on the Chainlink Foundry Starter Kit `PriceFeedConsumer.sol` example, with the required Data Feeds validation added for safer generated code. Follow the template README's "Adapt This Template" section: hold its invariant list exactly, and replace the illustrative contract name, raw-price accessors, and placeholder parameter values when the user's use case differs from the template's.

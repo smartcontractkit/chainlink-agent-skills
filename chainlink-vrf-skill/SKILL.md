@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit
 metadata:
   purpose: Chainlink VRF v2.5 developer assistance and reference
-  version: "0.0.4"
+  version: "0.0.5"
 ---
 
 # Chainlink VRF Skill
@@ -31,7 +31,7 @@ Route VRF requests to the simplest valid path while keeping side effects and cre
 ## Routing
 
 1. **Subscription (default)**: Use for recurring randomness, games, lotteries, any contract that requests randomness more than once. Route to `subscription.md`.
-   1a. **Starter kit / runnable project**: For project-level example requests, especially Foundry starter requests, use `templates/starter-kit`. Return a concise file tree, the relevant template files, install/test commands, and the Sepolia VRF v2.5 coordinator + key hash configuration unless the user asks for another chain. Preserve the template's Foundry layout and `VRFConsumerV2Plus` (v2.5) contract unless the user asks for a different framework.
+   1a. **Starter kit / runnable project**: For project-level example requests, especially Foundry starter requests, use `templates/starter-kit`. Return a concise file tree, the relevant template files, install/test commands, and the Sepolia VRF v2.5 coordinator + key hash configuration unless the user asks for another chain. Preserve the template's Foundry layout unless the user asks for a different framework. Follow the template README's "Adapt This Template" section: hold its invariant list exactly, and replace the illustrative request bookkeeping, contract name, and placeholder parameter values when the user's use case differs from the template's.
 2. **Direct funding**: Use for one-off requests or when the user explicitly does not want a subscription. Route to `direct-funding.md`.
 3. **Migration**: Detect legacy patterns (see Progressive Disclosure rule 4). Refuse to generate V2 code; load `migration-from-v2.md` and offer a v2.5 upgrade.
 4. **Network lookup**: When an address or key hash is needed, load `supported-networks.md`. Never invent coordinator or wrapper addresses.

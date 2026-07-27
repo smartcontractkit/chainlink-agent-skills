@@ -65,3 +65,43 @@ SUBSCRIPTION_ID=<your-sub-id> \
 ```
 
 Example code is unaudited and should be reviewed before production use.
+
+## Adapt This Template
+
+The template is a complete, compiling reference. Two layers behave differently when you adapt it.
+
+**Must be preserved exactly** — these are protocol requirements, not style choices:
+
+- The `VRFConsumerBaseV2Plus` base contract and its import path.
+- Requesting through `s_vrfCoordinator.requestRandomWords` with the `VRFV2PlusClient.RandomWordsRequest`
+  struct, including `extraArgs` built by `VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1(...))`.
+- `uint256` subscription IDs.
+- The `fulfillRandomWords(uint256, uint256[] calldata)` override signature.
+- Coordinator addresses, key hashes, and the dependency pins in `remappings.txt`. Copy these from the
+  template or the official docs rather than retyping them; a mistyped address literal fails EIP-55
+  checksum validation and will not compile.
+- Treating fulfillment as untrusted-timing: never assume randomness arrives in the same transaction.
+
+**Replace to fit the user's use case** — these are illustrative, not prescriptive. Do not copy them
+into an application that does not need them:
+
+- The `RequestStatus` struct, the `s_requests` mapping, `requestIds`, and `lastRequestId`. If the
+  application only needs a derived result (a winner index, a trait roll, a shuffled position), store
+  that instead of the raw words.
+- The `RequestSent` / `RequestFulfilled` events and the `getRequestStatus` view.
+- The `VRFConsumerV2Plus` contract name and file names.
+- `onlyOwner` on the request function. Gate requests however the application requires.
+
+**Tune, do not copy** — the template's values are placeholders for a 2-word request that only writes
+storage. State the reasoning for whichever value you pick:
+
+- `callbackGasLimit` (template: `100_000`). Size it to the work actually done inside
+  `fulfillRandomWords`, roughly 20,000 gas per stored word plus any application logic. Under-sizing
+  silently loses the fulfillment.
+- `numWords` (template: `2`). Request only what the application consumes; it cannot exceed
+  `VRFCoordinatorV2_5.MAX_NUM_WORDS`. One word can be expanded into many values off a single request.
+- `requestConfirmations` (template: `3`). Raise it on chains with higher reorg risk or when the
+  outcome is high-value.
+
+When randomness selects from a set, reducing a random word with `%` over the set size is biased
+unless the set size divides the word range. Say so, and use rejection sampling when the bias matters.
