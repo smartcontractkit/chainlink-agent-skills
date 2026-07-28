@@ -84,7 +84,7 @@ wallet argument present in the command. Because of that:
 
 1. Never run `send` or `manual-exec` from the agent runtime, including "just to estimate".
 2. Never read, print, or write `./.env`, and never ask the user for key material.
-3. For fee or gas numbers, give the user `send --only-get-fee` or `send --only-estimate` and let them run it.
+3. For fee or gas numbers, use the signerless SDK read `chain.getFee(...)` (see [ccip-sdk-examples.md](ccip-sdk-examples.md)) or the CCIP API and give the user the actual value. It needs no wallet, so it is a safe live fee read. Fall back to a user-run `send --only-get-fee` or `send --only-estimate` only when no signerless path covers the case.
 
 ### Read-only command templates
 

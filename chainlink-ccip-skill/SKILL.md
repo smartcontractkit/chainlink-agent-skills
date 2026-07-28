@@ -48,7 +48,7 @@ Perform live read-only lookups and generate user-run artifacts, but never sign, 
 
 1. Never execute, sign, broadcast, deploy, register, bridge, transfer, mint, burn, approve, or manually execute any on-chain action from agent tools.
 2. Never assume the intended route, lane, network, token, amount, or destination.
-3. Refuse all mainnet write actions in this version.
+3. Refuse all mainnet write actions in this version, including preparation of commands, unsigned transactions, code, or other user-run artifacts for a mainnet write.
 4. Allow read-only mainnet lookups in this version.
 5. Prefer the least risky valid path. If the user can accomplish the goal through CCIP tools, do not default to custom contracts.
 6. For contract work, prefer secure, conservative patterns with explicit access control, validation, least-privilege configuration, and minimal moving parts.
@@ -108,6 +108,8 @@ If the user asks the agent to perform any of the following, refuse the execution
 7. reads wallet credential material from disk or environment variables
 
 Do not treat user approval as permission to cross this boundary. Approval can authorize preparing artifacts, not executing write actions.
+
+Sibling Chainlink skills draw this line differently on purpose. `chainlink-cre-skill` lets the agent run `cre` commands that consume a private key it never reads, because those commands deploy workflows. CCIP moves value, so here the agent does not run the signing command at all.
 
 ## Working Rules
 
