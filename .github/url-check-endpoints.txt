@@ -10,3 +10,7 @@
 # Keep this list tight — anything here is exempt from normal 404 detection.
 
 svr-bid-endpoint.chain.link
+
+# CCIP REST API base path. Endpoints live under it (/v2/messages, /v2/lanes,
+# /v2/chains), but a GET on the base itself returns 404 by design.
+api.ccip.chain.link/v2

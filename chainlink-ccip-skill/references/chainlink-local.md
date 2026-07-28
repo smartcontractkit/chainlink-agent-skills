@@ -21,6 +21,7 @@ Do not use this workflow for live-network execution, message monitoring, or basi
 3. Use the current repo framework when it is already clearly Foundry or Hardhat.
 4. If the repo is not already committed to a framework and the user does not ask for one, default to Foundry.
 5. Use forked environments only when the user needs higher realism or specifically asks for a forked-network workflow.
+6. Before generating tests for existing contracts, inspect their paths, constructors, methods, and errors. If those details are unavailable, ask for them in one focused question and stop instead of generating a speculative test.
 
 ## Official References
 

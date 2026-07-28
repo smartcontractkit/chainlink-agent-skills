@@ -1,6 +1,6 @@
 # CCIP Non-EVM Chains
 
-Use this file when the user wants to work with CCIP on Solana, Aptos, Sui, TON, or any non-EVM chain family. This covers SDK usage, CLI command templates, non-custodial wallet guidance, architectural differences, and official tutorial links.
+Use this file when the user wants to work with CCIP on Solana, Aptos, Sui, TON, Canton, or any non-EVM chain family. This covers SDK usage, CLI command templates, non-custodial wallet guidance, architectural differences, and official tutorial links.
 
 Do not apply EVM-specific patterns (Solidity contracts, Foundry/Hardhat setup, Chainlink Local, OpenZeppelin imports) to non-EVM chains. Contract development on non-EVM chains uses chain-native languages and tooling.
 
@@ -24,6 +24,11 @@ Use this reference for requests like:
 | Aptos | `AptosChain` | Full | Full support |
 | Sui | `SuiChain` | Partial | Manual execution only |
 | TON | `TONChain` | Partial | No token pool/registry queries |
+| Canton | `CantonChain` | Supported | Requires `--canton-config`; `--indexer` for CCV verifications |
+
+These status columns go stale. Re-verify a family's current capability against
+`https://docs.chain.link/ccip/tools/llms.txt` or the per-command CLI pages before
+telling a user something is unsupported.
 
 ## SDK Chain Classes
 
@@ -216,6 +221,14 @@ https://api.testnet.aptoslabs.com/v1
 - `--force-lookup-table`: Create lookup table for account-heavy transactions
 - `--clear-leftover-accounts`: Clean up temporary accounts after execution
 
+### Canton-specific CLI options
+
+- `--canton-config <path>`: required for every Canton operation. It supplies the party ID and the default `senderInstanceId`.
+- `--indexer <url>`: CCIP v2 indexer URLs for CCV verifications, needed when a lane involves Canton.
+- `send --router`: on a Canton source this is a `CCIPSender` instance id, not a router address. It defaults to the `senderInstanceId` in the Canton config.
+- `manual-exec --receiver`: on a Canton destination this accepts a `CCIPReceiver` contract ID, a party ID (`hint::1220…`), or `keccak256(party)`.
+- Wallet material is a 64-character hex Ed25519 seed and is optional, because the party ID comes from the Canton config. Keep it outside the agent runtime like any other key.
+
 ## Architectural Differences from EVM
 
 ### Solana (SVM)
@@ -243,6 +256,13 @@ https://api.testnet.aptoslabs.com/v1
 
 - **Actor model**: Smart contracts are actors communicating via messages.
 - **CCIP status**: Partial -- no token pool or registry queries.
+
+### Canton
+
+- **Daml ledger**: contracts are Daml templates identified by contract IDs, and parties, not addresses, are the actors.
+- **Party-based identity**: the sending and receiving identity comes from `--canton-config`, and signing produces `PartySignatures`.
+- **Instruments**: fee tokens are instrument IDs (`parseCantonInstrumentId`, `DEFAULT_CANTON_LINK_INSTRUMENT_ID`), not ERC-20 addresses.
+- **CCV verification**: Canton lanes use CCIP v2 verifications, so `--indexer` is required for status and execution flows.
 
 ## Message Types (All Non-EVM Families)
 
@@ -304,9 +324,10 @@ Faucets: [Chainlink Faucets](https://faucets.chain.link/), [Solana Faucet](https
 
 ## Limitations
 
-1. Chainlink Local simulator is EVM-only. There is no local simulation for Solana, Aptos, Sui, or TON.
+1. Chainlink Local simulator is EVM-only. There is no local simulation for Solana, Aptos, Sui, TON, or Canton.
 2. Solidity contract patterns (sender, receiver, CCIPReceiver, IRouterClient) are EVM-only. Non-EVM chains use chain-native languages and frameworks.
 3. Foundry and Hardhat tooling applies only to EVM. Non-EVM chains use their own build tools (Anchor/Cargo for Solana, Aptos CLI for Aptos).
 4. Sui support is partial -- manual execution only.
 5. TON support is partial -- no token pool or registry queries.
 6. The CCIP Explorer, CCIP API, and CLI `show`/`status` commands work for all chain families.
+7. Canton operations require `--canton-config` for identity and `--indexer` for CCV verifications; without them CLI and SDK calls on a Canton lane fail.

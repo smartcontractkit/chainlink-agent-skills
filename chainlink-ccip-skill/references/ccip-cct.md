@@ -42,7 +42,7 @@ Clarify these before preparing user-run artifacts:
 4. Which source and destination networks are in scope?
 5. Does the user only want registration, or also rate limits and additional network configuration?
 
-Ask only the missing questions needed for the next safe step.
+Ask exactly one missing question needed for the next safe step, then stop.
 
 ## Workflow
 
