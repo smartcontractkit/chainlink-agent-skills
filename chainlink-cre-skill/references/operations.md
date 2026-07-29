@@ -110,6 +110,62 @@ Do not treat the user's original intent as the second confirmation. Ask again ri
 cre workflow activate <workflow-dir> --target <target-name>
 ```
 
+## Secret Custody And Opaque Transfer
+
+The agent never learns a secret's value. The agent may still move an existing secret from one user-controlled store to another when the value remains opaque throughout.
+
+That transfer is permitted only when the user explicitly authorized that specific transfer and all of the following hold:
+
+- The source and destination are systems the user identified and controls.
+- Transport is encrypted.
+- The value never appears in agent-visible output, in command arguments, in logs, in shell history, in files the agent reads, or in repository content.
+- The agent neither inspects nor retains the value.
+- The operation complies with system and developer policy and stays within the scope the user authorized.
+
+User authorization never licenses reading, printing, or logging a secret value.
+
+### Safe
+
+```bash
+# Safe: .env contains only the 1Password reference; op injects the value.
+MY_API_KEY_VAR=op://my-vault/my-item/api-key
+op run --env-file ../.env -- cre secrets create <workflow-dir> --target <target-name>
+
+# Safe: CRE reads MY_API_KEY_VAR from the environment the user provisioned.
+cre secrets create <workflow-dir> --target <target-name>
+
+# Safe: the destination consumes the value from stdin without agent-visible output.
+op read op://my-vault/my-item/api-key | some-store set MY_API_KEY --stdin
+
+# Safe: the user completes the required browser sign-in.
+cre login
+```
+
+### Unsafe
+
+```bash
+# Unsafe: reading a secret file exposes its contents to the agent.
+cat .env
+
+# Unsafe: printing a secret exposes it in output and logs.
+echo "$CRE_ETH_PRIVATE_KEY"
+
+# Unsafe: a literal secret argument enters shell history and the process list.
+some-store set MY_API_KEY --value '<literal-secret-value>'
+
+# Unsafe: writing a real value into secrets.yaml, config.json, a README, or a test fixture exposes and retains it.
+printf 'MY_API_KEY: %s\n' "$MY_API_KEY_VAR" > secrets.yaml
+
+# Unsafe: encoding or hashing is still exposure when the result is printed.
+printf '%s' "$MY_API_KEY_VAR" | base64
+printf '%s' "$MY_API_KEY_VAR" | shasum -a 256
+
+# Unsafe: asking the user to paste a secret into chat exposes it to the agent.
+printf '%s\n' 'Paste MY_API_KEY into chat so I can forward it.'
+```
+
+The safe list is not exhaustive. An unlisted mechanism is acceptable only when it satisfies every condition above; when it cannot, decline that mechanism and offer a compliant one rather than refusing the user's whole request.
+
 ## Monitoring
 
 ### Viewing Workflow Status
