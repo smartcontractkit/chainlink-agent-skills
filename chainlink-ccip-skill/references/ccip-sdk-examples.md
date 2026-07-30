@@ -4,6 +4,32 @@ Use this file for tool-first workflows that involve the CCIP TypeScript SDK (`@c
 
 When documentation-fetching tools are available, verify these patterns against the latest SDK docs at `https://docs.chain.link/ccip/tools/sdk/`. When they are not, use these as the authoritative starting point.
 
+## Official Guides
+
+One page per slug under `docs.chain.link/ccip/tools/sdk/guides/`, for example
+`https://docs.chain.link/ccip/tools/sdk/guides/fee-estimation`. Fetch the one that
+matches the task instead of the SDK landing page:
+
+| Guide | Covers |
+|---|---|
+| `fee-estimation` | `getFee`, `getTotalFeesEstimate`, fee tokens |
+| `gas-estimation` | Receiver callback gas limits and margins |
+| `sending-messages` | `sendMessage`, `generateUnsignedSendMessage`, extra args |
+| `tracking-messages` | Status polling and lifecycle stages |
+| `searching-messages` | `CCIPAPIClient` search and pagination |
+| `querying-data` | Lane, ramp, and token registry reads |
+| `manual-execution` | `calculateManualExecProof`, `execute`, `generateUnsignedExecute` |
+| `token-pools` | Pool config, remotes, rate limiter state |
+| `multi-chain` | Chain classes across EVM, Solana, Aptos, Sui, TON, Canton |
+| `ftf` | Faster-than-finality and CCTP finality options |
+| `error-handling`, `error-reference` | Typed errors, `isTransientError`, recovery hints |
+| `cancellation` | `AbortSignal` support |
+| `browser-setup` | Bundler and browser wallet integration |
+| `viem-integration` | Using viem instead of ethers |
+
+For the complete export list and method signatures in one request, fetch
+`https://docs.chain.link/ccip/tools/llms.txt`.
+
 ## Package
 
 ```bash
