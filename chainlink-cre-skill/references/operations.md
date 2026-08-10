@@ -126,9 +126,14 @@ User authorization never licenses reading, printing, or logging a secret value.
 
 ### Safe
 
+`.env` holds only the reference, never the value:
+
+```dotenv
+MY_API_KEY_REF=op://my-vault/my-item/api-key
+```
+
 ```bash
-# Safe: .env contains only the 1Password reference; op injects the value.
-MY_API_KEY_VAR=op://my-vault/my-item/api-key
+# Safe: op resolves the reference and injects the value; it never reaches the agent.
 op run --env-file ../.env -- cre secrets create <workflow-dir> --target <target-name>
 
 # Safe: CRE reads MY_API_KEY_VAR from the environment the user provisioned.
