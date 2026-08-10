@@ -5,7 +5,7 @@ A correct starter-kit response should:
 2. Preserve the template's validation in the consumer: round-completion check, staleness check against a threshold, and a positive-answer (answer bounds) check, with decimals read via `decimals()` rather than hardcoded.
 3. Provide install and run commands — installing `forge-std` and the Chainlink contracts dependency, then `forge test` (and the deploy `forge script` command).
 4. Default to the Sepolia ETH/USD feed (`0x694AA1769357215DE4FAC081bf1f309aDC325306`) unless the user asks for another chain, and tell the user to verify feed addresses against the official Chainlink docs (and add an L2 Sequencer Uptime check before production on L2 networks).
-5. Keep the template's Foundry layout and contract names unless the user asks for a different framework, and note that the example code is unaudited and should be reviewed before production use.
+5. Keep the template's Foundry layout unless the user asks for a different framework, and note that the example code is unaudited and should be reviewed before production use. Contract and file names are illustrative: renaming them to fit the user's use case is correct, and so is replacing the raw `getLatestPrice()` / `getDecimals()` / `getPriceFeed()` surface with the derived value the user actually asked for. Only penalize naming when the response drops a required file role (consumer, mock, script, tests, config). Do penalize copying the template's placeholder values without reasoning when the user's target differs — in particular a `stalenessThreshold` left at the template's hour without tying it to the target feed's stated heartbeat.
 
 Score:
 - 1.0: Faithful, complete starter-kit scaffold with validation and run/verify guidance (PASS)

@@ -1,0 +1,1 @@
+Scaffold a runnable Foundry project that uses Chainlink Data Feeds on Base to compute a borrower's collateral ratio in basis points from ETH/USD, with tests I can run using `forge test`. It should quote the ratio for a given collateral amount and debt amount rather than just exposing the raw price.

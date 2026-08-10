@@ -217,6 +217,24 @@ tests:
       requires_live_source: "no"
     assert: *starter_kit_asserts
 
+  - vars:
+      case_file: cases/functional/starter-kit-03.txt
+      reference_files:
+        - templates/starter-kit/README.md
+        - templates/starter-kit/foundry.toml
+        - templates/starter-kit/remappings.txt
+        - templates/starter-kit/src/PriceFeedConsumer.sol
+        - templates/starter-kit/script/PriceFeedConsumer.s.sol
+        - templates/starter-kit/test/PriceFeedConsumer.t.sol
+        - templates/starter-kit/test/mocks/MockV3Aggregator.sol
+        - references/feed-operations.md
+      workflow: starter-kit
+      requires_live_source: "no"
+    metadata:
+      workflow: starter-kit
+      category: functional
+    assert: *starter_kit_asserts
+
   # ── Trigger Positive ─────────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/reading-price-feeds-01.txt

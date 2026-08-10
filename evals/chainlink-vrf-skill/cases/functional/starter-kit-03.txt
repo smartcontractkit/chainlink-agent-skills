@@ -1,0 +1,1 @@
+Set me up a runnable Foundry project using Chainlink VRF on Sepolia for an NFT raffle. One request should pick a single winner index out of the current entrant list and store only that winner, then let anyone read the winner for a past raffle round. I don't need the raw random words kept around.

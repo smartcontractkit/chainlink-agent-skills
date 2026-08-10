@@ -142,6 +142,15 @@ tests:
       category: functional
     assert: *starter_kit_asserts
 
+  - vars:
+      case_file: cases/functional/starter-kit-03.txt
+      workflow: starter-kit
+      requires_live_source: "no"
+    metadata:
+      workflow: starter-kit
+      category: functional
+    assert: *starter_kit_asserts
+
   # ── Trigger Positive ─────────────────────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/subscription-01.txt
