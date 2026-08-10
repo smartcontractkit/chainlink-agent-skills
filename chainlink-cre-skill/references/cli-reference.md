@@ -137,10 +137,12 @@ cre workflow simulate <workflow-dir> --target <target-name>
 | `--http-payload` | HTTP trigger body: JSON string or path to a JSON file | When an HTTP body is required and not interactive |
 | `--evm-tx-hash` | Transaction hash `0x...` for EVM log trigger | When an onchain event must be specified |
 | `--evm-event-index` | 0-based log index inside the transaction | When the tx has multiple events |
-| `--timeout` | Simulation timeout | No (default: `30s`) |
+| `--evm-receipt-timeout` | Max wait for an EVM transaction receipt (not an overall simulation timeout); only on CLI versions that expose it | No |
 | `--broadcast` | Execute onchain writes via MockKeystoneForwarder | No |
 | `--limits` | Production limits: `default`, file path, or `none` | No |
 | `--skip-type-checks` | Skip TypeScript typecheck during compile | No |
+
+There is no generic overall simulation `--timeout` flag. Run `cre workflow simulate --help` to list the flags available in the installed CLI version.
 
 **IMPORTANT**: Always include `--target`. If the workflow has HTTP or EVM log handlers, or multiple handlers, the CLI may also prompt for payload, transaction hash, or which handler to run. Pass `--http-payload`, `--evm-tx-hash` / `--evm-event-index`, and for full automation `--non-interactive` with `--trigger-index`. See simulation.md.
 

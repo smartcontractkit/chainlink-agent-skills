@@ -78,7 +78,7 @@ cre workflow simulate <workflow-dir> --target <target-name>
 | `--http-payload` | JSON string or path to JSON file for HTTP trigger body | HTTP trigger when a body is required or with `--non-interactive` |
 | `--evm-tx-hash` | Transaction hash `0x...` containing the log | EVM log trigger when a tx is required or with `--non-interactive` |
 | `--evm-event-index` | 0-based log index inside the transaction | When the tx has multiple events and you must pick one |
-| `--timeout` | Simulation timeout | No (default: 30s) |
+| `--evm-receipt-timeout` | Max wait for an EVM transaction receipt (not an overall simulation timeout); only on CLI versions that expose it | No |
 | `--broadcast` | Real onchain writes (MockKeystoneForwarder) | No |
 | `--limits` | Production limits profile or file | No |
 | `--skip-type-checks` | Skip TypeScript typecheck | No |
@@ -155,10 +155,10 @@ After the curl request, Terminal 1 shows the workflow execution result.
 
 ### EVM Log Trigger
 
-**Default:** the simulator can monitor the chain for matching log events using the RPC endpoint from `project.yaml`. The run may need a long **`--timeout`** because it waits for a matching event.
+**Default:** the simulator can monitor the chain for matching log events using the RPC endpoint from `project.yaml`. There is no generic simulation **`--timeout`** to extend that wait; for a deterministic run, pass **`--evm-tx-hash`** (and **`--evm-event-index`** when needed).
 
 ```bash
-cre workflow simulate my-workflow --target staging-settings --timeout 120s
+cre workflow simulate my-workflow --target staging-settings
 ```
 
 **Non-interactive (agents, CI):** pass **`--evm-tx-hash`** (and **`--evm-event-index`** if needed) so the CLI does not ask for a transaction. Use **`--non-interactive`** and **`--trigger-index`** as in the [Non-Interactive Rule](#non-interactive-rule) section.
@@ -275,15 +275,22 @@ If the module is in a private repository:
 GONOSUMCHECK=github.com/smartcontractkit/* GONOSUMDB=github.com/smartcontractkit/* GOPROXY=direct go mod tidy
 ```
 
-### Simulation timeout
+### Simulation appears to hang
 
-**Cause**: Default timeout (30s) may be too short for EVM log triggers or slow RPC endpoints.
+**Cause**: An EVM log trigger may be waiting for a matching event, or the RPC endpoint may be slow.
 
-**Fix**: Increase the timeout:
+**Fix**: Run deterministically with the transaction and handler inputs:
 
 ```bash
-cre workflow simulate my-workflow --target staging-settings --timeout 120s
+cre workflow simulate my-workflow \
+  --evm-tx-hash 0x... \
+  --evm-event-index 0 \
+  --non-interactive \
+  --trigger-index <n> \
+  --target staging-settings
 ```
+
+Run `cre workflow simulate --help` on the installed CLI to confirm the flags available for that version.
 
 ## Official Documentation
 
