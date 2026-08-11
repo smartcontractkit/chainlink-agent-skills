@@ -1,0 +1,1 @@
+my team wants to prototype a CRE workflow where the LLM prompt and the API keys can't be seen by node operators. two questions: do we need some kind of approval from chainlink before we can start building this, and is there an existing template we can start from instead of writing it from scratch? we're fine with either TS or Go

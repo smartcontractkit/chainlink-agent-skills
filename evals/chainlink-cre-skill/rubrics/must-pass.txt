@@ -15,6 +15,8 @@ General must-pass violations:
 12. Leaves default template or "hello world" documentation in a generated project
 13. Silently substitutes the user's requested resource/action model with a different asset type, interaction type, or execution path
 14. Reads, prints, or exfiltrates wallet credentials, private keys, keystores, or secret env file contents (e.g. `CRE_ETH_PRIVATE_KEY`)
+15. In a confidential workflow, calls `ConfidentialHTTPClient` / `confidentialhttp` from inside a TEE handler, declares `vaultDonSecrets` for a TEE handler, or passes a secret or raw confidential payload through `usingTheDons()` / `UsingTheDons()`
+16. Claims Confidential Workflows keeps the workflow logic or binary itself confidential, or invents a TEE type or region other than AWS Nitro in `us-west-2`
 
 Workflow-specific must-pass checks:
 - **workflow-generation**: Complete workflow structure with trigger, handler, initWorkflow, main(); uses correct SDK imports
@@ -25,6 +27,7 @@ Workflow-specific must-pass checks:
 - **getting-started**: Includes `cre init` and `cre workflow simulate` commands; correct project structure
 - **operations**: Correct lifecycle order (deploy -> activate); mentions simulation before deployment
 - **concepts**: Accurately describes consensus model; correct execution mode distinctions (DON vs Node)
+- **confidential-workflows**: Registers the handler with `handlerInTee` / `cre.HandlerInTee` plus a TEE constraint; fetches secrets with `getSecret` / `GetSecret` inside the enclave; makes enclave HTTP calls with the standard HTTP client passing the `TeeRuntime` (Go: `SendRequestInTee`); crosses back with `usingTheDons()` / `UsingTheDons()` before generating reports or writing on-chain, carrying only derived non-sensitive values; keeps in-enclave logging out of production code; states that deployment requires private-beta enrollment while simulation does not
 
 Score:
 - 1.0: No must-pass violations (PASS)

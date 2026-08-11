@@ -18,16 +18,22 @@ Do not use for HTTP requests (see http-client.md), trigger configuration (see tr
 
 ```typescript
 import {
-  EVMClientCapability,
+  EVMClient,
   CronCapability,
+  encodeCallMsg,
+  getNetwork,
+  bytesToHex,
+  LAST_FINALIZED_BLOCK_NUMBER,
   handler,
   Runner,
   type Runtime,
 } from "@chainlink/cre-sdk"
 import {
+  type Address,
   parseAbi,
   encodeFunctionData,
   decodeFunctionResult,
+  zeroAddress,
 } from "viem"
 
 type Config = {
@@ -40,10 +46,18 @@ const abi = parseAbi([
   "function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
 ])
 
-const LAST_FINALIZED_BLOCK_NUMBER = 0n
-
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const evmClient = new EVMClientCapability()
+  // The chain selector goes in the constructor, so you need one client per chain.
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainSelectorName,
+    isTestnet: true,
+  })
+  if (!network) {
+    throw new Error(`Unknown chain selector name: ${runtime.config.chainSelectorName}`)
+  }
+
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi,
@@ -52,19 +66,19 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
   const result = evmClient
     .callContract(runtime, {
-      toAddress: runtime.config.contractAddress,
-      chainSelectorName: runtime.config.chainSelectorName,
-      callMsg: {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: runtime.config.contractAddress as Address,
         data: callData,
-        blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-      },
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
     })
     .result()
 
   const decoded = decodeFunctionResult({
     abi,
     functionName: "latestRoundData",
-    data: result.data as `0x${string}`,
+    data: bytesToHex(result.data),
   })
 
   const [roundId, answer, startedAt, updatedAt, answeredInRound] = decoded
@@ -230,8 +244,12 @@ const encoded = encodeAbiParameters(
 
 ```typescript
 import {
-  EVMClientCapability,
+  EVMClient,
   CronCapability,
+  getNetwork,
+  prepareReportRequest,
+  bytesToHex,
+  TxStatus,
   handler,
   Runner,
   type Runtime,
@@ -245,28 +263,41 @@ type Config = {
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const evmClient = new EVMClientCapability()
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainSelectorName,
+    isTestnet: true,
+  })
+  if (!network) {
+    throw new Error(`Unknown chain selector name: ${runtime.config.chainSelectorName}`)
+  }
+
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const encoded = encodeAbiParameters(
     parseAbiParameters("uint256 price"),
     [42000000000n]
   )
 
-  const signedReport = runtime.report(encoded)
+  // runtime.report returns a lazy handle; resolve it with .result()
+  const signedReport = runtime.report(prepareReportRequest(encoded)).result()
 
   const txResult = evmClient
     .writeReport(runtime, {
-      toAddress: runtime.config.consumerAddress,
-      chainSelectorName: runtime.config.chainSelectorName,
+      receiver: runtime.config.consumerAddress,
       report: signedReport,
-      gasLimit: 500000n,
+      gasConfig: { gasLimit: "500000" },
     })
     .result()
 
-  runtime.log(`TX hash: ${txResult.txHash}`)
-  runtime.log(`TX status: ${txResult.txStatus}`)
+  if (txResult.txStatus !== TxStatus.SUCCESS) {
+    throw new Error(`Write failed: ${txResult.errorMessage || txResult.txStatus}`)
+  }
 
-  return txResult.txHash
+  const txHash = bytesToHex(txResult.txHash ?? new Uint8Array(32))
+  runtime.log(`TX hash: ${txHash}`)
+
+  return txHash
 }
 
 const initWorkflow = (config: Config) => {

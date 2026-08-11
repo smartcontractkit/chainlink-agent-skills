@@ -285,6 +285,42 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  # ── Functional: Confidential Workflows ──────────────────────────────
+  - vars:
+      case_file: cases/functional/confidential-workflows-01.txt
+      reference_files:
+        - references/confidential-workflows.md
+        - references/http-client.md
+        - references/evm-client.md
+        - references/workflow-patterns.md
+      workflow: confidential-workflows
+      requires_live_source: "no"
+    metadata:
+      workflow: confidential-workflows
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/confidential-workflows-02.txt
+      reference_files:
+        - references/confidential-workflows.md
+        - references/project-scaffolding.md
+        - references/simulation.md
+        - references/workflow-patterns.md
+      workflow: confidential-workflows
+      requires_live_source: "no"
+    assert: *functional_asserts
+
+  - vars:
+      case_file: cases/functional/confidential-workflows-03.txt
+      reference_files:
+        - references/confidential-workflows.md
+        - references/project-scaffolding.md
+      workflow: confidential-workflows
+      requires_live_source: "no"
+    assert: *functional_asserts
+
   # ── Functional: Feedback Loop ───────────────────────────────────────
   - vars:
       case_file: cases/functional/feedback-no-offer-01.txt
@@ -393,6 +429,18 @@ tests:
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
+  - vars:
+      case_file: cases/trigger-positive/confidential-workflows-01.txt
+      reference_files:
+        - references/confidential-workflows.md
+      workflow: confidential-workflows
+      expected_trigger: "yes"
+    metadata:
+      workflow: confidential-workflows
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
   # ── Trigger Positive: Feedback Loop ─────────────────────────────────
   - vars:
       case_file: cases/trigger-positive/feedback-gap-01.txt
@@ -474,6 +522,17 @@ tests:
 
   - vars:
       case_file: cases/trigger-negative/neutral-monitoring-agent-01.txt
+      reference_files: []
+      workflow: none
+      expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/confidential-ai-attester-01.txt
       reference_files: []
       workflow: none
       expected_trigger: "no"

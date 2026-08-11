@@ -1,11 +1,11 @@
 ---
 name: chainlink-confidential-ai-attester-skill
-description: "Chainlink Confidential AI Attester: submit private documents to an LLM inside an AWS Nitro Enclave and get back a cryptographically attested result — raw documents never leave the TEE. Use for these hackathon scenarios: (1) undercollateralized DeFi lending — upload a bank statement, get an attested approved/denied JSON decision without exposing financials on-chain; (2) accredited investor verification — check SEC Rule 501 qualification from brokerage statements privately; (3) KYC/AML screening — analyse ID docs and transaction history inside a TEE, return a pass/fail with flags; (4) proof of reserves — verify custodian balance reports against claimed reserves; (5) any use case where an AI must read sensitive user documents and the result needs a cryptographic proof of what model ran on what data. Trigger on: private inference, attested AI, TEE inference, confidential AI, or undercollateralized lending / KYC / accredited investor mentioned alongside document analysis."
+description: "Chainlink Confidential AI Attester (alpha): submit private documents to an LLM inside an AWS Nitro Enclave and get back a cryptographically attested result — raw documents never leave the TEE. This product is in alpha, so use this skill only when the user explicitly names it — 'Confidential AI Attester', the `chainlink-confidential-ai-attester` repository, or attested LLM inference over uploaded documents — typically for: (1) undercollateralized DeFi lending from a bank statement; (2) accredited investor verification under SEC Rule 501; (3) KYC/AML screening of ID docs; (4) proof of reserves against custodian reports. Do not trigger on generic confidentiality, TEE, enclave, or privacy requests: a user who wants a Chainlink workflow's logic or data kept confidential from node operators wants CRE Confidential Workflows, which the chainlink-cre-skill covers. Prefer that skill unless this product is named."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.1"
+  version: "0.0.2"
 ---
 
 # Chainlink Confidential AI Attester

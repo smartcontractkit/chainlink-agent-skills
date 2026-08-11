@@ -32,12 +32,17 @@ Use `sendRequest` for most cases. It is simpler, more efficient, and runs entire
 
 ```typescript
 import {
-  HTTPClientCapability,
+  HTTPClient,
   CronCapability,
   handler,
   Runner,
+  json,
+  ok,
+  type HTTPSendRequester,
   type Runtime,
   ConsensusAggregationByFields,
+  median,
+  identical,
 } from "@chainlink/cre-sdk"
 import { z } from "zod"
 
@@ -53,25 +58,26 @@ const responseSchema = z.object({
 
 type ApiResponse = z.infer<typeof responseSchema>
 
-const fetchData = (url: string): ApiResponse => {
-  const response = fetch(url)
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
+// The fetch function's FIRST parameter is always an HTTPSendRequester supplied by
+// the SDK. Your own arguments come after it, and are passed to the returned function.
+// Do not use the global `fetch` here — HTTP goes through the send requester.
+const fetchData = (sendRequester: HTTPSendRequester, url: string): ApiResponse => {
+  const response = sendRequester.sendRequest({ url, method: "GET" }).result()
+  if (!ok(response)) {
+    throw new Error(`HTTP ${response.statusCode}`)
   }
-  const data = response.json()
-  return responseSchema.parse(data)
+  return responseSchema.parse(json(response))
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new HTTPClientCapability()
+  const httpClient = new HTTPClient()
 
-  const aggregation: ConsensusAggregationByFields<ApiResponse> = {
-    method: "byFields",
-    fields: {
-      price: { method: "median" },
-      symbol: { method: "identical" },
-    },
-  }
+  // ConsensusAggregationByFields is a function call, not a type annotation.
+  // Field values are bare aggregator references: `median`, not `median()`.
+  const aggregation = ConsensusAggregationByFields<ApiResponse>({
+    price: median,
+    symbol: identical,
+  })
 
   const result = httpClient
     .sendRequest(runtime, fetchData, aggregation)(runtime.config.apiUrl)
@@ -100,40 +106,66 @@ export async function main() {
 
 ### Aggregation Methods
 
-| Method | Description | Use Case |
-|--------|-------------|----------|
+Aggregation is expressed by passing SDK **function references** into `ConsensusAggregationByFields`, or by calling a whole-value aggregator such as `consensusMedianAggregation()`. There are no `{ method: "..." }` object literals in this SDK. See `sdk-reference.md` for the full list.
+
+| Field aggregator | Description | Use Case |
+|------------------|-------------|----------|
 | `median` | Median of numeric values | Prices, quantities |
 | `identical` | All nodes must return the same value | Strings, booleans, addresses |
-| `mode` | Most common value | Categorical data |
+| `commonPrefix` / `commonSuffix` | Longest shared prefix/suffix of arrays | Append-only lists, log batches |
+| `frequencyList` | Each observed value with its count | Categorical data |
+| `ignore` | Drop the field from the consensus result | Per-node noise (timings, node ids) |
 
-## GET Request with runInNodeMode (TypeScript)
+There is no `mode` aggregator; use `frequencyList` when you need observation counts.
+
+## Per-node Execution with runInNodeMode (TypeScript)
+
+`runInNodeMode` is a method on **`Runtime`**, not on the HTTP client. `httpClient.sendRequest` already wraps it, so reach for `runtime.runInNodeMode` directly only when a node has to do something `sendRequest` cannot express — several requests, or extra computation per node.
+
+The callback receives a `NodeRuntime<Config>` as its first argument. Inside it, HTTP goes through the HTTP client's two-argument overload, `httpClient.sendRequest(nodeRuntime, request).result()`.
+
+**Secrets are not available in node mode.** `NodeRuntime` extends only `BaseRuntime`, so it has no `getSecret`/`getSecrets` — and closing over the outer DON runtime does not work either, because entering node mode arms a `DonModeError` on it. Read secrets in DON mode *before* the call and pass the values in as arguments:
 
 ```typescript
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new HTTPClientCapability()
+import {
+  HTTPClient,
+  ConsensusAggregationByFields,
+  median,
+  identical,
+  json,
+  ok,
+  type NodeRuntime,
+  type Runtime,
+} from "@chainlink/cre-sdk"
 
-  const aggregation: ConsensusAggregationByFields<ApiResponse> = {
-    method: "byFields",
-    fields: {
-      price: { method: "median" },
-      symbol: { method: "identical" },
-    },
-  }
+// Extra arguments follow the NodeRuntime, and are supplied by the returned function.
+const fetchWithAuth = (nodeRuntime: NodeRuntime<Config>, apiKey: string): ApiResponse => {
+  const httpClient = new HTTPClient()
 
-  const fetchWithAuth = (): ApiResponse => {
-    const apiKey = runtime.getSecret("API_KEY")
-    const response = fetch(runtime.config.apiUrl, {
+  const response = httpClient
+    .sendRequest(nodeRuntime, {
+      url: nodeRuntime.config.apiUrl,
+      method: "GET",
       headers: { Authorization: `Bearer ${apiKey}` },
     })
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    return responseSchema.parse(response.json())
-  }
-
-  const result = httpClient
-    .runInNodeMode(runtime, fetchWithAuth, aggregation)()
     .result()
+
+  if (!ok(response)) {
+    throw new Error(`HTTP ${response.statusCode}`)
+  }
+  return responseSchema.parse(json(response))
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  // DON mode: read the secret here, before entering node mode
+  const apiKey = runtime.getSecret({ id: "API_KEY" }).result().value
+
+  const aggregation = ConsensusAggregationByFields<ApiResponse>({
+    price: median,
+    symbol: identical,
+  })
+
+  const result = runtime.runInNodeMode(fetchWithAuth, aggregation)(apiKey).result()
 
   runtime.log(`Price: ${result.price}`)
   return JSON.stringify(result)
@@ -142,8 +174,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 ### Key Difference from sendRequest
 
+- `runInNodeMode` lives on the runtime and takes no `runtime` argument of its own; `sendRequest` lives on the HTTP client and takes `runtime` first
 - `runInNodeMode` does not take a URL parameter; the fetch URL is inside the closure
-- The closure has access to `runtime.getSecret()` for API keys
+- Secrets must be read in DON mode and passed in as arguments — the node function cannot read them itself
 - Each node runs the closure independently; results are aggregated afterward
 
 ## GET Request (Go)
@@ -229,33 +262,46 @@ func InitWorkflow(config *Config) []cre.HandlerDefinition {
 
 ## POST Request (TypeScript)
 
+On the standard HTTP client, `body` is a protobuf `bytes` field, so it must be **base64-encoded** — you cannot assign a raw JSON string to it. (`bodyString` exists only on the *Confidential* HTTP client's request type; it is not a field here.)
+
 ```typescript
-const postData = (): ApiResponse => {
-  const response = fetch("https://api.example.com/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: "ETH/USD" }),
-  })
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
+const postData = (sendRequester: HTTPSendRequester): ApiResponse => {
+  const payload = JSON.stringify({ query: "ETH/USD" })
+
+  const response = sendRequester
+    .sendRequest({
+      url: "https://api.example.com/submit",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: bytesToBase64(new TextEncoder().encode(payload)), // base64, not the raw string
+    })
+    .result()
+
+  if (!ok(response)) {
+    throw new Error(`HTTP ${response.statusCode}`)
   }
-  return responseSchema.parse(response.json())
+  return responseSchema.parse(json(response))
 }
 
 const result = httpClient
-  .runInNodeMode(runtime, postData, aggregation)()
+  .sendRequest(runtime, postData, aggregation)()
   .result()
 ```
 
 ## Cache Settings for Non-Idempotent Requests
 
-By default, identical HTTP requests within a short window may be cached. For non-idempotent requests (POST, PUT, DELETE), disable caching:
+By default, identical HTTP requests within a short window may be cached. Caching is configured **on the request object** via `cacheSettings` — it is not a fourth argument to `sendRequest` or `runInNodeMode`, and there is no `{ cache: false }` option. For non-idempotent requests (POST, PUT, DELETE), disable the store:
 
 ```typescript
-const result = httpClient
-  .runInNodeMode(runtime, postData, aggregation, { cache: false })()
-  .result()
+sendRequester.sendRequest({
+  url: "https://api.example.com/submit",
+  method: "POST",
+  body: bytesToBase64(new TextEncoder().encode(payload)),
+  cacheSettings: { store: false },
+})
 ```
+
+`cacheSettings` also accepts `maxAge` (a `Duration`) to bound how long a stored response stays usable.
 
 ## Webhooks And Alert Delivery
 
@@ -287,11 +333,11 @@ const submitReport = (): { status: string } => {
   return { status: response.ok ? "success" : "failed" }
 }
 
-const result = httpClient
-  .runInNodeMode(runtime, submitReport, {
-    method: "byFields",
-    fields: { status: { method: "identical" } },
-  })()
+const result = runtime
+  .runInNodeMode(
+    submitReport,
+    ConsensusAggregationByFields<{ status: string }>({ status: identical }),
+  )()
   .result()
 ```
 
@@ -299,12 +345,14 @@ const result = httpClient
 
 The Confidential HTTP client provides privacy-preserving HTTP requests via enclave execution. Secrets are injected into the request inside the enclave using template syntax, never exposed to DON nodes.
 
+This is not the same feature as Confidential Workflows, which runs an entire handler inside an enclave — see `confidential-workflows.md`. Use Confidential HTTP when only one request's credentials and payload need protecting while the decision logic stays on the DON. The two do not compose: `ConfidentialHTTPClient` has no `TeeRuntime` overload, and Go's `confidentialhttp.Client.SendRequest` only accepts `cre.Runtime`, so neither can be called from a TEE handler. Inside a TEE handler, use the standard `HTTPClient` with the `TeeRuntime` (Go: `http.Client.SendRequestInTee`).
+
 ### Key Differences from Standard HTTP
 
 | Aspect | Standard HTTP | Confidential HTTP |
 |--------|--------------|-------------------|
-| Class | `HTTPClientCapability` | `ConfidentialHTTPClient` |
-| Secrets | `runtime.getSecret()` | `{{.secretName}}` template in headers/body |
+| Class | `HTTPClient` | `ConfidentialHTTPClient` |
+| Secrets | `runtime.getSecret({ id }).result().value` | `{{.secretName}}` template in headers/body |
 | Secret storage | secrets.yaml + env vars | Vault DON (`vaultDonSecrets`) |
 | Execution | DON/Node mode | Enclave execution |
 | Response | Plain | Optional encryption via `encryptOutput` |

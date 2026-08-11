@@ -164,20 +164,50 @@ secretsNames:
 
 ### TypeScript
 
+`getSecret` takes an **object** (`{ id, namespace? }`) and is **synchronous** — it returns a lazy handle resolved with `.result()`, not a `Promise` and not `string | undefined`. Never `await` it, and never pass a bare string:
+
 ```typescript
-const apiKey = runtime.getSecret("MY_API_KEY")
-if (!apiKey) {
-  throw new Error("MY_API_KEY secret not found")
+const apiKey = runtime.getSecret({ id: "MY_API_KEY" }).result().value
+```
+
+A missing or unauthorized secret throws `SecretsError` from `.result()`; it does not resolve to `undefined`, so guard with try/catch rather than a falsy check:
+
+```typescript
+let apiKey: string
+try {
+  apiKey = runtime.getSecret({ id: "MY_API_KEY" }).result().value
+} catch (err) {
+  throw new Error(`MY_API_KEY secret not available: ${err}`)
 }
+```
+
+For several secrets, use one batched call — the result is keyed by secret `id`:
+
+```typescript
+const requests = [{ id: "KEY_A" }, { id: "KEY_B" }]
+const secrets = runtime.getSecrets(requests).result()
+const keyA = secrets.KEY_A.value
+```
+
+`TeeRuntime` in a Confidential Workflow exposes exactly the same `getSecret`/`getSecrets` shape — both runtimes extend the same `SecretsProvider` type.
+
+Secrets are **DON-mode only**. `NodeRuntime` has no `getSecret`, and closing over the DON runtime inside a `runInNodeMode` callback throws `DonModeError`. Read the secret first, then pass the value in:
+
+```typescript
+const apiKey = runtime.getSecret({ id: "MY_API_KEY" }).result().value
+const result = runtime.runInNodeMode(fetchWithAuth, aggregation)(apiKey).result()
 ```
 
 ### Go
 
+`GetSecret` takes a `*cre.SecretRequest` and returns a `Promise`, resolved with `.Await()`:
+
 ```go
-apiKey, err := runtime.GetSecret("MY_API_KEY")
+apiKey, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
 if err != nil {
     return nil, fmt.Errorf("failed to get secret: %w", err)
 }
+// apiKey.Value holds the secret string
 ```
 
 ### In Deployed Workflows
@@ -291,7 +321,7 @@ All CRE capability calls in TypeScript return objects with a `.result()` method.
 ```typescript
 const response = httpClient.sendRequest(runtime, fetchFn, aggregation)(config).result()
 const contractCall = evmClient.callContract(runtime, { ... }).result()
-const secret = runtime.getSecret("KEY")
+const secret = runtime.getSecret({ id: "KEY" }).result().value
 ```
 
 This pattern is consistent across all SDK capabilities and replaces the `await` pattern from standard async JavaScript.

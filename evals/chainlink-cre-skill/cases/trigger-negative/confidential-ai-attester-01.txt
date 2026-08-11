@@ -1,0 +1,1 @@
+I'm using the Chainlink Confidential AI Attester for a hackathon project. A borrower uploads a PDF bank statement, it gets analysed by an LLM inside an AWS Nitro Enclave, and I need the attested approved/denied JSON back so my undercollateralized lending contract can verify it. How do I submit the document and verify the attestation?
