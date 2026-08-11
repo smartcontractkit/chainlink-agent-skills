@@ -24,10 +24,13 @@ Always use `cre init` with `--non-interactive` and explicit flags to create new 
 |------|-------------|-----------------------------------|
 | `--non-interactive` | Fail instead of prompting | Yes (prevents interactive prompts) |
 | `-p, --project-name` | Name for the new project | Yes (when creating a new project) |
+| `--deployment-registry` | Deployment registry the new project targets | Yes (required to guarantee non-interactive behavior; omitting it can still prompt for registry selection) |
 | `-w, --workflow-name` | Name for the new workflow | No (defaults to template name) |
 | `-t, --template` | Template name (e.g., `hello-world-ts`, `hello-world-go`) | No (but recommended) |
 | `--rpc-url` | RPC endpoint, format: `chain-name=url` (repeatable) | Depends on template |
 | `--refresh` | Bypass template cache and fetch from GitHub | No |
+
+Always pass `--deployment-registry <ID>` so the run is genuinely non-interactive; omitting it can still prompt for registry selection. Valid registry IDs are scoped to the logged-in user's account and organization rather than a fixed global list, so use authenticated `cre registry list` to obtain or confirm an available ID instead of hardcoding or guessing.
 
 Built-in templates (available offline, no GitHub fetch needed):
 - `hello-world-go` - Go hello world with cron trigger
@@ -43,6 +46,7 @@ For a Confidential Workflow, scaffold from `hello-confidential-workflows-ts` or 
 cre init \
   --non-interactive \
   --project-name my-project \
+  --deployment-registry <your-deployment-registry> \
   --workflow-name my-workflow \
   --template hello-world-ts
 ```
@@ -53,6 +57,7 @@ cre init \
 cre init \
   --non-interactive \
   --project-name my-project \
+  --deployment-registry <your-deployment-registry> \
   --workflow-name my-workflow \
   --template hello-world-go
 ```
@@ -63,6 +68,7 @@ cre init \
 cre init \
   --non-interactive \
   --project-name my-project \
+  --deployment-registry <your-deployment-registry> \
   --workflow-name my-workflow \
   --template hello-world-ts \
   --rpc-url sepolia=https://ethereum-sepolia-rpc.publicnode.com

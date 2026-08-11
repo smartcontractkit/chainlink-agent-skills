@@ -347,7 +347,7 @@ Execution is single-threaded. `.Await()` drives the event loop forward until the
 Use this checklist when generating or scaffolding a workflow, not for simple explanations.
 
 1. Default to TypeScript when the user gives no language preference, unless the repo or prompt strongly indicates Go.
-2. Read project-scaffolding.md before creating a new project. Prefer `cre init --non-interactive --project-name <name> --template <template>` and fall back to manual templates only if needed.
+2. Read project-scaffolding.md before creating a new project. Prefer `cre init --non-interactive --project-name <name> --deployment-registry <ID> --template <template>`; pass `--deployment-registry` so the run is genuinely non-interactive, since omitting it can still prompt for registry selection, and get `<ID>` from authenticated `cre registry list` because valid IDs are scoped to the logged-in account and organization. Fall back to manual templates only if needed.
 3. For HTTP requests, choose regular HTTP by default. Ask about Confidential HTTP when the user needs privacy-preserving requests, secret injection via `{{.secretName}}`, or enclave execution.
 4. If multiple triggers share config, secrets, or consumer contracts, put them in one workflow with multiple handlers.
 5. Generate the complete project shape from the embedded references. Mark specific missing live values inline, such as `// NEED: exact chain selector name`, instead of inventing them.

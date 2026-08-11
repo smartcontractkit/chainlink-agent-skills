@@ -17,7 +17,7 @@ When running CRE CLI commands from an automated agent or script, always provide 
 
 Key rules:
 - **Always pass `--target`** on every `cre workflow` and `cre secrets` command. Omitting it triggers a "Select a target" interactive prompt.
-- **Always pass `--non-interactive`** with `cre init` plus the required flags (`--project-name`, `--template`). Without `--non-interactive`, the command prompts for input.
+- **Always pass `--non-interactive`** with `cre init` plus the required flags (`--project-name`, `--deployment-registry`, `--template`). A deployment registry ID is needed for the run to be genuinely non-interactive. Without `--non-interactive`, the command prompts for input.
 - **Request JSON output whenever the command supports it** so you can parse results reliably instead of scraping human-formatted text. The flag differs by command:
   - `cre templates list --json`
   - `cre workflow list --output json`
@@ -78,12 +78,13 @@ cre init [flags]
 |------|-------------|-----------------------------------|
 | `--non-interactive` | Fail instead of prompting (for CI/CD and agents) | Yes (prevents interactive prompts) |
 | `-p, --project-name` | Name for the new project | Yes (when creating a new project) |
+| `--deployment-registry` | Deployment registry the new project targets | Yes (required to guarantee non-interactive behavior; omitting it can still prompt for registry selection) |
 | `-w, --workflow-name` | Name for the new workflow | No |
 | `-t, --template` | Template name (e.g., `hello-world-ts`, `hello-world-go`) | No (but recommended) |
 | `--rpc-url` | RPC endpoint, format: `chain-name=url` (repeatable) | Depends on template |
 | `--refresh` | Bypass template cache and fetch from GitHub | No |
 
-Always use `--non-interactive` when running as an agent to prevent the CLI from waiting for input.
+Always use `--non-interactive` when running as an agent to prevent the CLI from waiting for input. Always pass `--deployment-registry <ID>` so the run is genuinely non-interactive; omitting it can still prompt for registry selection. Valid registry IDs are scoped to the logged-in user's account and organization rather than a fixed global list, so use authenticated `cre registry list` to obtain or confirm an available ID instead of hardcoding or guessing.
 
 Non-interactive example:
 
@@ -91,6 +92,7 @@ Non-interactive example:
 cre init \
   --non-interactive \
   --project-name my-project \
+  --deployment-registry <your-deployment-registry> \
   --workflow-name my-workflow \
   --template hello-world-ts
 ```
