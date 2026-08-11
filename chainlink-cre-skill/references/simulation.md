@@ -254,7 +254,7 @@ GOFLAGS=-mod=mod go mod tidy
 **Cause**: Code or a dependency uses Node.js APIs that are not available in the QuickJS WASM runtime.
 
 **Fix**: Replace Node.js APIs with CRE equivalents:
-- `process.env.X` -> `runtime.getSecret("X")`
+- `process.env.X` -> `runtime.getSecret({ id: "X" }).result().value`
 - `Buffer.from(...)` -> `new Uint8Array(...)`
 - `crypto.randomBytes(...)` -> not available; use deterministic logic or Go workflows for randomness
 - See project-scaffolding.md for the full list of unsupported APIs

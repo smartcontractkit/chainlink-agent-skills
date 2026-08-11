@@ -35,6 +35,8 @@ Built-in templates (available offline, no GitHub fetch needed):
 
 Run `cre templates list` to see all available templates including those from GitHub. When running as an agent, add the `--json` flag (`cre templates list --json`) to receive machine-readable output for reliable parsing.
 
+For a Confidential Workflow, scaffold from `hello-confidential-workflows-ts` or `hello-confidential-workflows-go` — both are registered starter templates, so `cre init -t hello-confidential-workflows-ts` works. The three advanced confidential examples (`ai-audit-firewall`, `automated-liquidation-protection`, `automated-portfolio-rebalancing`) are not registered and cannot be used with `-t`; they must be cloned from the `cre-templates` repository. See `confidential-workflows.md`.
+
 #### TypeScript project:
 
 ```bash
@@ -427,7 +429,7 @@ CRE TypeScript workflows compile to WebAssembly via QuickJS. The following Node.
 
 ### What This Means for Code Generation
 
-- Never use `process.env` to read environment variables. Use `runtime.getSecret()` instead.
+- Never use `process.env` to read environment variables. Use `runtime.getSecret({ id: "NAME" }).result().value` instead — it takes an object argument and is synchronous, never awaited.
 - Never use `Buffer`. Use `Uint8Array` or `ArrayBuffer` instead.
 - Never use `crypto` from Node.js. Use `viem` utilities for hashing and encoding.
 - Never use `setTimeout`, `setInterval`, or `setImmediate`. The WASM environment is synchronous.

@@ -33,6 +33,9 @@ Do not use for workflow code patterns, CLI usage, or conceptual questions that a
 | HTTP GET (Go) | `https://docs.chain.link/cre/guides/workflow/using-http-client/get-request-go.md` |
 | HTTP POST (TS) | `https://docs.chain.link/cre/guides/workflow/using-http-client/post-request-ts.md` |
 | Confidential HTTP (TS) | `https://docs.chain.link/cre/capabilities/confidential-http-ts.md` |
+| Making a workflow confidential (TS) | `https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts` |
+| Making a workflow confidential (Go) | `https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go` |
+| Requesting Confidential Workflows access | `https://docs.chain.link/cre/account/confidential-workflows-access` |
 | Onchain read (TS) | `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-read-ts.md` |
 | Onchain read (Go) | `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-read-go.md` |
 | Onchain write | `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain.md` |
@@ -52,6 +55,8 @@ Do not use for workflow code patterns, CLI usage, or conceptual questions that a
 | Project configuration (TS) | `https://docs.chain.link/cre/reference/project-configuration-ts.md` |
 | Project configuration (Go) | `https://docs.chain.link/cre/reference/project-configuration-go.md` |
 | CRE CLI reference | `https://docs.chain.link/cre/reference/cli.md` |
+| Confidential Workflows client (TS) | `https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-ts` |
+| Confidential Workflows client (Go) | `https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-go` |
 
 ## Concepts
 
@@ -60,12 +65,15 @@ Do not use for workflow code patterns, CLI usage, or conceptual questions that a
 | Consensus computing | `https://docs.chain.link/cre/concepts/consensus-computing.md` |
 | Finality | `https://docs.chain.link/cre/concepts/finality.md` |
 | Non-determinism | `https://docs.chain.link/cre/concepts/non-determinism.md` |
+| Confidential Workflows | `https://docs.chain.link/cre/concepts/confidential-workflows` |
 
 ## GitHub Repositories
 
 | Repository | URL | Description |
 |------------|-----|-------------|
 | CRE Templates | `https://github.com/smartcontractkit/cre-templates` | Starter templates for CRE workflows |
+| Hello Confidential Workflows | `https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/hello-confidential-workflows` | Minimal TEE workflow, TS and Go; available via `cre init -t` |
+| Confidential Workflows examples | `https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows` | AI audit firewall, liquidation protection, portfolio rebalancing; clone-only (see `confidential-workflows.md`) |
 | CRE SDK TypeScript | `https://github.com/smartcontractkit/cre-sdk-typescript` | TypeScript SDK source |
 | CRE SDK Go | `https://github.com/smartcontractkit/cre-sdk-go` | Go SDK source |
 | CRE CLI | `https://github.com/smartcontractkit/cre-cli` | CLI source and releases |
