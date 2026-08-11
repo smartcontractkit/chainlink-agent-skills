@@ -299,7 +299,7 @@ In Go each TEE binding owns its own region enum (`cre.Nitro` pairs with `cre.Nit
 | HTTP from inside the enclave | `new HTTPClient().sendRequest(runtime, req).result()` | `(&http.Client{}).SendRequestInTee(runtime, req).Await()` |
 | Cross back to the DON | `runtime.usingTheDons()` returns `Runtime<C>` | `runtime.UsingTheDons()` returns `cre.Runtime` |
 | Report without a full crossover | `runtime.reportFromDon({...}).result()` | `runtime.ReportFromDon(&cre.ReportRequest{...}).Await()` |
-| Config, time, logging, metrics | `runtime.config`, `runtime.now()`, `runtime.log()`, `runtime.emitMetric()` | config is a handler parameter; `runtime.Now()`, `runtime.Logger()` |
+| Config, time, logging | `runtime.config`, `runtime.now()`, `runtime.log()` | config is a handler parameter; `runtime.Now()`, `runtime.Logger()` |
 
 `TeeRuntime` extends the base runtime and the secrets provider, so triggers, config parsing, and the `Runner` setup are identical to a non-confidential workflow. The handler registration and the runtime type are the only structural differences.
 
