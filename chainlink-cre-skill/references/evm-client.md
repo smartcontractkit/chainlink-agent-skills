@@ -51,7 +51,6 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainSelectorName,
-    isTestnet: true,
   })
   if (!network) {
     throw new Error(`Unknown chain selector name: ${runtime.config.chainSelectorName}`)
@@ -266,7 +265,6 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainSelectorName,
-    isTestnet: true,
   })
   if (!network) {
     throw new Error(`Unknown chain selector name: ${runtime.config.chainSelectorName}`)
