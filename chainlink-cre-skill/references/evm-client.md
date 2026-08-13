@@ -103,54 +103,91 @@ export async function main() {
 package main
 
 import (
+    "fmt"
+    "log/slog"
     "math/big"
-    "github.com/smartcontractkit/cre-sdk-go/cre"
+
+    "my-project/contracts/evm/src/generated/storage"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
     "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-    "my-project/contracts/evm/src/abi"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/smartcontractkit/cre-sdk-go/cre/wasm"
 )
 
 type Config struct {
-    Schedule          string `json:"schedule"`
-    ContractAddress   string `json:"contractAddress"`
-    ChainSelectorName string `json:"chainSelectorName"`
+    Schedule        string `json:"schedule"`
+    ContractAddress string `json:"contractAddress"`
+    ChainSelector   uint64 `json:"chainSelector"`
 }
 
 type Result struct {
-    Price string `json:"price"`
+    Value string `json:"value"`
 }
 
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*Result, error) {
-    evmClient := runtime.EVMClient()
+    evmClient := &evm.Client{ChainSelector: config.ChainSelector}
+    contractAddress := common.HexToAddress(config.ContractAddress)
 
-    binding := abi.NewAggregatorV3Interface(
-        config.ContractAddress,
-        config.ChainSelectorName,
-        evmClient,
-    )
-
-    result, err := binding.LatestRoundData(big.NewInt(-3)).Await()
+    binding, err := storage.NewStorage(evmClient, contractAddress, nil)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("create Storage binding: %w", err)
     }
 
-    return &Result{Price: result.Answer.String()}, nil
+    value, err := binding.Get(runtime, big.NewInt(-3)).Await()
+    if err != nil {
+        return nil, fmt.Errorf("read storage value: %w", err)
+    }
+
+    return &Result{Value: value.String()}, nil
 }
 
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-    return []cre.HandlerDefinition{
-        cre.Handler(cron.Trigger(cron.Config{Schedule: config.Schedule}), onCronTrigger),
-    }
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    return cre.Workflow[*Config]{
+        cre.Handler(
+            cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+            onCronTrigger,
+        ),
+    }, nil
+}
+
+func main() {
+    wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
 
 ### Block Number Options
 
+#### TypeScript
+
 | Value | Description |
 |-------|-------------|
-| `0n` / `big.NewInt(0)` | Last finalized block (default, recommended) |
-| `-1n` / `big.NewInt(-1)` | Latest known block (not finalized) |
-| `-2n` / `big.NewInt(-2)` | Safe block |
-| `-3n` / `big.NewInt(-3)` | Pending block |
+| `0n` | Last finalized block (default, recommended) |
+| `-1n` | Latest known block (not finalized) |
+| `-2n` | Safe block |
+| `-3n` | Pending block |
+| Positive value | Specific block number |
+
+#### Go
+
+**Generated bindings (`binding.Method(runtime, ..., blockNumber)`)**
+
+| Value | Description |
+|-------|-------------|
+| `big.NewInt(-3)` | Finalized block (recommended for production) |
+| `big.NewInt(-2)` | Latest known block |
+| `nil` | Finalized block (default) |
+| Positive value | Specific block number |
+
+Generated read methods substitute `bindings.FinalizedBlockNumber` when `blockNumber` is `nil`.
+
+**Low-level `evm.Client` calls (`CallContract`, `BalanceAt`, `HeaderByNumber` — `BlockNumber *pb.BigInt`)**
+
+| Value | Description |
+|-------|-------------|
+| `nil` or `-2` | Latest known block (default) |
+| `-3` | Finalized block |
 | Positive value | Specific block number |
 
 ### ABI Encoding/Decoding (TypeScript)
@@ -182,8 +219,8 @@ Use `bigint` (not `number`) for all Solidity integer types to avoid precision lo
 ### Writing Data Workflow
 
 1. **ABI-encode** the data you want to write
-2. **Generate a signed report** using `runtime.report()`
-3. **Submit the report** using `evmClient.writeReport()`
+2. **Generate a signed report** using `runtime.report()` in TypeScript (`runtime.GenerateReport()` in Go)
+3. **Submit the report** using `evmClient.writeReport()` in TypeScript (a generated `WriteReportFrom<StructName>` helper or `evmClient.WriteReport()` in Go)
 
 ### TypeScript: Encoding Single Values
 
@@ -315,86 +352,137 @@ export async function main() {
 package main
 
 import (
+    "fmt"
+    "log/slog"
     "math/big"
+
+    calculator_consumer "my-project/contracts/evm/src/generated/calculator_consumer"
+
     "github.com/ethereum/go-ethereum/accounts/abi"
-    "github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
     "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/smartcontractkit/cre-sdk-go/cre/wasm"
 )
 
 type Config struct {
-    Schedule          string `json:"schedule"`
-    ConsumerAddress   string `json:"consumerAddress"`
-    ChainSelectorName string `json:"chainSelectorName"`
+    Schedule        string `json:"schedule"`
+    ConsumerAddress string `json:"consumerAddress"`
+    ChainSelector   uint64 `json:"chainSelector"`
+    GasLimit        uint64 `json:"gasLimit"`
 }
 
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*string, error) {
-    evmClient := runtime.EVMClient()
+    evmClient := &evm.Client{ChainSelector: config.ChainSelector}
+    consumerAddress := common.HexToAddress(config.ConsumerAddress)
 
-    uint256Type, _ := abi.NewType("uint256", "", nil)
+    consumerContract, err := calculator_consumer.NewCalculatorConsumer(evmClient, consumerAddress, nil)
+    if err != nil {
+        return nil, fmt.Errorf("create CalculatorConsumer binding: %w", err)
+    }
+
+    gasConfig := &evm.GasConfig{GasLimit: config.GasLimit}
+    writePromise := consumerContract.WriteReportFromCalculatorResult(runtime, calculator_consumer.CalculatorResult{
+        OffchainValue: big.NewInt(20000000000),
+        OnchainValue:  big.NewInt(22000000000),
+        FinalResult:   big.NewInt(42000000000),
+    }, gasConfig)
+
+    resp, err := writePromise.Await()
+    if err != nil {
+        return nil, fmt.Errorf("write generated report: %w", err)
+    }
+
+    txHash := common.BytesToHash(resp.TxHash).Hex()
+    return &txHash, nil
+}
+
+func writeReportExplicit(runtime cre.Runtime, evmClient *evm.Client, consumerAddress common.Address, gasLimit uint64) (string, error) {
+    uint256Type, err := abi.NewType("uint256", "", nil)
+    if err != nil {
+        return "", fmt.Errorf("create uint256 ABI type: %w", err)
+    }
     args := abi.Arguments{{Type: uint256Type}}
     encoded, err := args.Pack(big.NewInt(42000000000))
     if err != nil {
-        return nil, err
+        return "", fmt.Errorf("encode report payload: %w", err)
     }
 
-    signedReport := runtime.Report(encoded)
-
-    txResult, err := evmClient.WriteReport(cre.WriteReportConfig{
-        ToAddress:         config.ConsumerAddress,
-        ChainSelectorName: config.ChainSelectorName,
-        Report:            signedReport,
-        GasLimit:          big.NewInt(500000),
+    report, err := runtime.GenerateReport(&cre.ReportRequest{
+        EncodedPayload: encoded,
+        EncoderName:    "evm",
+        SigningAlgo:    "ecdsa",
+        HashingAlgo:    "keccak256",
     }).Await()
     if err != nil {
-        return nil, err
+        return "", fmt.Errorf("generate report: %w", err)
     }
 
-    result := txResult.TxHash
-    return &result, nil
+    resp, err := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
+        Receiver:  consumerAddress.Bytes(),
+        Report:    report,
+        GasConfig: &evm.GasConfig{GasLimit: gasLimit},
+    }).Await()
+    if err != nil {
+        return "", fmt.Errorf("write report: %w", err)
+    }
+
+    return common.BytesToHash(resp.TxHash).Hex(), nil
 }
 
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-    return []cre.HandlerDefinition{
-        cre.Handler(cron.Trigger(cron.Config{Schedule: config.Schedule}), onCronTrigger),
-    }
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    return cre.Workflow[*Config]{
+        cre.Handler(
+            cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+            onCronTrigger,
+        ),
+    }, nil
+}
+
+func main() {
+    wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
+
+The binding generator creates a `WriteReportFrom<StructName>` helper named after each ABI input struct. That helper performs the ABI encoding, `runtime.GenerateReport()`, and `evmClient.WriteReport()` steps for you.
 
 ### TxStatus Values
 
-| Status | Description |
-|--------|-------------|
-| `Success` | Transaction confirmed and successful |
-| `Reverted` | Transaction was reverted on chain |
-| `Pending` | Transaction is pending confirmation |
-| `FatalError` | Unrecoverable error |
+| Go | TypeScript | Description |
+|----|------------|-------------|
+| `evm.TxStatus_TX_STATUS_SUCCESS` | `TxStatus.SUCCESS` | Transaction confirmed and successful |
+| `evm.TxStatus_TX_STATUS_REVERTED` | `TxStatus.REVERTED` | Transaction was reverted onchain |
+| `evm.TxStatus_TX_STATUS_FATAL` | `TxStatus.FATAL` | Transaction failed with an unrecoverable error |
 
 ### Gas Configuration
 
-Default gas limit is 500,000. Override per-write with the `gasLimit` parameter.
+In Go, pass `&evm.GasConfig{GasLimit: <uint64>}` to the write call, or pass `nil` to accept the default. In TypeScript, set the per-write limit with `gasConfig.gasLimit`.
 
 ## Go Binding Generation
 
-Generate type-safe Go bindings from Solidity ABI files:
+Place raw ABI arrays (`*.abi`) or compiled contract artifacts (`*.json`) in `contracts/evm/src/abi/`, then generate the bindings:
 
 ```bash
-cre generate-bindings --abi-dir contracts/evm/src/abi --pkg abi --output contracts/evm/src/abi
+cre generate-bindings evm
 ```
 
-Place ABI JSON files in the `contracts/evm/src/abi/` directory:
-
-```
-contracts/evm/src/abi/
-├── AggregatorV3Interface.json
-└── MyContract.json
-```
-
-Generated bindings provide type-safe methods that return `Promise` objects:
+Generated Go packages land under `contracts/evm/src/generated/`. Constructors return the binding and an error, and generated read methods take the runtime first:
 
 ```go
-binding := abi.NewMyContract(address, chainSelector, evmClient)
-result, err := binding.MyMethod(arg1, arg2).Await()
+evmClient := &evm.Client{ChainSelector: config.ChainSelector}
+address := common.HexToAddress(config.ContractAddress)
+binding, err := my_contract.NewMyContract(evmClient, address, nil)
+if err != nil {
+    return nil, fmt.Errorf("create MyContract binding: %w", err)
+}
+result, err := binding.MyMethod(runtime, my_contract.MyMethodInput{
+    Arg1: arg1,
+    Arg2: arg2,
+}, big.NewInt(-3)).Await()
 ```
+
+Methods with no ABI inputs omit the `args` parameter entirely.
 
 ## Consumer Contracts
 
@@ -697,3 +785,5 @@ const display = formatUnits(1000000000000000000n, 18)
 - Onchain write: `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain.md`
 - Consumer contracts: `https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts.md`
 - Forwarder addresses: `https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts.md`
+- Go binding generation: `https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings-go.md`
+- Go EVM client SDK reference: `https://docs.chain.link/cre/reference/sdk/evm-client-go.md`

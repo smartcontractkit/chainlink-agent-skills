@@ -408,8 +408,7 @@ Package: `github.com/smartcontractkit/cre-sdk-go`
 | `Now()` | `time.Time` | Consensus-derived timestamp |
 | `Rand()` | `(*rand.Rand, error)` | Consensus-safe random source |
 | `GetSecret(name string)` | `(string, error)` | Retrieve a secret |
-| `Report(data []byte)` | `SignedReport` | Generate signed report |
-| `EVMClient()` | `EVMClient` | Access the EVM client |
+| `GenerateReport(*cre.ReportRequest)` | `Promise[*cre.Report]` | Generate a signed report from the DON |
 
 #### `cre.NodeRuntime`
 
@@ -423,7 +422,10 @@ Available inside `RunInNodeMode` callbacks:
 #### `cre.Handler(trigger, callback)`
 
 ```go
-cre.Handler(trigger TriggerDefinition, callback HandlerFunc) HandlerDefinition
+cre.Handler[C any, M proto.Message, T any, O any](
+    trigger Trigger[M, T],
+    callback func(config C, runtime cre.Runtime, payload T) (O, error),
+) ExecutionHandler[C, Runtime]
 ```
 
 #### `cre.HandlerInTee(trigger, callback, tees)` and `cre.TeeRuntime`
@@ -458,26 +460,51 @@ Asynchronous result wrapper.
 ### EVM Client API (Go)
 
 ```go
-evmClient := runtime.EVMClient()
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+
+evmClient := &evm.Client{ChainSelector: config.ChainSelector}
 ```
+
+`ChainSelector` is a `uint64`. Use `evm.ChainSelectorFromName(name)` to resolve a chain selector name first.
 
 #### Generated Bindings
 
 ```go
-binding := abi.NewMyContract(address, chainSelector, evmClient)
-result, err := binding.MyMethod(args...).Await()
+contractAddress := common.HexToAddress(config.ContractAddress)
+binding, err := my_contract.NewMyContract(evmClient, contractAddress, nil)
+if err != nil {
+    return nil, fmt.Errorf("create MyContract binding: %w", err)
+}
+result, err := binding.MyMethod(runtime, my_contract.MyMethodInput{Arg1: arg1, Arg2: arg2}, blockNumber).Await()
 ```
 
 #### WriteReport
 
+Generate a report, then submit it through the EVM client:
+
 ```go
-txResult, err := evmClient.WriteReport(cre.WriteReportConfig{
-    ToAddress:         string,
-    ChainSelectorName: string,
-    Report:            SignedReport,
-    GasLimit:          *big.Int,
+report, err := runtime.GenerateReport(&cre.ReportRequest{
+    EncodedPayload: encoded,
+    EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+}).Await()
+if err != nil {
+    return nil, err
+}
+
+resp, err := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
+    Receiver:  consumerAddress.Bytes(),
+    Report:    report,
+    GasConfig: &evm.GasConfig{GasLimit: gasLimit},
 }).Await()
 ```
+
+The stable low-level signature is `WriteReport(runtime cre.Runtime, input *evm.WriteCreReportRequest) cre.Promise[*evm.WriteReportReply]`. `evm.WriteCreReportRequest` contains `Receiver []byte`, `Report *cre.Report`, and optional `GasConfig *evm.GasConfig`; `evm.GasConfig.GasLimit` is a `uint64`.
+
+`evm.WriteReportReply` contains `TxStatus TxStatus`, `ReceiverContractExecutionStatus *ReceiverContractExecutionStatus`, `TxHash []byte`, `TransactionFee *pb.BigInt`, and `ErrorMessage *string`. `TxStatus` is one of `evm.TxStatus_TX_STATUS_SUCCESS`, `evm.TxStatus_TX_STATUS_REVERTED`, or `evm.TxStatus_TX_STATUS_FATAL`.
+
+Prefer the generated helper for ABI structs: the generator creates a `WriteReportFrom<StructName>(runtime, data, gasConfig)` method named after each input struct, which performs the encoding, `runtime.GenerateReport()`, and client `WriteReport()` calls.
 
 ### HTTP Client API (Go)
 
@@ -498,7 +525,7 @@ result, err := httpClient.RunInNodeMode(runtime, fetchFn, aggregation).Await()
 ```go
 import "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
 
-cron.Trigger(cron.Config{Schedule: "*/30 * * * * *"})
+cron.Trigger(&cron.Config{Schedule: "*/30 * * * * *"})
 ```
 
 Callback: `func(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*Result, error)`
