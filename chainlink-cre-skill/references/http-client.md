@@ -32,17 +32,15 @@ Use `sendRequest` for most cases. It is simpler, more efficient, and runs entire
 
 ```typescript
 import {
-  HTTPClient,
+  consensusMedianAggregation,
   CronCapability,
   handler,
-  Runner,
+  HTTPClient,
   json,
   ok,
+  Runner,
   type HTTPSendRequester,
   type Runtime,
-  ConsensusAggregationByFields,
-  median,
-  identical,
 } from "@chainlink/cre-sdk"
 import { z } from "zod"
 
@@ -56,35 +54,30 @@ const responseSchema = z.object({
   symbol: z.string(),
 })
 
-type ApiResponse = z.infer<typeof responseSchema>
-
-// The fetch function's FIRST parameter is always an HTTPSendRequester supplied by
-// the SDK. Your own arguments come after it, and are passed to the returned function.
-// Do not use the global `fetch` here — HTTP goes through the send requester.
-const fetchData = (sendRequester: HTTPSendRequester, url: string): ApiResponse => {
+// The callback's FIRST parameter is the HTTPSendRequester the SDK supplies. Your own
+// arguments come after it, and are passed to the function `sendRequest` returns.
+// There is no global `fetch` here — requests go through the send requester.
+const fetchPrice = (sendRequester: HTTPSendRequester, url: string): number => {
   const response = sendRequester.sendRequest({ url, method: "GET" }).result()
   if (!ok(response)) {
     throw new Error(`HTTP ${response.statusCode}`)
   }
-  return responseSchema.parse(json(response))
+  return responseSchema.parse(json(response)).price
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
   const httpClient = new HTTPClient()
 
-  // ConsensusAggregationByFields is a function call, not a type annotation.
-  // Field values are bare aggregator references: `median`, not `median()`.
-  const aggregation = ConsensusAggregationByFields<ApiResponse>({
-    price: median,
-    symbol: identical,
-  })
-
-  const result = httpClient
-    .sendRequest(runtime, fetchData, aggregation)(runtime.config.apiUrl)
+  // Whole-value aggregators are called. `number` satisfies the NumericType constraint,
+  // so a single scalar needs no per-field aggregation.
+  const price = httpClient
+    .sendRequest(runtime, fetchPrice, consensusMedianAggregation<number>())(
+      runtime.config.apiUrl,
+    )
     .result()
 
-  runtime.log(`Price: ${result.price}, Symbol: ${result.symbol}`)
-  return JSON.stringify(result)
+  runtime.log(`Price: ${price}`)
+  return JSON.stringify({ price })
 }
 
 const initWorkflow = (config: Config) => {
@@ -100,7 +93,7 @@ export async function main() {
 
 ### How sendRequest Works
 
-1. The function you pass (`fetchData`) runs on each DON node independently
+1. The function you pass (`fetchPrice`) runs on each DON node independently
 2. Each node's result is aggregated using the specified consensus method
 3. The aggregated result is returned to the caller
 
@@ -128,20 +121,30 @@ The callback receives a `NodeRuntime<Config>` as its first argument. Inside it, 
 
 ```typescript
 import {
+  consensusMedianAggregation,
   HTTPClient,
-  ConsensusAggregationByFields,
-  median,
-  identical,
   json,
   ok,
   type NodeRuntime,
   type Runtime,
 } from "@chainlink/cre-sdk"
+import { z } from "zod"
 
-// Extra arguments follow the NodeRuntime, and are supplied by the returned function.
-const fetchWithAuth = (nodeRuntime: NodeRuntime<Config>, apiKey: string): ApiResponse => {
+type Config = {
+  schedule: string
+  apiUrl: string
+}
+
+const responseSchema = z.object({
+  price: z.number(),
+})
+
+// The callback's FIRST parameter is the NodeRuntime. Your own arguments follow it,
+// and are supplied through the function `runInNodeMode` returns.
+const fetchWithAuth = (nodeRuntime: NodeRuntime<Config>, apiKey: string): number => {
   const httpClient = new HTTPClient()
 
+  // Node mode uses the two-argument overload: runtime first, request second.
   const response = httpClient
     .sendRequest(nodeRuntime, {
       url: nodeRuntime.config.apiUrl,
@@ -153,31 +156,38 @@ const fetchWithAuth = (nodeRuntime: NodeRuntime<Config>, apiKey: string): ApiRes
   if (!ok(response)) {
     throw new Error(`HTTP ${response.statusCode}`)
   }
-  return responseSchema.parse(json(response))
+  return responseSchema.parse(json(response)).price
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
   // DON mode: read the secret here, before entering node mode
   const apiKey = runtime.getSecret({ id: "API_KEY" }).result().value
 
-  const aggregation = ConsensusAggregationByFields<ApiResponse>({
-    price: median,
-    symbol: identical,
-  })
+  const price = runtime
+    .runInNodeMode(fetchWithAuth, consensusMedianAggregation<number>())(apiKey)
+    .result()
 
-  const result = runtime.runInNodeMode(fetchWithAuth, aggregation)(apiKey).result()
-
-  runtime.log(`Price: ${result.price}`)
-  return JSON.stringify(result)
+  runtime.log(`Price: ${price}`)
+  return JSON.stringify({ price })
 }
 ```
 
 ### Key Difference from sendRequest
 
 - `runInNodeMode` lives on the runtime and takes no `runtime` argument of its own; `sendRequest` lives on the HTTP client and takes `runtime` first
-- `runInNodeMode` does not take a URL parameter; the fetch URL is inside the closure
+- `runInNodeMode` passes your own arguments through the function it returns; anything else the node needs comes from `nodeRuntime.config`
 - Secrets must be read in DON mode and passed in as arguments — the node function cannot read them itself
 - Each node runs the closure independently; results are aggregated afterward
+
+### API notes
+
+Checked against the published `@chainlink/cre-sdk` 1.17.0 type declarations.
+
+- **Capability classes.** `HTTPClient`, `CronCapability`, `HTTPCapability`, `EVMClient`, `SolanaClient`, and `ConfidentialHTTPClient` are exported both as top-level names and as members of the `cre.capabilities` namespace object, so `new HTTPClient()` and `new cre.capabilities.HTTPClient()` construct the same class; `handler` is likewise reachable as `cre.handler`. Match whichever style the project already uses. There is no `HTTPClientCapability` export.
+- **The `sendRequest` callback shape.** The DON-mode form is `httpClient.sendRequest(runtime, fn, aggregation)`, which returns a function that takes your own arguments. `fn` receives an `HTTPSendRequester` as its first parameter, followed by those arguments, and issues the request as `sendRequester.sendRequest({ url, method })` — with no runtime argument of its own. The workflow runtime provides no global `fetch`; every request goes through the send requester, or through `httpClient.sendRequest(nodeRuntime, request)` in node mode.
+- **Parsing the response.** `.result()` yields a `Response` whose `statusCode` is a number and whose `body` is raw bytes. Use `ok(response)` to test for a 2xx status and `json(response)` to parse the body. `json` is typed as returning `unknown`, so validate or narrow it — the examples above hand it to a `zod` schema. `text(response)` and `getHeader(response, name)` cover the non-JSON cases.
+- **Whole-value aggregators are called.** `consensusMedianAggregation<T>()`, `consensusIdenticalAggregation<T>()`, `consensusCommonPrefixAggregation<T>()`, `consensusCommonSuffixAggregation<T>()`, and `consensusFrequencyListAggregation<T>()` are invoked to produce the aggregation value handed to `sendRequest` or `runInNodeMode`. `consensusMedianAggregation` constrains its type parameter to `NumericType` — `number`, `bigint`, `Date`, `Decimal`, `Int64`, or `UInt64`. Returning a single scalar and aggregating it this way avoids per-field typing altogether.
+- **`ConsensusAggregationByFields` is a function whose field values are not called.** Call it as `ConsensusAggregationByFields<T>({ ... })`; it is never a type annotation. Its parameter type is `{ [K in keyof T]: () => ConsensusFieldAggregation<T[K], true> }`, so each value is the aggregator function itself — bare `median`, not `median()` — and the implementation invokes it once per field. That trailing `true` is a serializability check: `median<T extends NumericType>()` produces `ConsensusFieldAggregation<T, true>` outright, whereas `identical<T>()` produces `ConsensusFieldAggregation<T, TypeVerifier<T, CreSerializable<T>>>`, so a field whose type is not CRE-serializable fails to satisfy the field map and the call does not type-check.
 
 ## GET Request (Go)
 
@@ -265,7 +275,9 @@ func InitWorkflow(config *Config) []cre.HandlerDefinition {
 On the standard HTTP client, `body` is a protobuf `bytes` field, so it must be **base64-encoded** — you cannot assign a raw JSON string to it. (`bodyString` exists only on the *Confidential* HTTP client's request type; it is not a field here.)
 
 ```typescript
-const postData = (sendRequester: HTTPSendRequester): ApiResponse => {
+import { consensusIdenticalAggregation } from "@chainlink/cre-sdk"
+
+const postData = (sendRequester: HTTPSendRequester): z.infer<typeof responseSchema> => {
   const payload = JSON.stringify({ query: "ETH/USD" })
 
   const response = sendRequester
@@ -284,7 +296,7 @@ const postData = (sendRequester: HTTPSendRequester): ApiResponse => {
 }
 
 const result = httpClient
-  .sendRequest(runtime, postData, aggregation)()
+  .sendRequest(runtime, postData, consensusIdenticalAggregation<z.infer<typeof responseSchema>>())()
   .result()
 ```
 
