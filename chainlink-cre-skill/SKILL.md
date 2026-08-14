@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.20"
+  version: "0.0.21"
 ---
 
 # Chainlink CRE Skill
