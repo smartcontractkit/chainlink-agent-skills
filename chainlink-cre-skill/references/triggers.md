@@ -1,308 +1,77 @@
 # Triggers
 
-Use this file when the user wants to set up cron triggers, HTTP triggers, or EVM log triggers.
+CRE supports cron, HTTP, and EVM-log triggers. [workflow-patterns.md](workflow-patterns.md) owns Runner/handler scaffolding; this file supplies trigger-specific registration, payloads, and constraints.
 
-## Trigger Conditions
+## Cron
 
-- "How do I set up a cron trigger?"
-- "How do I use an HTTP trigger?"
-- "How do I listen for onchain events?"
-- "How do I trigger a workflow on a schedule?"
-
-Do not use for HTTP client operations (see http-client.md), EVM client reads/writes (see evm-client.md), or general workflow structure (see workflow-patterns.md).
-
-## Trigger Types
-
-CRE supports three trigger types:
-
-| Trigger | Description | Use Case |
-|---------|-------------|----------|
-| Cron | Time-based scheduling | Periodic data fetching, scheduled onchain writes |
-| HTTP | External HTTP request | Webhook endpoints, API-driven workflows |
-| EVM Log | Onchain event emission | React to smart contract events |
-
-## Cron Trigger
-
-### TypeScript
+TypeScript:
 
 ```typescript
-import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
-
-type Config = {
-  schedule: string
-}
-
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  runtime.log(`Cron triggered at ${runtime.now().toISOString()}`)
-  return "done"
-}
-
-const initWorkflow = (config: Config) => {
-  const cron = new CronCapability()
-  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
-}
-
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
+const cron = new CronCapability()
+const trigger = cron.trigger({ schedule: config.schedule })
+// handler(trigger, (runtime: Runtime<Config>) => output)
 ```
 
-### Go
+Go: `cron.Trigger(&cron.Config{Schedule: config.Schedule})`; callback payload is `*cron.Payload`.
 
-```go
-package main
+Cron accepts five fields with an optional leading seconds field:
 
-import (
-    "github.com/smartcontractkit/cre-sdk-go/cre"
-    "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-)
-
-type Config struct {
-    Schedule string `json:"schedule"`
-}
-
-func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*string, error) {
-    runtime.Logger().Info("Cron triggered")
-    result := "done"
-    return &result, nil
-}
-
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-    return []cre.HandlerDefinition{
-        cre.Handler(cron.Trigger(cron.Config{Schedule: config.Schedule}), onCronTrigger),
-    }
-}
+```text
+second? minute hour day-of-month month day-of-week
 ```
 
-### Cron Expression Format
+Examples: `*/30 * * * * *` every 30 seconds; `0 */5 * * * *` every five minutes; `0 0 * * * *` hourly; `0 0 12 * * *` noon UTC. Default timezone is UTC; timezone-aware schedules use `CRON_TZ=America/New_York 0 9 * * *`. Cron callbacks obtain consensus time from `runtime.now()`/`runtime.Now()`; do not require or invent a `scheduledTime` payload field.
 
-Standard 5-field cron expressions with an optional 6th field for seconds:
+## HTTP trigger
 
-```
-┌──────────── second (optional, 0-59)
-│ ┌────────── minute (0-59)
-│ │ ┌──────── hour (0-23)
-│ │ │ ┌────── day of month (1-31)
-│ │ │ │ ┌──── month (1-12)
-│ │ │ │ │ ┌── day of week (0-6, Sunday=0)
-│ │ │ │ │ │
-* * * * * *
-```
-
-Examples:
-- `*/30 * * * * *` = every 30 seconds
-- `0 */5 * * * *` = every 5 minutes
-- `0 0 * * * *` = every hour
-- `0 0 12 * * *` = daily at noon UTC
-
-### CronPayload
-
-The trigger callback receives a `CronPayload` with:
-- `scheduledTime`: The scheduled trigger time (use for time-based logic instead of `runtime.now()`)
-
-### Timezone Support
-
-Cron expressions run in UTC by default. Time-zone aware scheduling is available with the `TZ` prefix:
-
-```json
-{
-  "schedule": "CRON_TZ=America/New_York 0 9 * * *"
-}
-```
-
-## HTTP Trigger
-
-### TypeScript
+TypeScript:
 
 ```typescript
-import { HTTPCapability, handler, Runner, type Runtime, type HTTPTriggerPayload } from "@chainlink/cre-sdk"
-
-type Config = {
-  authorizedKeys: string[]
-}
-
-const onHttpTrigger = (runtime: Runtime<Config>, triggerEvent: HTTPTriggerPayload): string => {
-  runtime.log(`HTTP trigger received: ${JSON.stringify(triggerEvent.body)}`)
-  return JSON.stringify({ status: "ok", received: triggerEvent.body })
-}
-
-const initWorkflow = (config: Config) => {
-  const http = new HTTPCapability()
-  return [handler(http.trigger({ authorizedKeys: config.authorizedKeys }), onHttpTrigger)]
-}
-
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
+const http = new HTTPCapability()
+const trigger = http.trigger({ authorizedKeys: config.authorizedKeys })
+const onHTTP = (
+  runtime: Runtime<Config>,
+  event: HTTPTriggerPayload,
+): string => JSON.stringify({ status: 'ok', received: event.body })
 ```
 
-### Go
+Go uses `webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: config.AuthorizedKeys})`; callback payload is `*webhooktrigger.Payload`.
 
-```go
-package main
+TypeScript `HTTPTriggerPayload` supplies the request body to the handler; consume `event.body` and return a serialized string rather than depending on an assumed `event.url` field. Deployed HTTP triggers require authorized Ethereum public-key addresses; an empty authorized-senders list is valid only for simulation, where approved senders may be omitted. Deployed requests use the documented JSON-RPC/JWT signature flow; never handle the caller's private signing key. For simulation inputs and `--http-payload`, see [simulation.md](simulation.md).
 
-import (
-    "encoding/json"
-    "github.com/smartcontractkit/cre-sdk-go/cre"
-    "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/webhooktrigger"
-)
+## EVM log trigger
 
-type Config struct {
-    AuthorizedKeys []string `json:"authorizedKeys"`
-}
-
-type Result struct {
-    Status string `json:"status"`
-}
-
-func onHTTPTrigger(config *Config, runtime cre.Runtime, trigger *webhooktrigger.Payload) (*Result, error) {
-    runtime.Logger().Info("HTTP trigger received")
-    return &Result{Status: "ok"}, nil
-}
-
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-    return []cre.HandlerDefinition{
-        cre.Handler(
-            webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: config.AuthorizedKeys}),
-            onHTTPTrigger,
-        ),
-    }
-}
-```
-
-### HTTPTriggerPayload Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `body` | `object` | Parsed JSON body of the request |
-| `headers` | `Record<string, string>` | Request headers |
-| `url` | `string` | Request URL path |
-
-### Authorization
-
-For deployed workflows, HTTP triggers require authorized sender keys to prevent unauthorized invocations. Set the `authorizedKeys` field in the config to a list of approved Ethereum addresses:
-
-```json
-{
-  "authorizedKeys": ["0xABC123..."]
-}
-```
-
-For simulation, leave the array empty to accept any request.
-
-### Testing HTTP Triggers in Simulation
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-In a separate terminal, send a test request:
-
-```bash
-curl -X POST http://localhost:8080/trigger \
-  -H "Content-Type: application/json" \
-  -d '{"key": "value"}'
-```
-
-## EVM Log Trigger
-
-### TypeScript
+There is no TypeScript `EVMLogCapability`. Resolve the selector with `getNetwork`, construct `new EVMClient(network.chainSelector.selector)`, then use:
 
 ```typescript
-import { EVMLogCapability, handler, Runner, type Runtime, type EVMLogPayload } from "@chainlink/cre-sdk"
-
-type Config = {
-  contractAddress: string
-  chainSelectorName: string
-}
-
-const onLogTrigger = (runtime: Runtime<Config>, triggerEvent: EVMLogPayload): string => {
-  runtime.log(`Event received from ${triggerEvent.address}`)
-  runtime.log(`Topics: ${JSON.stringify(triggerEvent.topics)}`)
-  return "processed"
-}
-
-const initWorkflow = (config: Config) => {
-  const evmLog = new EVMLogCapability()
-  return [
-    handler(
-      evmLog.trigger({
-        contractAddress: config.contractAddress,
-        chainSelectorName: config.chainSelectorName,
-        eventSignature: "Transfer(address,address,uint256)",
-      }),
-      onLogTrigger,
-    ),
-  ]
-}
-
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
+evmClient.logTrigger({
+  addresses: string[],
+  topics: TopicValues[],
+  confidence?: ConfidenceLevel,
+}): Trigger<Log, Log>
 ```
 
-### Go
+The SDK `Log`/`EVMLog` payload contains address, topics, data, block number, and transaction hash in protobuf-shaped fields; byte fields are `Uint8Array`. Low-level address/topic filters require the SDK's documented base64 encoding, and indexed values must be padded to 32 bytes; do not invent an encoder. Generated bindings are safer and expose per-event helpers such as `binding.logTriggerLargeTransfer()`.
+
+Go uses generated binding helpers when possible. Low-level registration uses the EVM log trigger/filter request types from the installed SDK; legacy project templates may expose:
 
 ```go
-package main
-
-import (
-    "github.com/smartcontractkit/cre-sdk-go/cre"
-    "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/evmlogtrigger"
-)
-
-type Config struct {
-    ContractAddress   string `json:"contractAddress"`
-    ChainSelectorName string `json:"chainSelectorName"`
-}
-
-func onLogTrigger(config *Config, runtime cre.Runtime, trigger *evmlogtrigger.Payload) (*string, error) {
-    runtime.Logger().Info("Event received", "address", trigger.Address)
-    result := "processed"
-    return &result, nil
-}
-
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-    return []cre.HandlerDefinition{
-        cre.Handler(
-            evmlogtrigger.Trigger(evmlogtrigger.Config{
-                ContractAddress:   config.ContractAddress,
-                ChainSelectorName: config.ChainSelectorName,
-                EventSignature:    "Transfer(address,address,uint256)",
-            }),
-            onLogTrigger,
-        ),
-    }
-}
+evmlogtrigger.Trigger(evmlogtrigger.Config{
+    ContractAddress: config.ContractAddress,
+    ChainSelectorName: config.ChainSelectorName,
+    EventSignature: "Transfer(address,address,uint256)",
+})
 ```
 
-### EVMLogPayload Fields
+Event signatures omit names/spaces: `Transfer(address,address,uint256)`, `Approval(address,address,uint256)`, `OwnershipTransferred(address,address)`. Only indexed parameters can be topic-filtered. Use finalized confidence unless the product explicitly accepts reorg risk; constants are in [concepts.md](concepts.md).
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `address` | `string` | Contract address that emitted the event |
-| `topics` | `string[]` | Indexed event parameters |
-| `data` | `string` | ABI-encoded non-indexed parameters |
-| `blockNumber` | `bigint` | Block number where the event was emitted |
-| `transactionHash` | `string` | Hash of the transaction |
+## Composition
 
-### Event Signature Format
+Register several trigger/callback pairs in one workflow when they share config, secrets, and consumers; instantiate each capability once. Separate workflows only for distinct chains, lifecycles, namespaces, or ownership. For non-interactive simulation, run each handler independently with `--trigger-index` and matching HTTP/EVM inputs.
 
-Use the Solidity event signature string format:
+## Sources
 
-```
-Transfer(address,address,uint256)
-Approval(address,address,uint256)
-OwnershipTransferred(address,address)
-```
-
-Topic filtering can be used to narrow the events received. Check the SDK reference for advanced topic filter configuration.
-
-## Official Documentation
-
-- Cron trigger: `https://docs.chain.link/cre/guides/workflow/using-triggers/cron-trigger-ts.md`
-- HTTP trigger: `https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-ts.md`
-- EVM log trigger: `https://docs.chain.link/cre/guides/workflow/using-triggers/evm-log-trigger-ts.md`
+- https://docs.chain.link/cre/guides/workflow/using-triggers/cron-trigger-ts.md
+- https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/configuration-ts.md
+- https://docs.chain.link/cre/guides/workflow/using-triggers/evm-log-trigger-ts.md
+- https://docs.chain.link/cre/reference/sdk/triggers/overview-go.md
