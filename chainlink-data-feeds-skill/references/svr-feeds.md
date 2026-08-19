@@ -39,23 +39,42 @@ Integrating SVR feeds is minimal — the interface is identical to standard Pric
 2. Find the SVR feed address on the Feed Addresses page — filter for "SVR" feeds.
 3. Read the feed using AggregatorV3Interface with the SVR address instead of the standard address.
 
+
+All standard validation applies: staleness checks, bounds checks, L2 sequencer checks (if on L2).
+
+### Validated consumer
+
 ```solidity
-// Same interface as standard price feeds — only the address changes
-AggregatorV3Interface internal svrPriceFeed;
+import {AggregatorV3Interface} from
+    "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-constructor(address _svrFeedAddress) {
-    svrPriceFeed = AggregatorV3Interface(_svrFeedAddress);
-}
+contract SVRConsumer {
+    AggregatorV3Interface public immutable svrFeed;
+    uint256 public immutable maxAge;
+    int256 public immutable minPrice;
+    int256 public immutable maxPrice;
 
-function getLatestPrice() public view returns (int256) {
-    (, int256 price, , uint256 updatedAt, ) = svrPriceFeed.latestRoundData();
-    require(block.timestamp - updatedAt <= STALENESS_THRESHOLD, "Stale price");
-    require(price > 0, "Invalid price");
-    return price;
+    constructor(address proxy, uint256 age, int256 min, int256 max) {
+        require(proxy != address(0) && age != 0, "Invalid config");
+        require(min > 0 && max > min, "Invalid bounds");
+        svrFeed = AggregatorV3Interface(proxy);
+        maxAge = age;
+        minPrice = min;
+        maxPrice = max;
+    }
+
+    function latestPrice() external view returns (int256, uint8) {
+        (, int256 answer,, uint256 updatedAt,) =
+            svrFeed.latestRoundData();
+        require(updatedAt != 0 && updatedAt <= block.timestamp, "Invalid round");
+        require(block.timestamp - updatedAt <= maxAge, "Stale price");
+        require(answer >= minPrice && answer <= maxPrice, "Price out of bounds");
+        return (answer, svrFeed.decimals());
+    }
 }
 ```
 
-All standard validation applies: staleness checks, bounds checks, L2 sequencer checks (if on L2).
+Set `maxAge` from the feed heartbeat and configure asset-specific bounds. On an L2, perform the sequencer check before this read and enforce the 3600-second recovery grace period.
 
 ### Risks to communicate
 
@@ -108,29 +127,3 @@ All standard validation applies: staleness checks, bounds checks, L2 sequencer c
 2. Auction mechanics and Atlas contract addresses may be updated — fetch the searcher onboarding page when the user needs current operational details.
 3. The integration pattern (AggregatorV3Interface with SVR address) is stable and can be used from this file directly.
 
-## Triggering Tests
-
-- "I want to integrate SVR feeds into my lending protocol"
-- "How do I participate in Chainlink SVR auctions as a searcher?"
-- "What's the difference between SVR and regular price feeds?"
-
-## Functional Tests
-
-1. Protocol integration response uses AggregatorV3Interface with the SVR feed address.
-2. Response explains that SVR is identical to standard feeds except for the address and the addition of MEV recapture.
-3. Searcher onboarding response distinguishes between Ethereum (MEV-Share) and Atlas (Base/Arbitrum/BNB) paths.
-4. Response mentions the compatibility form requirement before integration.
-
-## Eval Checks
-
-1. Consumer code uses standard AggregatorV3Interface — not a custom SVR interface.
-2. Staleness and bounds validation included in generated code.
-3. Searcher guidance includes correct WebSocket endpoint and signing format.
-4. Risks (delay, competition, dynamic rates) are mentioned for protocol integration.
-5. Correct auction system identified for the user's target network.
-
-## A/B Prompt Pack
-
-- "Set up SVR price feeds for my Aave fork on Ethereum mainnet"
-- "I'm a searcher and I want to bid on Chainlink SVR auctions on Base"
-- "What do I need to change in my existing price feed consumer to use SVR?"
