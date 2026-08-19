@@ -1,230 +1,49 @@
 # WebSocket SDK Workflows
 
-Use this file when the user wants real-time Data Streams reports over WebSocket, including High Availability mode.
+Use this for Go, Rust, or TypeScript real-time streams, including HA. Generate with the official SDK, server-side environment credentials, matching decoder, and configurable [endpoints](public-endpoints-and-addresses.md). Default an omitted language to TypeScript; deliver the streamer rather than only asking.
 
-## Default Path
+## One Stream Lifecycle
 
-1. Prefer the official SDK for Go, Rust, or TypeScript.
-2. Keep Data Streams credentials server-side.
-3. Decode reports with the official report decoder for the schema version.
-4. Backfill missed reports with REST if the application needs a complete time series.
-5. Expose metrics or logs for connection state, reconnects, and deduplication when generating long-running services.
+Every generated streamer must implement this lifecycle; HA adds origin discovery, simultaneous connections, failover, deduplication, and per-connection monitoring:
 
-For default WebSocket endpoint domains, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). Keep endpoints configurable because HA support and environment availability can change.
+1. Build config from `DATA_STREAMS_API_KEY`, `DATA_STREAMS_USER_SECRET`, `DATA_STREAMS_REST_URL`, and `DATA_STREAMS_WS_URL`.
+2. Parse one or more feed IDs; select standard or verified-supported HA mode.
+3. Connect/listen, read report events, and decode `full_report` with its official schema decoder.
+4. Deduplicate before storage/publishing; log/measure connection state, accepted, received, deduplicated, reconnect, and active-connection counts when exposed.
+5. After each reconnect, REST-backfill from last accepted `observationsTimestamp` via [paginated history](rest-sdk.md) (`/api/v1/reports/page` cursor); never infer gaps from live timestamp jumps.
+6. On authentication, entitlement, disconnect, decode, or process-shutdown events, handle the error and close cleanly.
 
-## Standard Streaming
-
-Standard streaming is appropriate for:
-
-- development and testnet prototypes
-- simple backend consumers
-- cases where occasional reconnects can be tolerated
-
-Expected generated flow:
-
-1. build SDK client config from environment variables
-2. subscribe to one or more feed IDs
-3. handle report events or blocking reads
-4. decode the full report
-5. store or forward the decoded data
-6. close the stream cleanly on shutdown
-
-Minimal Go stream:
-
-```go
-// Function-body fragment. Required imports: context, fmt, os,
-// github.com/smartcontractkit/data-streams-sdk/go, and
-// github.com/smartcontractkit/data-streams-sdk/go/feed.
-feedID := &feed.ID{}
-if err := feedID.FromString(os.Getenv("DATA_STREAMS_FEED_ID")); err != nil {
-	panic(err)
-}
-
-client, err := streams.New(streams.Config{
-	ApiKey:    os.Getenv("DATA_STREAMS_API_KEY"),
-	ApiSecret: os.Getenv("DATA_STREAMS_USER_SECRET"),
-	RestURL:   os.Getenv("DATA_STREAMS_REST_URL"),
-	WsURL:     os.Getenv("DATA_STREAMS_WS_URL"),
-	WsHA:      false,
-})
-if err != nil {
-	panic(err)
-}
-
-ctx := context.Background()
-stream, err := client.Stream(ctx, []feed.ID{*feedID})
-if err != nil {
-	panic(err)
-}
-defer stream.Close()
-
-report, err := stream.Read(ctx)
-if err != nil {
-	panic(err)
-}
-fmt.Println(report.FeedID, report.ObservationsTimestamp)
-```
-
-Minimal Rust stream:
-
-```rust
-// Function-body fragment. Required imports: ID, Config, Stream.
-let feed_id = ID::from_hex_str(&std::env::var("DATA_STREAMS_FEED_ID")?)?;
-let config = Config::new(
-    std::env::var("DATA_STREAMS_API_KEY")?,
-    std::env::var("DATA_STREAMS_USER_SECRET")?,
-    std::env::var("DATA_STREAMS_REST_URL")?,
-    std::env::var("DATA_STREAMS_WS_URL")?,
-)
-.build()?;
-
-let mut stream = Stream::new(&config, vec![feed_id]).await?;
-stream.listen().await?;
-let response = stream.read().await?;
-println!(
-    "{} {}",
-    response.report.feed_id.to_hex_string(),
-    response.report.observations_timestamp
-);
-stream.close().await?;
-```
-
-Minimal TypeScript stream:
+Canonical TypeScript lifecycle (standard by default; set `DATA_STREAMS_HA=true` only after the checks below):
 
 ```typescript
 import { createClient } from "@chainlink/data-streams-sdk";
 
+const haMode = process.env.DATA_STREAMS_HA === "true";
 const client = createClient({
   apiKey: process.env.DATA_STREAMS_API_KEY!,
   userSecret: process.env.DATA_STREAMS_USER_SECRET!,
   endpoint: process.env.DATA_STREAMS_REST_URL!,
   wsEndpoint: process.env.DATA_STREAMS_WS_URL!,
-  haMode: false,
+  haMode,
 });
-
 const stream = client.createStream([process.env.DATA_STREAMS_FEED_ID!]);
 stream.on("report", report => {
   console.log(report.feedID, report.observationsTimestamp);
 });
-stream.on("error", error => {
-  console.error(error.message);
-});
-await stream.connect();
-```
-
-## High Availability Mode
-
-HA mode is appropriate for production-style consumers that need lower risk of report gaps.
-
-Current docs describe HA as using multiple simultaneous WebSocket connections with origin discovery, automatic failover, report deduplication, and per-connection monitoring. The TypeScript SDK docs currently state HA mode is mainnet-only, so verify current docs before enabling it in generated code.
-
-Expected HA behavior:
-
-- enable the SDK's HA option for the target language
-- deduplicate reports before storage or downstream publishing
-- track accepted, received, deduplicated, reconnect, and active-connection metrics when the SDK exposes them
-- backfill with REST after reconnects if gaps matter
-
-Minimal Go HA stream:
-
-```go
-feedID := &feed.ID{}
-if err := feedID.FromString(os.Getenv("DATA_STREAMS_FEED_ID")); err != nil {
-	panic(err)
-}
-
-client, err := streams.New(streams.Config{
-	ApiKey:    os.Getenv("DATA_STREAMS_API_KEY"),
-	ApiSecret: os.Getenv("DATA_STREAMS_USER_SECRET"),
-	RestURL:   os.Getenv("DATA_STREAMS_REST_URL"),
-	WsURL:     os.Getenv("DATA_STREAMS_WS_URL"),
-	WsHA:      true,
-})
-if err != nil {
-	panic(err)
-}
-
-stream, err := client.Stream(context.Background(), []feed.ID{*feedID})
-if err != nil {
-	panic(err)
-}
-defer stream.Close()
-
-report, err := stream.Read(context.Background())
-if err != nil {
-	panic(err)
-}
-fmt.Println(report.FeedID, stream.Stats())
-```
-
-Minimal Rust HA stream:
-
-```rust
-use chainlink_data_streams_sdk::config::WebSocketHighAvailability;
-
-let feed_id = ID::from_hex_str(&std::env::var("DATA_STREAMS_FEED_ID")?)?;
-let config = Config::new(
-    std::env::var("DATA_STREAMS_API_KEY")?,
-    std::env::var("DATA_STREAMS_USER_SECRET")?,
-    std::env::var("DATA_STREAMS_REST_URL")?,
-    std::env::var("DATA_STREAMS_WS_URL")?,
-)
-.with_ws_ha(WebSocketHighAvailability::Enabled)
-.build()?;
-
-let mut stream = Stream::new(&config, vec![feed_id]).await?;
-stream.listen().await?;
-let response = stream.read().await?;
-println!("{} {:?}", response.report.feed_id.to_hex_string(), stream.get_stats());
-stream.close().await?;
-```
-
-Minimal TypeScript HA stream:
-
-```typescript
-const client = createClient({
-  apiKey: process.env.DATA_STREAMS_API_KEY!,
-  userSecret: process.env.DATA_STREAMS_USER_SECRET!,
-  endpoint: process.env.DATA_STREAMS_REST_URL!,
-  wsEndpoint: process.env.DATA_STREAMS_WS_URL!,
-  haMode: true,
-});
-
-const stream = client.createStream([process.env.DATA_STREAMS_FEED_ID!], {
-  maxReconnectAttempts: 10,
-  reconnectInterval: 3000,
-});
-
-stream.on("report", report => console.log(report.feedID, report.observationsTimestamp));
 stream.on("error", error => console.error(error.message));
 await stream.connect();
 ```
 
-## Language Notes
+## Language and HA Deltas
 
-Go:
-- `Config` includes REST URL, WebSocket URL, `WsHA`, reconnect settings, debug logging, and optional HTTP inspection.
-- `Stream` exposes read, stats, and close behavior.
+Verify current SDK methods and the target environment before generation or enabling HA. Treat TypeScript HA's documented mainnet-only note as a freshness-sensitive caveat to re-check, not a hard fact.
 
-Rust:
-- Use `chainlink-data-streams-sdk` for stream clients.
-- Use `chainlink-data-streams-report` for decoding.
-- The SDK repository includes examples for simple WebSocket streams and multiple streams in HA mode.
+| Language | SDK and standard lifecycle | HA option and metrics |
+|---|---|---|
+| Go | `github.com/smartcontractkit/data-streams-sdk/go`; `streams.New(Config)` → `client.Stream(ctx, []feed.ID)` → `stream.Read(ctx)` → `stream.Close()` | `WsHA: true` (`false` for standard); `Config` also has reconnect, debug, and optional HTTP-inspection settings; inspect `stream.Stats()` |
+| Rust | `chainlink-data-streams-sdk` client plus `chainlink-data-streams-report` decoder; `Stream::new(&config, vec![feed_id])` → `listen().await` → `read().await` → `close().await` | `.with_ws_ha(WebSocketHighAvailability::Enabled)`; inspect `stream.get_stats()`; repository examples cover simple and multi-stream HA |
+| TypeScript | `@chainlink/data-streams-sdk`; `createClient` → `createStream(feedIDs)` → report/error listeners → `connect()` | `haMode: true` (`false` for standard); re-check the documented network caveat; use exposed metrics/events |
 
-TypeScript:
-- Use `@chainlink/data-streams-sdk`.
-- Create streams from feed IDs and listen for report/error events.
-- Use `haMode: true` only after verifying the target environment supports it.
+Go config fields are `ApiKey`, `ApiSecret`, `RestURL`, `WsURL`, and `WsHA`; parse IDs with `feed.ID.FromString`. Rust uses `Config::new(apiKey, secret, restURL, wsURL).build()` and `ID::from_hex_str`. TypeScript config uses `apiKey`, `userSecret`, `endpoint`, `wsEndpoint`, and `haMode`.
 
-## Failure Handling
-
-Generated services should handle:
-
-- authentication failures
-- feed entitlement failures
-- disconnects and reconnects
-- duplicate reports in HA mode
-- decode mismatch
-- process shutdown
-
-Avoid browser-direct WebSocket connections to Data Streams unless the docs explicitly support a safe browser credential model. Use a backend proxy for browser UIs.
+Never connect from a browser; proxy sanitized reports from a credentialed backend.

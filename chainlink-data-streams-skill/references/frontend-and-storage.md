@@ -1,40 +1,14 @@
 # Frontend and Storage
 
-Use this file when the user wants a real-time frontend, candlestick chart, local price tracking, or SQLite persistence for Data Streams reports.
+Use this for real-time UI, candlesticks, local report history, or SQLite. Keep every credential in backend environment variables: SDK stream → decode/optionally verify → optionally store raw+decoded report → publish sanitized data by WebSocket/SSE/HTTP → render. Browsers receive sanitized data only; never connect them to Streams directly.
 
-## Frontend Architecture
+## Charts
 
-Keep Data Streams credentials out of the browser.
+For live prices, show latest price, bid/ask, raw timestamp, and connection state from backend-decoded reports. For candles, prefer the Candlestick API for official OHLC history; aggregate reports only when local candles are requested or that API is unavailable. It provides history, row/column response formats, symbol/group discovery, and streaming price updates. Take its endpoint from [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md), fetch current parameter docs, and use the repo's existing chart stack (or a fitting library such as Lightweight Charts/Recharts).
 
-Preferred architecture:
+## SQLite
 
-1. backend service connects to Data Streams using the official SDK
-2. backend decodes and optionally verifies reports
-3. backend stores raw and decoded reports if persistence is needed
-4. backend publishes sanitized updates to the frontend over WebSocket, Server-Sent Events, or HTTP polling
-5. frontend renders charts from sanitized price/time data
-
-Use direct browser access only if the current official docs provide a safe public-client pattern. Otherwise, refuse to expose credentials in browser code.
-
-## Charting Choices
-
-For a live price display:
-
-- stream decoded reports from the backend
-- show latest price, bid/ask, timestamp, and connection status
-- preserve raw timestamps so users can audit timing
-
-For candlesticks:
-
-- use the Candlestick API when the user wants official OHLC history
-- aggregate local report data only when the user explicitly wants local candles or the Candlestick API is unavailable
-- choose a common chart library that fits the repo, such as Lightweight Charts, Recharts, or the existing frontend stack
-
-The Candlestick API exposes history endpoints, row/column response formats, symbol/group discovery, and streaming price updates. Use [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md) for public endpoint defaults, and fetch the docs before relying on exact parameters.
-
-## SQLite Persistence
-
-Default local schema shape:
+Use only when local persistence was requested. Default shape:
 
 ```sql
 CREATE TABLE IF NOT EXISTS reports (
@@ -50,29 +24,12 @@ CREATE TABLE IF NOT EXISTS reports (
   source TEXT NOT NULL,
   UNIQUE(feed_id, observations_timestamp, full_report)
 );
-
 CREATE INDEX IF NOT EXISTS idx_reports_feed_time
 ON reports(feed_id, observations_timestamp);
 ```
 
-Adjust fields per schema and language. Store `full_report` even when decoded JSON is available so reports can be re-decoded after SDK upgrades.
-
-## Storage Rules
-
-1. Use prepared statements.
-2. Use idempotent inserts to tolerate reconnects and HA duplicates.
-3. Store feed IDs as lowercase hex strings unless the SDK requires preserving case.
-4. Store timestamps as integers.
-5. Store decoded values as strings when precision matters.
-6. Use WAL mode for long-running collectors when safe for the target app.
+Adjust fields to the schema/language. Preserve `full_report` for re-decoding after SDK upgrades. Use prepared statements, idempotent inserts for reconnect/HA duplicates, integer timestamps, strings for precision-sensitive decoded values, and lowercase-hex feed IDs unless the SDK requires case. WAL suits long-running collectors when safe for the app.
 
 ## Timestamp Lookback
 
-For "what was the price at UNIX timestamp X?":
-
-1. use the REST API or SDK timestamp lookup
-2. decode the returned report
-3. optionally insert the report into SQLite
-4. return the raw report timestamp fields and the decoded value
-
-Do not fabricate values from local SQLite if the user asked for official Data Streams history unless local-only behavior is explicitly requested.
+For a price at Unix timestamp X: use the REST API/SDK timestamp lookup, decode it, optionally insert it, and return raw timestamp fields plus the decoded value. Do not substitute local SQLite data when official history was requested unless local-only behavior is explicit.

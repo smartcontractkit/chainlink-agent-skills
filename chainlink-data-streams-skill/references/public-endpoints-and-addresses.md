@@ -1,21 +1,13 @@
 # Public Endpoints And Addresses
 
-Use this file when the user needs public Chainlink Data Streams endpoint defaults or supported-network verifier proxy/program IDs.
-
-These details are public developer integration data. Keep credentials secret and keep endpoint/address values configurable in generated projects.
-
-## Freshness Boundary
-
-Endpoint domains and verifier addresses are public, but they are still live deployment facts. Before production deployment, any transaction, or any user-facing claim that an address is current, fetch the official docs again:
+Public offline defaults for endpoint domains and supported-network verifier proxy/program IDs. Keep all values configurable. Before production use or a current-address claim, re-check:
 
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api.md`
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-ws.md`
 - `https://docs.chain.link/data-streams/supported-networks.md`
 - `https://github.com/smartcontractkit/documentation/blob/main/src/features/feeds/data/StreamsNetworksData.ts`
 
-If docs fetching fails, tell the user which URL could not be verified and say that this table is the offline fallback. This table was checked against the public Chainlink docs repository on 2026-04-27 at commit `d3e2464b68546a899c015c438241a788a17a79ea`.
-
-Do not treat any mainnet address below as approval to deploy, configure, submit, or otherwise perform a mainnet write. Mainnet writes are refused by this skill.
+Offline lookup only; never embed in deployments. The table was checked against the public docs repository on 2026-04-27 at commit `d3e2464b68546a899c015c438241a788a17a79ea`. Safety boundaries live in [SKILL.md](../SKILL.md).
 
 ## API Endpoint Defaults
 
@@ -25,32 +17,16 @@ Do not treat any mainnet address below as approval to deploy, configure, submit,
 | WebSocket API | `wss://ws.testnet-dataengine.chain.link` | `wss://ws.dataengine.chain.link` |
 | Candlestick API | `https://priceapi.testnet-dataengine.chain.link` | `https://priceapi.dataengine.chain.link` |
 
-REST paths:
+Paths: latest `/api/v1/reports/latest?feedID=<feedID>`; timestamp `/api/v1/reports?feedID=<feedID>&timestamp=<unixTimestamp>`; bulk `/api/v1/reports/bulk?feedIDs=<feedID1>,<feedID2>&timestamp=<unixTimestamp>`; page `/api/v1/reports/page?feedID=<feedID>&startTimestamp=<unixTimestamp>&limit=<limit>`; WebSocket `/api/v1/ws?feedIDs=<feedID1>,<feedID2>`.
 
-- latest report: `/api/v1/reports/latest?feedID=<feedID>`
-- timestamp lookup: `/api/v1/reports?feedID=<feedID>&timestamp=<unixTimestamp>`
-- bulk timestamp lookup: `/api/v1/reports/bulk?feedIDs=<feedID1>,<feedID2>&timestamp=<unixTimestamp>`
-- paginated history: `/api/v1/reports/page?feedID=<feedID>&startTimestamp=<unixTimestamp>&limit=<limit>`
-
-WebSocket path:
-
-- stream reports: `/api/v1/ws?feedIDs=<feedID1>,<feedID2>`
-
-Recommended environment variables:
-
+Environment defaults:
 ```text
 DATA_STREAMS_REST_URL=https://api.testnet-dataengine.chain.link
 DATA_STREAMS_WS_URL=wss://ws.testnet-dataengine.chain.link
 DATA_STREAMS_CANDLESTICK_URL=https://priceapi.testnet-dataengine.chain.link
 ```
 
-Switch these to mainnet only when the user explicitly targets mainnet read paths. This does not change the skill's mainnet-write refusal.
-
-## Verifier Proxy And Program Fallbacks
-
-All Data Streams report types share the verifier address for a supported network unless the current docs say otherwise.
-
-For Solana, the address column is the verifier program ID and the note includes the access controller. For Canton, Chainlink issues party-specific `VerifierConfig` contract IDs, so there is no reusable verifier proxy address.
+Use mainnet endpoints only for explicitly requested read paths. All report types share a supported network's verifier unless current docs say otherwise. For Solana, the address is the verifier program ID and the note holds the access controller. Canton instead uses a Chainlink-issued, party-specific `VerifierConfig` contract ID.
 
 | Network | Environment | Verifier proxy / program ID | Access controller / note |
 |---|---|---|---|
