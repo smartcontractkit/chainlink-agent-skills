@@ -1,117 +1,51 @@
 # CCIP Contracts
 
-Use this file only for contract-first CCIP requests where the user wants sender or receiver contracts, contract modifications, or project setup help for CCIP Solidity development. These patterns are EVM-specific. For non-EVM chains (Solana programs, Aptos Move modules), see [ccip-non-evm.md](ccip-non-evm.md).
+Use for EVM contract-first sender/receiver work, modifications, and Solidity project setup. For tool-first send/bridge/monitoring use [tools](ccip-tools.md); for Solana programs, Aptos/Sui Move, TON, or Canton use [non-EVM](ccip-non-evm.md).
 
-## Trigger Conditions
+## Shapes and invariants
 
-Use this workflow for requests like:
+Supported shapes: data-only, token-only, data-plus-token, contract→EOA, and EOA→contract. When a sender/receiver or generic sender is requested, emit concrete CCIP contracts immediately if constructor-injected router/LINK addresses suffice; do not wait for testnet names or runtime values. If the shape is ambiguous, recommend data-only as the simpler security-first default before data plus tokens. Start code from [ccip-solidity-examples.md](ccip-solidity-examples.md) using `CCIPReceiver`, `IRouterClient`, and `Client`.
 
-- "Create contracts that send and receive a CCIP message."
-- "Build a CCIP receiver for token transfers."
-- "Help me wire up a sender and receiver for data plus tokens."
-- "Add CCIP support to this Solidity project."
-- "Fix the CCIP imports or setup in my Foundry project."
+Conservative defaults:
 
-Do not use this workflow when the user clearly wants a tool-first send, bridge, or monitoring path without custom contracts.
+- explicit send/admin access control; validate destination before send;
+- receiver validates source selector and sender when required; inherited `CCIPReceiver.ccipReceive` admits only its router;
+- a data-only pair validates the router through `CCIPReceiver`, then the source selector and sender contract; deployment and setup remain user-run;
+- quote with `IRouterClient.getFee`; `isChainSupported` can verify chain support;
+- keep receipt separate from business logic and add recovery when receiver logic may fail;
+- if `ccipReceive` reverts, associated token transfer reverts and the message enters failed/manual-execution state;
+- tokens plus data sent to an EOA deliver only the tokens;
+- avoid dynamic configuration, hidden control flow, and unnecessary abstraction.
 
-## Supported Contract Shapes
+For testnet transfers, default to faucet/tutorial **CCIP-BnM** (burn-and-mint) unless the user chooses another token. Verify the route and token first.
 
-Support these contract-first flows:
+| Shape | Required construction |
+|---|---|
+| Data | `Client.EVM2AnyMessage`, fee quote, explicit payload, validated receiver |
+| Token | route/token verification; explicit amount and router approvals; `gasLimit: 0` when no callback |
+| Data + token | programmable-transfer pattern; defensive receiver if payload handling could revert after token delivery |
 
-1. data-only sender and/or receiver
-2. token-only sender and/or receiver
-3. data-plus-token sender and/or receiver
-4. contract sender with EOA receiver
-5. EOA sender with contract receiver
+## Local/testnet deployment order
 
-## Security Defaults
+These examples are for local use or testnets. Before deployment, verify the router, LINK address, and route in the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet). Deployment and every configuration/send action are user-run:
 
-Prefer secure, conservative implementations by default:
+1. Deploy the receiver on the destination testnet.
+2. Deploy the sender on the source testnet.
+3. Allow the destination selector on the sender.
+4. Allow the source selector and sender contract on the receiver.
+5. Fund the sender with testnet LINK.
+6. The user calls `sendMessage`.
 
-1. use simple, explicit access control for send functions and admin updates
-2. verify destination chains before sending
-3. verify source chains on receive
-4. verify sender addresses on receive when the use case requires it
-5. verify router addresses on receive
-6. quote fees before sending
-7. keep message reception separate from core business logic when possible
-8. add fallback or recovery paths for receiver-side failures when the workflow needs them
-9. avoid unnecessary abstraction, dynamic configurability, and hidden control flow
+Tutorials: arbitrary data `https://docs.chain.link/ccip/tutorials/evm/send-arbitrary-data.md`; tokens `https://docs.chain.link/ccip/tutorials/evm/transfer-tokens-from-contract.md`; programmable `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers.md`; defensive `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers-defensive.md`; best practices `https://docs.chain.link/ccip/concepts/best-practices/evm.md`; `CCIPReceiver` `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/ccip-receiver.md`; `IRouterClient` `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/i-router-client.md`.
 
-These defaults are grounded in the CCIP EVM best-practices docs and the `CCIPReceiver` and `IRouterClient` interfaces.
+## Project setup
 
-Reference points:
-
-- Arbitrary messaging tutorial: `https://docs.chain.link/ccip/tutorials/evm/send-arbitrary-data.md`
-- Token transfer tutorial: `https://docs.chain.link/ccip/tutorials/evm/transfer-tokens-from-contract.md`
-- Programmable token transfer tutorial: `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers.md`
-- Defensive programmable token transfer tutorial: `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers-defensive.md`
-- EVM best practices: `https://docs.chain.link/ccip/concepts/best-practices/evm.md`
-- `CCIPReceiver` API reference: `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/ccip-receiver.md`
-- `IRouterClient` API reference: `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/i-router-client.md`
-
-## Core Building Blocks
-
-Use the official CCIP EVM contracts and interfaces as the starting point:
-
-- `CCIPReceiver`
-- `IRouterClient`
-- `Client`
-
-For concrete, production-ready code examples of each contract shape, see [ccip-solidity-examples.md](ccip-solidity-examples.md). Use those examples as the starting point for code generation.
-
-Important behaviors from the official references:
-
-1. `CCIPReceiver.ccipReceive` only accepts calls from the authorized router.
-2. If `ccipReceive` reverts, associated token transfers also revert and the message enters a failed state for manual execution.
-3. `IRouterClient.getFee` should be used to estimate fees before sending.
-4. `IRouterClient.isChainSupported` can be used to verify chain support.
-5. If tokens and data are sent to an EOA receiver, only the tokens arrive.
-
-## Testnet Tokens
-
-For testnet contract-first flows, the standard test token is **CCIP-BnM** (burn-and-mint). It is the token provided by the Chainlink faucet and used in official CCIP tutorials. When generating or testing token-transfer contracts on a testnet, use CCIP-BnM as the default token unless the user specifies otherwise.
-
-## Contract Workflow
-
-### Data-only contracts
-
-1. Start from the official arbitrary-messaging tutorial pattern.
-2. Build the outgoing message with `Client.EVM2AnyMessage`.
-3. Quote fees before sending.
-4. Use a receiver that validates the router and handles the payload explicitly.
-
-### Token-only contracts
-
-1. Start from the official token-transfer tutorial pattern.
-2. Verify the route and token path before writing code that sends.
-3. Keep token-transfer approvals and amount handling explicit.
-4. Keep receiver-side token handling small and auditable.
-
-### Data-plus-token contracts
-
-1. Start from the official programmable-token-transfer tutorial pattern.
-2. Prefer defensive receiver logic and explicit validation.
-3. Separate receipt from business logic where practical.
-4. If the receiver expects both tokens and data, warn about failure modes where data handling can revert after token delivery.
-5. When that risk matters, suggest the defensive example pattern from the official defensive tutorial instead of a naive receiver.
-
-## Setup Guidance
-
-### Foundry preferred path
-
-Prefer Foundry for Solidity CCIP contract work unless the user explicitly wants another framework.
-
-Use tagged installs rather than assuming the repository default branch matches the desired contract release.
-
-Common install pattern:
+Prefer the established framework; otherwise Foundry. Install tagged releases rather than assuming default branches:
 
 ```bash
 forge install smartcontractkit/chainlink-ccip@contracts-ccip-v<version>
 forge install smartcontractkit/chainlink-evm@contracts-v<version>
 ```
-
-Common remappings:
 
 ```text
 @chainlink/contracts/=lib/chainlink-evm/contracts/
@@ -119,50 +53,23 @@ Common remappings:
 @chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/
 ```
 
-If CCIP imports pull in OpenZeppelin contracts, install the exact versions required by those imports. In practice, this often means one or both of:
+Inspect installed CCIP imports before selecting OpenZeppelin versions: `CCIPReceiver` imports `IERC165`, and its version can differ from other dependencies. Common simultaneous remappings are:
 
 ```text
 @openzeppelin/contracts@4.8.3/=lib/openzeppelin-contracts-4.8.3/contracts/
 @openzeppelin/contracts@5.3.0/=lib/openzeppelin-contracts-5.3.0/contracts/
 ```
 
-`CCIPReceiver` itself imports `IERC165` from OpenZeppelin, and the version it expects may differ from the OZ version used elsewhere in the project. For example, `CCIPReceiver` may require `@openzeppelin/contracts@5.0.2` while other CCIP or Chainlink contracts require `4.8.3` or `5.3.0`. Check the actual import paths in the installed CCIP contracts (grep for `@openzeppelin` in `lib/chainlink-ccip/`) to determine which versions are needed, and add separate remappings for each.
-
-Additional remappings may be required in projects that also depend on Chainlink ACE or related packages:
+`CCIPReceiver` may instead require `5.0.2`; grep `lib/chainlink-ccip/` for `@openzeppelin`, install exact releases, and give each a separate remapping. ACE projects may also need:
 
 ```text
 @chainlink/policy-management/=lib/chainlink-ace/packages/policy-management/src/
 ```
 
-### Hardhat and npm
-
-If the current repository is already a Hardhat project, use Hardhat. If the user explicitly asks for Hardhat, use Hardhat. Otherwise default to Foundry.
-
-Use the same version discipline in npm package setup. If OpenZeppelin aliases are needed, call them out explicitly in `package.json`, for example:
+In existing/explicit Hardhat projects use npm with the same import-driven discipline. Aliases may be required:
 
 ```json
-{
-  "dependencies": {
-    "@openzeppelin/contracts-4.8.3": "npm:@openzeppelin/contracts@4.8.3",
-    "@openzeppelin/contracts-5.3.0": "npm:@openzeppelin/contracts@5.3.0"
-  }
-}
+{"dependencies":{"@openzeppelin/contracts-4.8.3":"npm:@openzeppelin/contracts@4.8.3","@openzeppelin/contracts-5.3.0":"npm:@openzeppelin/contracts@5.3.0"}}
 ```
 
-Align the package versions with the imports the project actually uses. Prefer the existing project structure instead of forcing a Foundry-first shape onto a Hardhat repository.
-
-Local simulation and local contract testing are handled separately. Do not load local-testing guidance speculatively from this file.
-
-## Freshness Rules
-
-1. Read [official-sources.md](official-sources.md) before using live route, token, or chain data in generated contracts or setup guidance.
-2. Use CCIP Docs for contract patterns, tutorials, interfaces, and best practices.
-3. Use CCIP Directory for route and token availability.
-4. Do not hardcode current routes, token support, or router assumptions without verification.
-
-## Refusal Rules
-
-1. Refuse mainnet deployment or any other mainnet write action in this version.
-2. Refuse to guess package versions or remappings when imports clearly indicate a different dependency graph.
-3. If a safer simple design can satisfy the request, do not generate a more complex architecture by default.
-4. Refuse to deploy, verify, configure, approve, or send contract transactions from agent tools. Provide user-run deployment/configuration commands or tests instead.
+Use [Chainlink Local](chainlink-local.md) only for an actual local-testing request. Reusable Solidity with placeholders or constructor arguments may be mainnet-compatible and is not an onchain write. Verify current routes, tokens, routers, versions, and remappings before deployment.
