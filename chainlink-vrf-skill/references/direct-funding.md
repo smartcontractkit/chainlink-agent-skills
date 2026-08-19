@@ -1,20 +1,11 @@
-# VRF v2.5 Direct Funding Method
+# VRF v2.5 Direct Funding
 
-## Overview
+Use direct funding for one-off or infrequent requests that should not share a subscription. The consumer holds LINK or native coin and pays an estimated cost upfront when it requests; an underfunded call reverts. Prefer [`subscription.md`](subscription.md) for recurring requests.
+For a one-off or single-request consumer, permanently block a second request after the first succeeds: check `lastRequestId != 0` (or a dedicated used flag) before calling the wrapper and revert with `RequestAlreadyMade`. Omit that guard only when the user asks for recurring requests.
 
-The direct funding method lets a consumer contract pay for each VRF request directly, without maintaining a subscription. The contract must hold enough LINK or native coin before calling `requestRandomWords`. Billing is **upfront** — the cost is estimated and charged at request time.
+Official guide: https://docs.chain.link/vrf/v2-5/direct-funding/get-a-random-number.md
 
-Use direct funding when:
-
-- You need a one-off randomness request.
-- You don't want to manage a subscription account.
-- Each request is infrequent enough that subscription overhead is not worth it.
-
-For recurring requests, prefer the subscription method (`subscription.md`).
-
-**Official docs:** https://docs.chain.link/vrf/v2-5/direct-funding/get-a-random-number.md
-
-## Complete Consumer Contract
+## Consumer
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -22,7 +13,6 @@ pragma solidity ^0.8.20;
 
 import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 
 contract VRFDirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
@@ -33,7 +23,7 @@ contract VRFDirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwne
     error WithdrawFailed();
 
     struct RequestStatus {
-        uint256 paid;       // amount paid in juels (LINK) or wei (native)
+        uint256 paid; // juels for LINK, wei for native
         bool fulfilled;
         uint256[] randomWords;
         bool native;
@@ -43,33 +33,21 @@ contract VRFDirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwne
     uint256[] public requestIds;
     uint256 public lastRequestId;
 
-    // Depends on the number of requested values that you want sent to the
-    // fulfillRandomWords() function. Test and adjust
-    // this limit based on the network that you select, the size of the request,
-    // and the processing of the callback request in the fulfillRandomWords()
-    // function.
     uint32 public callbackGasLimit = 100_000;
-
-    // The default is 3, but you can set this higher.
     uint16 public requestConfirmations = 3;
-
-    // For this example, retrieve 2 random values in one request.
-    // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
     uint32 public numWords = 2;
 
-    // Pass only the wrapper address — no LINK token address (v2.5 change from V2)
+    // v2.5 takes only the wrapper address; V2 also took a LINK address.
     constructor(address wrapperAddress)
         ConfirmedOwner(msg.sender)
         VRFV2PlusWrapperConsumerBase(wrapperAddress)
     {}
 
-    /**
-     * @param enableNativePayment true = pay in native coin, false = pay in LINK.
-     * The contract must hold sufficient balance of the chosen token before calling.
-     */
-    function requestRandomWords(
-        bool enableNativePayment
-    ) external onlyOwner returns (uint256 requestId) {
+    function requestRandomWords(bool enableNativePayment)
+        external
+        onlyOwner
+        returns (uint256 requestId)
+    {
         bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
             VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
         );
@@ -100,36 +78,37 @@ contract VRFDirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwne
         requestIds.push(requestId);
         lastRequestId = requestId;
         emit RequestSent(requestId, numWords);
-        return requestId;
     }
 
-    // VRFV2PlusWrapperConsumerBase uses memory (not calldata) for randomWords
-    function fulfillRandomWords(
-        uint256 _requestId,
-        uint256[] memory _randomWords
-    ) internal override {
-        if (s_requests[_requestId].paid == 0) revert RequestNotFound(_requestId);
-        s_requests[_requestId].fulfilled = true;
-        s_requests[_requestId].randomWords = _randomWords;
-        emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+    // Wrapper consumers require memory, unlike subscription consumers' calldata.
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords)
+        internal
+        override
+    {
+        RequestStatus storage request = s_requests[requestId];
+        if (request.paid == 0 || request.fulfilled || randomWords.length == 0) return;
+        request.fulfilled = true;
+        request.randomWords = randomWords;
+        emit RequestFulfilled(requestId, randomWords, request.paid);
     }
 
-    function getRequestStatus(
-        uint256 _requestId
-    ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
-        if (s_requests[_requestId].paid == 0) revert RequestNotFound(_requestId);
-        RequestStatus memory request = s_requests[_requestId];
+    function getRequestStatus(uint256 requestId)
+        external
+        view
+        returns (uint256 paid, bool fulfilled, uint256[] memory randomWords)
+    {
+        if (s_requests[requestId].paid == 0) revert RequestNotFound(requestId);
+        RequestStatus memory request = s_requests[requestId];
         return (request.paid, request.fulfilled, request.randomWords);
     }
 
-    // i_linkToken is inherited from VRFV2PlusWrapperConsumerBase
+    // i_linkToken is inherited from VRFV2PlusWrapperConsumerBase.
     function withdrawLink(address beneficiary, uint256 amount) external onlyOwner {
-        bool success = i_linkToken.transfer(beneficiary, amount);
-        if (!success) revert WithdrawFailed();
+        if (!i_linkToken.transfer(beneficiary, amount)) revert WithdrawFailed();
     }
 
     function withdrawNative(address beneficiary, uint256 amount) external onlyOwner {
-        (bool success, ) = beneficiary.call{value: amount}("");
+        (bool success,) = beneficiary.call{value: amount}("");
         if (!success) revert WithdrawFailed();
     }
 
@@ -137,40 +116,25 @@ contract VRFDirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwne
 }
 ```
 
-## Key Differences from Subscription
+Tune `callbackGasLimit` to measured callback work. `requestConfirmations` defaults to 3 but should reflect value at risk. `numWords` is 2 here and cannot exceed `VRFV2Wrapper.getConfig().maxNumWords`.
 
-| Aspect                     | Subscription                       | Direct Funding                                |
-| -------------------------- | ---------------------------------- | --------------------------------------------- |
-| Base contract              | `VRFConsumerBaseV2Plus`            | `VRFV2PlusWrapperConsumerBase`                |
-| Funding                    | Central subscription account       | Contract holds tokens directly                |
-| Billing timing             | Post-fulfillment (actual gas used) | Upfront (estimated at request time)           |
-| Request return             | Single `uint256 requestId`         | Tuple `(uint256 requestId, uint256 reqPrice)` |
-| Constructor                | Takes coordinator address          | Takes **only** wrapper address                |
-| `fulfillRandomWords` param | `uint256[] calldata`               | `uint256[] memory`                            |
+## Differences from Subscriptions
 
-## v2.5 Constructor Change (Important)
+| Aspect | Subscription | Direct funding |
+|---|---|---|
+| Base | `VRFConsumerBaseV2Plus` | `VRFV2PlusWrapperConsumerBase` |
+| Funds | Shared subscription | Consumer balance |
+| Billing | Post-fulfillment, actual callback gas | Upfront estimate; full callback gas limit |
+| Return | `uint256 requestId` | `(uint256 requestId, uint256 reqPrice)` |
+| Constructor | Coordinator address | Wrapper address only |
+| Callback words | `uint256[] calldata` | `uint256[] memory` |
+| LINK request | Coordinator `RandomWordsRequest` | `requestRandomness(..., extraArgs)` |
+| Native request | `ExtraArgsV1({nativePayment: true})` | `requestRandomnessPayInNative(..., extraArgs)` |
 
-V2 wrapper constructor required both LINK and wrapper addresses:
+The V2 constructor `VRFV2WrapperConsumerBase(linkAddress, wrapperAddress)` must not be used. The v2.5 constructor is `VRFV2PlusWrapperConsumerBase(wrapperAddress)`.
 
-```solidity
-// V2 — DO NOT USE
-VRFV2WrapperConsumerBase(linkAddress, wrapperAddress)
-```
+## Funding and Accounting
 
-V2.5 wrapper constructor takes only the wrapper address:
+Transfer sufficient ERC-677 LINK or native coin to the consumer before requesting. The recorded `paid` value is the upfront request price and supports accounting. Use [`billing.md`](billing.md) for formulas and PegSwap requirements.
 
-```solidity
-// v2.5 — CORRECT
-VRFV2PlusWrapperConsumerBase(wrapperAddress)
-```
-
-## Funding the Contract
-
-Simply transfer LINK or native coin to the contract to fund it. Use `billing.md` for calculation on how much to transfer.
-
-## Security Notes
-
-- Ensure the contract holds sufficient balance **before** calling `requestRandomWords`. The call reverts if underfunded.
-- The `paid` field in `RequestStatus` records the upfront cost — use it for accounting.
-- Get the wrapper address from `supported-networks.md` or https://docs.chain.link/vrf/v2-5/supported-networks.md — never hardcode it without verifying.
-- This example code is **unaudited**. Conduct a security audit before production deployment.
+Copy the wrapper address from [`supported-networks.md`](supported-networks.md) or the live supported-networks page; never guess or retain an unverified hardcoded value. Keep request access controlled, preserve enough balance, and keep the callback non-reverting.
