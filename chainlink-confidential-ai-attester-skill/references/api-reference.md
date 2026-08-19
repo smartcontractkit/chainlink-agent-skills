@@ -40,7 +40,7 @@ Submit an inference request.
 - `resources` — optional, up to 10 items. Two variants:
   - **Base64 upload**: `filename` + `content_type` + `content_base64`. Use for sensitive documents — never publicly hosted.
   - **URL fetch**: `url` + `method` + optional `headers`. The server fetches it server-side at inference time.
-- `cre_callback` — optional. When the request reaches a terminal state, the server POSTs `{"input": <full status object>}` to the URL once (10 s timeout, no retries, best-effort).
+- `cre_callback` — optional. On terminal state, the server POSTs `{"input": <full status object>}` once (10 s timeout, no retries, best-effort). Its live route must return 2xx within that timeout; keep any tunnel running until terminal status.
 
 **Response: 202 Accepted**
 

@@ -5,24 +5,21 @@ license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.2"
+  version: "0.0.3"
 ---
 
 # Chainlink Confidential AI Attester
 
-Runs LLM inference inside Trusted Execution Environment (TEE). Documents go in, LLM analysis comes out — the raw documents are never stored or exposed.
+Private-document LLM inference runs in a TEE; raw documents never leave it and are never stored or exposed.
 
-**Beta product for the EthGlobal NYC hackathon.** Get an API key at the **Chainlink booth** or via the **#partner-chainlink channel in the EthGlobal Discord**.
+Scope: only the Chainlink Confidential AI Attester HTTP API. Leave Anthropic/OpenAI/vendor PDF APIs, Bedrock or generic AWS Nitro client attestation (COSE/cert-chain/nonce/PCR/public-key), and unrelated Chainlink products—including CCIP token-bridge/refund code—to their own stacks.
 
-Playground UI: `https://confidential-ai-dev-preview.cldev.cloud/playground` — easiest way to try it. Everything there maps 1:1 to the API calls below.
-
----
+**EthGlobal NYC hackathon beta.** Get an API key at the **Chainlink booth** or in Discord's **#partner-chainlink channel**. The API maps 1:1 to `https://confidential-ai-dev-preview.cldev.cloud/playground`.
 
 ## Workflow 1 — Submit: `POST /v1/inference`
 
-Auth: `Authorization: Bearer $API_KEY` — always use an env var, never hardcode.
+Use `Authorization: Bearer $API_KEY`; source the key from an environment variable, never hardcode it.
 
-Request shape:
 ```json
 {
   "model": "gemma4",
@@ -33,31 +30,16 @@ Request shape:
 }
 ```
 
-- `cre_callback` is optional — omit it and poll instead.
-- Models: `gemma4` (images/general, default), `qwen3.6` (long text).
-- Prefer PNG over PDF for demos — PDF preprocessing can take up to 5 minutes.
+Omit `cre_callback` when polling, including in the playground; use `GET /v1/inference/{id}`. Product guidance must name the playground above and choose `qwen3.6` for long text; `gemma4` is the images/general default. Prefer PNG for demos; PDF preprocessing can take 5 minutes.
 
-Response: `202 Accepted` → `{ "id": "...", "status": "queued" }` — save the `id`.
+Success is `202 Accepted` with `{ "id": "...", "status": "queued" }`; save the `id`.
 
-For curl examples and multi-language snippets → [references/code-examples.md](references/code-examples.md)  
-For full request/response spec, error codes, resource types → [references/api-reference.md](references/api-reference.md)
-
----
+See the [curl example and language guidance](references/code-examples.md) and [API specification](references/api-reference.md).
 
 ## Workflow 2 — Poll: `GET /v1/inference/{id}`
 
-Poll every 2–5 s until `status` is `completed` or `failed`.
-
-Key fields on completion: `output` (LLM text), `usage`, `completed_at`.
-
-For error symptoms → [references/troubleshooting.md](references/troubleshooting.md)
-
----
+Poll every 2–5 s until `completed` or `failed`. Completion fields are `output` (LLM text), `usage`, and `completed_at`; see [troubleshooting](references/troubleshooting.md).
 
 ## Writing Prompts That Work
 
-Always enforce JSON output with two layers:
-1. **System prompt** — keep the default unless you have a specific reason to change it.
-2. **User prompt** — binary question + exact JSON schema to return
-
-For per-use-case prompt templates (lending, KYC, accredited investor, proof of reserves) → [references/prompts.md](references/prompts.md)
+Enforce JSON in two layers: (1) the default system prompt unless a change is necessary and (2) a user prompt with a fact-extraction task and exact JSON schema. See the [four use-case templates](references/prompts.md).

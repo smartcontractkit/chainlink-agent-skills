@@ -1,38 +1,33 @@
 # Chainlink Confidential AI — Prompt Templates
 
-Two layers of enforcement are always required:
+Prompts need two layers:
 
 1. **System prompt** — domain role
-2. **User prompt** — binary question + exact JSON schema
+2. **User prompt** — fact-extraction task + exact JSON schema
 
 ---
 
 ## Undercollateralized DeFi Lending
 
-**System prompt:**
+**Default system prompt (use for every template):**
 ```
 You are a helpful assistant. When documents are provided, base your answers on their content. If the documents do not contain enough information to answer, say so.
 ```
 
 **User prompt:**
 ```
-Based on the financial documents provided, is this individual suitable for an
-undercollateralized DeFi loan of [AMOUNT] USDC?
-
-- Sum all credit transactions to estimate monthly income
-- Sum all debit transactions to estimate monthly obligations
-- Note total liquid assets as a repayment buffer
-- Assess based on available evidence only — do not refuse due to missing documents
+Extract repayment-relevant facts from the supplied documents for a human reviewer.
+Do not approve or deny the loan, score eligibility, or invent thresholds.
+Use only provided evidence; represent unknowns as null.
 
 Respond with ONLY a valid JSON object:
 {
-  "approved": true,
-  "confidence": "high|medium|low",
-  "reason": "one sentence citing specific figures",
   "estimated_monthly_income_usd": 0,
   "estimated_monthly_obligations_usd": 0,
   "liquid_buffer_usd": 0,
-  "risk_level": "low|medium|high"
+  "risk_flags": [],
+  "missing_information": [],
+  "review_required": true
 }
 ```
 
@@ -40,23 +35,17 @@ Respond with ONLY a valid JSON object:
 
 ## Accredited Investor (SEC Rule 501)
 
-**System prompt:**
-```
-You are a helpful assistant. When documents are provided, base your answers on their content. If the documents do not contain enough information to answer, say so.
-```
-
 **User prompt:**
 ```
-Based solely on the provided financial documents, does this individual qualify as
-an accredited investor under SEC Rule 501?
-Assess based on available evidence only — do not refuse due to missing documents.
+Extract facts relevant to SEC Rule 501 for review by a qualified human.
+Do not decide qualification or give legal advice. Use only provided evidence.
 
 Respond with ONLY a valid JSON object:
 {
-  "qualified": true,
-  "confidence": "high|medium|low",
-  "reason": "one sentence",
-  "key_figure_usd": 0
+  "evidence": ["specific document fact"],
+  "key_figure_usd": 0,
+  "missing_information": [],
+  "review_required": true
 }
 ```
 
@@ -64,36 +53,23 @@ Respond with ONLY a valid JSON object:
 
 ## KYC/AML Check
 
-**System prompt:**
-```
-You are a helpful assistant. When documents are provided, base your answers on their content. If the documents do not contain enough information to answer, say so.
-```
-
 **User prompt:**
 ```
-Based on the provided documents, does this individual pass a basic KYC/AML check?
-Look for identity verification, suspicious transaction patterns, and sanctions indicators.
-Assess based on available evidence only.
+Extract identity and transaction facts for human review.
+Do not decide pass/fail or sanctions status; flag potential matches for verification.
 
 Respond with ONLY a valid JSON object:
 {
-  "pass": true,
-  "confidence": "high|medium|low",
-  "reason": "one sentence",
-  "flags": []
+  "identity_evidence": [],
+  "transaction_flags": [],
+  "potential_sanctions_matches": [],
+  "review_required": true
 }
 ```
-
-`flags` is an array of strings — include specific concerns (e.g. `"large unexplained cash deposits"`). Empty if none.
 
 ---
 
 ## Proof of Reserves
-
-**System prompt:**
-```
-You are a helpful assistant. When documents are provided, base your answers on their content. If the documents do not contain enough information to answer, say so.
-```
 
 **User prompt:**
 ```

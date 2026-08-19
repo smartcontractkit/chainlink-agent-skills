@@ -16,7 +16,7 @@ REQUEST_ID=$(curl -s -X POST $BASE_URL/v1/inference \
   -d "{
     \"model\": \"gemma4\",
     \"system_prompt\": \"You are a helpful assistant. When documents are provided, base your answers on their content. If the documents do not contain enough information to answer, say so.\",
-    \"prompt\": \"Is this individual suitable for an undercollateralized DeFi loan of 500,000 USDC? Assess based on available evidence only. Respond with ONLY a valid JSON object: {\\\"approved\\\": true, \\\"confidence\\\": \\\"high\\\", \\\"reason\\\": \\\"one sentence\\\", \\\"estimated_monthly_income_usd\\\": 0, \\\"liquid_buffer_usd\\\": 0, \\\"risk_level\\\": \\\"low\\\"}\",
+    \"prompt\": \"Extract monthly income, obligations, liquid assets, and risk flags for human review. Do not approve or deny the loan. Return ONLY JSON: {\\\"estimated_monthly_income_usd\\\": 0, \\\"estimated_monthly_obligations_usd\\\": 0, \\\"liquid_buffer_usd\\\": 0, \\\"risk_flags\\\": [], \\\"review_required\\\": true}\",
     \"resources\": [{
       \"filename\": \"statement.pdf\",
       \"content_type\": \"application/pdf\",
@@ -39,13 +39,4 @@ done
 echo "$RESULT" | jq '{status, output, error}'
 ```
 
-The same two HTTP calls (POST to submit, GET to poll) work identically from any language — Python `requests`, Node.js `fetch`, Go `net/http`, Rust `reqwest`, etc. Base64-encode the file, build the JSON body, save the `id`, poll until `completed`.
-
-## Base64 encoding by language
-
-| Language | One-liner |
-|----------|-----------|
-| Bash | `base64 -i file.pdf` |
-| Python | `base64.b64encode(open("file.pdf","rb").read()).decode()` |
-| Node.js | `fs.readFileSync("file.pdf").toString("base64")` |
-| Go | `base64.StdEncoding.EncodeToString(fileBytes)` |
+The same two HTTP calls—POST to submit and GET to poll—work from any language. Use the language's standard base64 encoder and put its result in `content_base64`; build the JSON body, save the `id`, and poll until `completed`.
