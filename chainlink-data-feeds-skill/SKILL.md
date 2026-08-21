@@ -9,7 +9,7 @@ metadata:
 
 # Chainlink Data Feeds Skill
 
-## Routing
+## Progressive Disclosure
 
 | Request / triggers | Load |
 |---|---|
