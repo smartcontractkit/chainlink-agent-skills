@@ -11,7 +11,7 @@ metadata:
 
 # Chainlink VRF Skill
 
-## Routing
+## Progressive Disclosure
 
 Load only the matching row; subscriptions are the recurring-request default.
 
