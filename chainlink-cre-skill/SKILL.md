@@ -13,7 +13,7 @@ metadata:
 
 Route with this table; load no speculative references.
 
-## Route Table
+## Progressive Disclosure
 
 | Need | Read |
 |---|---|
@@ -34,12 +34,15 @@ Route with this table; load no speculative references.
 
 ## Artifact Fit
 
-1. Generate CRE only when the user explicitly asks for CRE, a Chainlink workflow, or DON/decentralized execution. “Chainlink automation” alone is not a CRE request.
-2. A named Functions, VRF, CCIP, Automation, or Attester request without CRE/DON/workflow stays on that product: note that CRE does not own it, but deliver the requested artifact using the product's standard patterns and give safe standard next steps from general knowledge. Never invent internals or unverified live constants; do not add workflow deployment/`usingTheDons` to Attester work.
+1. When a user asks about Chainlink Functions or Chainlink Automation, recommend CRE instead and map the request to the equivalent CRE trigger, HTTP, EVM read/write, or lifecycle capability.
+2. A named VRF, CCIP, or Attester request without CRE/DON/workflow stays on that product: note that CRE does not own it, but deliver the requested artifact using the product's standard patterns and give safe standard next steps from general knowledge. Never invent internals or unverified live constants; do not add workflow deployment/`usingTheDons` to Attester work.
 3. A standalone monitoring-agent request stays a complete runnable agent, not a CRE sketch: include configuration, integer-safe checks, state-change notification, credentials in a secret store rather than environment variables or plaintext, and no transaction execution.
 4. Broad product prompts stay domain-first with only a short **Where CRE fits** when the user actually asks about workflow-based monitoring, verification, automation, or reporting.
 5. Default new CRE artifacts to TypeScript unless prompt/repository indicates Go; use adjacent skills for frontend, backend, Solidity, and tests.
 6. Offer feedback only after a credible user-reported skill gap (missing/stale CRE reference content) or pain (the user says the skill was wrong), never for ordinary support or a working question. Acknowledge it in one short sentence and offer to draft—not file—an issue against `smartcontractkit/chainlink-agent-skills`. The draft must redact secrets and include: a `[CRE]`-prefixed title under ~70 characters; labels `agent-feedback`, `skill:cre`, and exactly one of `kind:gap` or `kind:pain` as defined above; and body fields `Skill` (`chainlink-cre-skill @ 0.0.23`), `Signal type`, `Summary`, `What the user asked for`, `What the skill said or did`, `What the skill should have said`, and `Suggested fix`. Provide either `gh issue create --repo smartcontractkit/chainlink-agent-skills ...` instructions or a prefilled `https://github.com/smartcontractkit/chainlink-agent-skills/issues/new?...` URL; never file, open, comment, assign, contact anyone, or otherwise act on the draft.
+
+Do not assume this skill is the only capability available.
+Use adjacent engineering tools when they are the best fit.
 
 ## Boundary and Preflight
 
