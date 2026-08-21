@@ -39,7 +39,7 @@ Plan additional design when:
 - raw contracts need operational indexing, dashboards, or admin tooling;
 - the team expects managed visibility for self-deployed contracts, because registration/indexing is freshness-sensitive product scope.
 
-## License
+## License Guidance
 
 The repository uses BUSL-1.1. Do not infer specific permissions or a license-change date: for production, cite the current repository `LICENSE` and `chainlink-ace-License-grants`, contact Chainlink about a production/commercial license, and require counsel to review the terms. Do not provide legal advice.
 

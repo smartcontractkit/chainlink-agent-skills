@@ -11,7 +11,7 @@ metadata:
 
 # Chainlink ACE Skill
 
-## Routing
+## Progressive Disclosure
 
 Classify each request as OSS/self-deployed, managed Platform, or both. Load only matching rows. Ask one focused question when contract type, function, chain/network, rule, or upgradeability is unclear; read-only explanation, review, code, policy selection, source lookup, and local-test planning need no approval. Use adjacent skills for Proof of Reserve/Data Feeds, frameworks, or generic tests.
 
@@ -29,6 +29,8 @@ If the user mentions none of ACE, Automated Compliance Engine, `chainlink-ace`, 
 | current facts; source/interface names/locations; repository/package docs/scripts; token implementations; license; API resources/docs paths | [official-sources.md](references/official-sources.md) |
 
 For implementation start with onchain, then policy management/library or identity. Policy recommendations include a chain, default, order, and extracted parameters. Separate OSS Credential Data Validators from possibly attestation-only managed Beta.
+
+Do not assume this skill is the only capability available.
 
 ## Source Authority
 
