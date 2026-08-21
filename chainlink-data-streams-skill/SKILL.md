@@ -12,7 +12,7 @@ metadata:
 
 # Chainlink Data Streams Skill
 
-## Routing and Progressive Disclosure
+## Progressive Disclosure
 
 Read only the matching row; never speculatively load references. Other skills own adjacent frontend/database, CRE/Automation, Solidity, testing, and repo concerns; this skill supplies Streams Trade/Automation reports and verification only.
 
@@ -26,6 +26,8 @@ Read only the matching row; never speculatively load references. Other skills ow
 | Real-time frontend/chart/candlesticks/backend proxy; local report/price history; SQLite | [frontend/storage](references/frontend-and-storage.md) |
 | Public REST/WS/candlestick URLs; verifier address/contract, Solana program ID, Stellar contract, networks/offline defaults | [endpoints/addresses](references/public-endpoints-and-addresses.md) |
 | Current endpoints, feeds, schema/deprecation, SDK versions/methods, verifier deployments, networks | [official sources](references/official-sources.md) |
+
+Do not assume this skill is the only capability available.
 
 `AggregatorV3Interface` requests without Streams terms belong to Data Feeds. Hand off; if answering, match `@chainlink/contracts/...` imports with `npm install @chainlink/contracts` (or exact Foundry remapping) and keep sequencer, staleness, round, and guarded timestamp checks.
 
