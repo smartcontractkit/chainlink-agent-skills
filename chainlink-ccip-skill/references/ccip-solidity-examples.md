@@ -37,52 +37,52 @@ contract DataSender is OwnerIsCreator {
     event MessageSent(bytes32 indexed messageId, uint64 indexed destinationChainSelector,
         address receiver, string text, address feeToken, uint256 fees);
 
-    IRouterClient public immutable router;
-    IERC20 public immutable link;
+    IRouterClient public immutable s_router;
+    IERC20 public immutable s_linkToken;
     mapping(uint64 => bool) public allowlistedDestinationChains;
 
-    constructor(address routerAddress, address linkAddress) {
-        router = IRouterClient(routerAddress);
-        link = IERC20(linkAddress);
+    constructor(address _router, address _link) {
+        s_router = IRouterClient(_router);
+        s_linkToken = IERC20(_link);
     }
 
-    modifier onlyAllowedDestination(uint64 selector) {
-        if (!allowlistedDestinationChains[selector])
-            revert DestinationChainNotAllowed(selector);
+    modifier onlyAllowedDestination(uint64 _destinationChainSelector) {
+        if (!allowlistedDestinationChains[_destinationChainSelector])
+            revert DestinationChainNotAllowed(_destinationChainSelector);
         _;
     }
 
-    function allowlistDestinationChain(uint64 selector, bool allowed) external onlyOwner {
-        allowlistedDestinationChains[selector] = allowed;
+    function allowlistDestinationChain(uint64 _destinationChainSelector, bool _allowed) external onlyOwner {
+        allowlistedDestinationChains[_destinationChainSelector] = _allowed;
     }
 
-    function quoteFee(uint64 selector, address receiver, string calldata text)
+    function quoteFee(uint64 destinationChainSelector, address receiver, string calldata text)
         external view returns (uint256)
     {
-        return router.getFee(selector, _dataMessage(receiver, text));
+        return s_router.getFee(destinationChainSelector, _dataMessage(receiver, text));
     }
 
-    function sendMessage(uint64 selector, address receiver, string calldata text)
-        external onlyOwner onlyAllowedDestination(selector) returns (bytes32 id)
+    function sendMessage(uint64 destinationChainSelector, address receiver, string calldata text)
+        external onlyOwner onlyAllowedDestination(destinationChainSelector) returns (bytes32 messageId)
     {
-        Client.EVM2AnyMessage memory message = _dataMessage(receiver, text);
+        Client.EVM2AnyMessage memory evm2AnyMessage = _dataMessage(receiver, text);
         uint256 fees;
-        (id, fees) = _quoteApproveSend(selector, message, address(0), 0);
-        emit MessageSent(id, selector, receiver, text, address(link), fees);
+        (messageId, fees) = _quoteApproveSend(destinationChainSelector, evm2AnyMessage, address(0), 0);
+        emit MessageSent(messageId, destinationChainSelector, receiver, text, address(s_linkToken), fees);
     }
 
     function _quoteApproveSend(
-        uint64 selector,
-        Client.EVM2AnyMessage memory message,
+        uint64 _destinationChainSelector,
+        Client.EVM2AnyMessage memory evm2AnyMessage,
         address token,
         uint256 amount
     ) internal returns (bytes32 messageId, uint256 fees) {
-        fees = router.getFee(selector, message);
-        uint256 balance = link.balanceOf(address(this));
+        fees = s_router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 balance = s_linkToken.balanceOf(address(this));
         if (fees > balance) revert NotEnoughBalance(balance, fees);
-        link.forceApprove(address(router), fees);
-        if (amount != 0) IERC20(token).forceApprove(address(router), amount);
-        messageId = router.ccipSend(selector, message);
+        s_linkToken.forceApprove(address(s_router), fees);
+        if (amount != 0) IERC20(token).forceApprove(address(s_router), amount);
+        messageId = s_router.ccipSend(_destinationChainSelector, evm2AnyMessage);
     }
 
     function _dataMessage(address receiver, string memory text)
@@ -95,7 +95,7 @@ contract DataSender is OwnerIsCreator {
             extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({
                 gasLimit: 200_000, allowOutOfOrderExecution: true
             })),
-            feeToken: address(link)
+            feeToken: address(s_linkToken)
         });
     }
 }
@@ -104,26 +104,26 @@ contract TokenSender is DataSender {
     event TokensSent(bytes32 indexed messageId, uint64 indexed destinationChainSelector,
         address receiver, address token, uint256 amount, address feeToken, uint256 fees);
 
-    constructor(address routerAddress, address linkAddress)
-        DataSender(routerAddress, linkAddress) {}
+    constructor(address _router, address _link)
+        DataSender(_router, _link) {}
 
-    function transferTokens(uint64 selector, address receiver, address token, uint256 amount)
-        external onlyOwner onlyAllowedDestination(selector) returns (bytes32 id)
+    function transferTokens(uint64 destinationChainSelector, address receiver, address token, uint256 amount)
+        external onlyOwner onlyAllowedDestination(destinationChainSelector) returns (bytes32 messageId)
     {
-        Client.EVMTokenAmount[] memory amounts = new Client.EVMTokenAmount[](1);
-        amounts[0] = Client.EVMTokenAmount({token: token, amount: amount});
-        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+        Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
+        tokenAmounts[0] = Client.EVMTokenAmount({token: token, amount: amount});
+        Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
             data: "",
-            tokenAmounts: amounts,
+            tokenAmounts: tokenAmounts,
             extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({
                 gasLimit: 0, allowOutOfOrderExecution: true
             })),
-            feeToken: address(link)
+            feeToken: address(s_linkToken)
         });
         uint256 fees;
-        (id, fees) = _quoteApproveSend(selector, message, token, amount);
-        emit TokensSent(id, selector, receiver, token, amount, address(link), fees);
+        (messageId, fees) = _quoteApproveSend(destinationChainSelector, evm2AnyMessage, token, amount);
+        emit TokensSent(messageId, destinationChainSelector, receiver, token, amount, address(s_linkToken), fees);
     }
 }
 ```
@@ -139,7 +139,7 @@ import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
 
 contract DataReceiver is CCIPReceiver, OwnerIsCreator {
-    error SourceChainNotAllowed(uint64 selector);
+    error SourceChainNotAllowed(uint64 sourceChainSelector);
     error SenderNotAllowed(address sender);
     event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector,
         address sender, string text);
@@ -148,21 +148,21 @@ contract DataReceiver is CCIPReceiver, OwnerIsCreator {
     mapping(address => bool) public allowlistedSenders;
     string private s_lastReceivedText;
 
-    constructor(address router) CCIPReceiver(router) {}
+    constructor(address _router) CCIPReceiver(_router) {}
 
-    function allowlistSourceChain(uint64 selector, bool allowed) external onlyOwner {
-        allowlistedSourceChains[selector] = allowed;
+    function allowlistSourceChain(uint64 _sourceChainSelector, bool _allowed) external onlyOwner {
+        allowlistedSourceChains[_sourceChainSelector] = _allowed;
     }
-    function allowlistSender(address sender, bool allowed) external onlyOwner {
-        allowlistedSenders[sender] = allowed;
+    function allowlistSender(address _sender, bool _allowed) external onlyOwner {
+        allowlistedSenders[_sender] = _allowed;
     }
-    function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
-        address sender = abi.decode(message.sender, (address));
-        if (!allowlistedSourceChains[message.sourceChainSelector])
-            revert SourceChainNotAllowed(message.sourceChainSelector);
+    function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
+        address sender = abi.decode(any2EvmMessage.sender, (address));
+        if (!allowlistedSourceChains[any2EvmMessage.sourceChainSelector])
+            revert SourceChainNotAllowed(any2EvmMessage.sourceChainSelector);
         if (!allowlistedSenders[sender]) revert SenderNotAllowed(sender);
-        s_lastReceivedText = abi.decode(message.data, (string));
-        emit MessageReceived(message.messageId, message.sourceChainSelector, sender, s_lastReceivedText);
+        s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
+        emit MessageReceived(any2EvmMessage.messageId, any2EvmMessage.sourceChainSelector, sender, s_lastReceivedText);
     }
     function getLastReceivedText() external view returns (string memory) {
         return s_lastReceivedText;
@@ -207,47 +207,47 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
     mapping(address => uint256) public s_receivedTotals;
     EnumerableMap.Bytes32ToUintMap internal s_failedMessages;
 
-    constructor(address router) CCIPReceiver(router) {}
+    constructor(address _router) CCIPReceiver(_router) {}
     modifier onlySelf() {
         if (msg.sender != address(this)) revert OnlySelf();
         _;
     }
 
-    function allowlistSourceChain(uint64 selector, bool allowed) external onlyOwner {
-        allowlistedSourceChains[selector] = allowed;
+    function allowlistSourceChain(uint64 _sourceChainSelector, bool _allowed) external onlyOwner {
+        allowlistedSourceChains[_sourceChainSelector] = _allowed;
     }
-    function allowlistSender(address sender, bool allowed) external onlyOwner {
-        allowlistedSenders[sender] = allowed;
+    function allowlistSender(address _sender, bool _allowed) external onlyOwner {
+        allowlistedSenders[_sender] = _allowed;
     }
 
-    function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
-        address sender = abi.decode(message.sender, (address));
-        if (!allowlistedSourceChains[message.sourceChainSelector])
-            revert SourceChainNotAllowed(message.sourceChainSelector);
+    function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
+        address sender = abi.decode(any2EvmMessage.sender, (address));
+        if (!allowlistedSourceChains[any2EvmMessage.sourceChainSelector])
+            revert SourceChainNotAllowed(any2EvmMessage.sourceChainSelector);
         if (!allowlistedSenders[sender]) revert SenderNotAllowed(sender);
 
-        try this.processMessage(message) {
+        try this.processMessage(any2EvmMessage) {
             // Success.
         } catch (bytes memory reason) {
-            s_failedMessages.set(message.messageId, uint256(ErrorCode.FAILED));
-            s_messageContents[message.messageId] = message;
-            emit MessageFailed(message.messageId, reason);
+            s_failedMessages.set(any2EvmMessage.messageId, uint256(ErrorCode.FAILED));
+            s_messageContents[any2EvmMessage.messageId] = any2EvmMessage;
+            emit MessageFailed(any2EvmMessage.messageId, reason);
             return;
         }
     }
 
-    function processMessage(Client.Any2EVMMessage calldata message) external onlySelf {
-        if (message.destTokenAmounts.length == 0 || message.destTokenAmounts[0].amount == 0)
+    function processMessage(Client.Any2EVMMessage calldata any2EvmMessage) external onlySelf {
+        if (any2EvmMessage.destTokenAmounts.length == 0 || any2EvmMessage.destTokenAmounts[0].amount == 0)
             revert NoTokensReceived();
-        address token = message.destTokenAmounts[0].token;
-        uint256 amount = message.destTokenAmounts[0].amount;
-        address beneficiary = abi.decode(message.data, (address));
+        address token = any2EvmMessage.destTokenAmounts[0].token;
+        uint256 amount = any2EvmMessage.destTokenAmounts[0].amount;
+        address beneficiary = abi.decode(any2EvmMessage.data, (address));
         s_receivedTotals[token] += amount;
         IERC20(token).safeTransfer(beneficiary, amount);
         emit MessageReceived(
-            message.messageId,
-            message.sourceChainSelector,
-            abi.decode(message.sender, (address)),
+            any2EvmMessage.messageId,
+            any2EvmMessage.sourceChainSelector,
+            abi.decode(any2EvmMessage.sender, (address)),
             token,
             amount,
             beneficiary
@@ -258,9 +258,9 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
         if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED))
             revert MessageNotFailed(messageId);
         s_failedMessages.set(messageId, uint256(ErrorCode.RESOLVED));
-        Client.Any2EVMMessage memory message = s_messageContents[messageId];
-        IERC20(message.destTokenAmounts[0].token).safeTransfer(
-            tokenReceiver, message.destTokenAmounts[0].amount
+        Client.Any2EVMMessage memory any2EvmMessage = s_messageContents[messageId];
+        IERC20(any2EvmMessage.destTokenAmounts[0].token).safeTransfer(
+            tokenReceiver, any2EvmMessage.destTokenAmounts[0].amount
         );
         emit MessageRecovered(messageId);
     }

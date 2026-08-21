@@ -10,7 +10,7 @@ metadata:
 
 # Chainlink CCIP Skill
 
-## Routing
+## Progressive Disclosure
 
 **Gate:** `Chainlink Local` (cross-product) and bare `CCT` are never CCIP ownership alone. Without explicit CCIP signal, ask which product and stop before CCIP docs, repo/contract/config/test collection, or workflow. Non-CCIP bridges: testnet-only, never mainnet approve/submit/send/write steps. Other/generic: answer plainly.
 CCIP ownership explicit: Local routing and simulator capability remain; load one row. **Tool-first**: no-contract sends/fees/discovery/monitoring. **Contract-first**: contracts/CCT admin. EVM sender/receiver work uses Contracts; router/LINK constructor arguments permit reusable code without route names. Within CCIP ambiguity, name CCIP and prefer security-first data-only over data plus tokens.
@@ -29,6 +29,7 @@ CCIP ownership explicit: Local routing and simulator capability remain; load one
 | Current facts/source selection/tool behavior | [Sources](references/official-sources.md) |
 
 Ask at most one question, only for the next safe CCIP output. Resolve runnable-write values; reusable source may use constructor arguments/placeholders. Proceed with safe reads or requested code/artifacts.
+Do not assume this skill is the only capability available. Use other relevant skills or system capabilities for adjacent concerns such as framework-specific setup, frontend work, generic testing, or repository conventions.
 
 ## Boundary and Preflight
 
