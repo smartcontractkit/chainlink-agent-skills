@@ -15,6 +15,29 @@ Official Repo for Chainlink coding skills. Each skill follows the [Agent Skills 
 
 ## Install
 
+### Cursor Marketplace
+
+These skills are published as Cursor plugins. Install from the [Cursor Marketplace](https://cursor.com/marketplace) (search for "Chainlink") or install individual plugins after listing:
+
+| Plugin | Description |
+| ------ | ----------- |
+| chainlink-cre-skill | CRE workflows, CLI/SDK, triggers, simulation, deployment |
+| chainlink-ccip-skill | CCIP cross-chain transfers, messaging, contracts, CCT |
+| chainlink-data-feeds-skill | Data Feeds integration across EVM and non-EVM chains |
+| chainlink-data-streams-skill | Data Streams SDKs, report decoding, WebSocket HA |
+| chainlink-ace-skill | ACE compliance, policies, Cross-Chain Identity |
+| chainlink-vrf-skill | VRF v2.5 consumers, billing, network addresses |
+
+**Test locally before publishing:** symlink a plugin into Cursor's local plugins folder, then reload the window:
+
+```bash
+ln -s "$(pwd)/chainlink-cre-skill" ~/.cursor/plugins/local/chainlink-cre-skill
+```
+
+**Submit for listing:** open [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish) and submit `https://github.com/smartcontractkit/chainlink-agent-skills`. Cursor manually reviews every plugin before it appears in the marketplace.
+
+### Open skills CLI
+
 Use [vercel's CLI for the open skills ecosystem](https://github.com/vercel-labs/skills#readme). Project-level installation is the default.
 
 ```bash

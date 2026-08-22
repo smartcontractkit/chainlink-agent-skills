@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-data-streams-skill",
+  "displayName": "Chainlink Data Streams",
+  "version": "0.0.2",
+  "description": "Data Streams SDKs, report decoding, WebSocket HA, and on-chain verification.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/data-streams",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "data-streams", "oracle", "low-latency", "websocket"],
+  "logo": "assets/chainlink-icon.png"
+}

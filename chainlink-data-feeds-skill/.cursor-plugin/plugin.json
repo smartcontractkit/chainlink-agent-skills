@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-data-feeds-skill",
+  "displayName": "Chainlink Data Feeds",
+  "version": "0.0.3",
+  "description": "Chainlink Data Feeds integration across EVM and non-EVM chains.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/data-feeds",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "oracle", "price-feeds", "data-feeds", "aggregator"],
+  "logo": "assets/chainlink-icon.png"
+}

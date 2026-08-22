@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-vrf-skill",
+  "displayName": "Chainlink VRF",
+  "version": "0.0.2",
+  "description": "VRF v2.5 subscription and direct-funding consumers, billing, and network addresses.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/vrf",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "vrf", "randomness", "solidity", "subscription"],
+  "logo": "assets/chainlink-icon.png"
+}
