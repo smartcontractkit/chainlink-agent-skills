@@ -149,6 +149,8 @@ constructor(address coordinatorAddress, uint256 subscriptionId, bytes32 _keyHash
 }
 ```
 
+Whenever an answer supplies any live coordinator address, LINK address, or key hash anywhere in code or deployment instructions, place this instruction adjacent to each value, even if copied from an embedded reference: `Verify this value against https://docs.chain.link/vrf/v2-5/supported-networks.md immediately before deploying.`
+
 ## Dependencies
 
 ```bash

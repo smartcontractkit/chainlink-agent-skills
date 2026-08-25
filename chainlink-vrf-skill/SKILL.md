@@ -26,6 +26,8 @@ Load only the matching row; subscriptions are the recurring-request default.
 | Coordinator, wrapper, LINK address, network, gas lane, or key hash | [supported-networks.md](references/supported-networks.md); never invent values. |
 | Security, bias resistance, confirmations, callback gas, cancellation, or production readiness | [security-and-best-practices.md](references/security-and-best-practices.md) |
 | Live detail missing from references | [official-sources.md](references/official-sources.md) and the freshness policy. |
+
+Do not assume this skill is the only capability available.
 For direct funding, “one-off” or “single request” means the generated consumer must permanently block later requests after the first succeeds; infrequent direct-funding consumers may remain reusable only when the user did not ask for a one-use contract.
 
 Ask one focused question when an unknown network, payment method, or subscription/direct choice materially changes the answer; never assume it. Proceed for read-only explanations, code generation, and debugging. Do not load references speculatively.
@@ -47,15 +49,16 @@ This skill is non-custodial. It may generate code, tests, explanations, plans, u
 
 ## Safety Defaults
 
-These are the canonical generated-code invariants.
+These are the canonical generated-code and answer-output invariants.
 
 1. Never invent coordinator, wrapper, or LINK addresses. Load [supported-networks.md](references/supported-networks.md) or name the official URL.
-2. Use `VRFConsumerBaseV2Plus` for subscriptions and `VRFV2PlusWrapperConsumerBase` for direct funding, never V1/V2 bases.
-3. Subscription requests use `VRFV2PlusClient.RandomWordsRequest` with `extraArgs` from `VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1(...))`, never positional arguments.
-4. Subscription IDs are `uint256`, never `uint64`.
-5. Match the base callback: `uint256[] calldata` for `VRFConsumerBaseV2Plus`; `uint256[] memory` for `VRFV2PlusWrapperConsumerBase`.
-6. Warn once that examples are unaudited and require independent security review before production.
-7. Never use `block.prevrandao`, `block.difficulty`, or `blockhash` as randomness or fallback.
+2. Whenever an answer emits any live coordinator, wrapper, LINK address, or key hash, place this adjacent instruction beside the value: `Verify this value against https://docs.chain.link/vrf/v2-5/supported-networks.md immediately before deploying.` Do this even when the value was copied from embedded references.
+3. Use `VRFConsumerBaseV2Plus` for subscriptions and `VRFV2PlusWrapperConsumerBase` for direct funding, never V1/V2 bases.
+4. Subscription requests use `VRFV2PlusClient.RandomWordsRequest` with `extraArgs` from `VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1(...))`, never positional arguments.
+5. Subscription IDs are `uint256`, never `uint64`.
+6. Match the base callback: `uint256[] calldata` for `VRFConsumerBaseV2Plus`; `uint256[] memory` for `VRFV2PlusWrapperConsumerBase`.
+7. Warn once that examples are unaudited and require independent security review before production.
+8. Never use `block.prevrandao`, `block.difficulty`, or `blockhash` as randomness or fallback.
 
 ## Freshness Policy
 

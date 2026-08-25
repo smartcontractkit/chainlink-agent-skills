@@ -113,7 +113,7 @@ contract MyDirectConsumer is VRFV2PlusWrapperConsumerBase {
 
 ## Address and State Migration
 
-V2 and v2.5 coordinator addresses differ, and V2 subscriptions do not carry over. Replace the constructor address, create and fund a v2.5 subscription, authorize the new consumer, and update hardcoded addresses in scripts/configuration. Copy values from [`supported-networks.md`](supported-networks.md), never by inference.
+V2 and v2.5 coordinator addresses differ, and V2 subscriptions do not carry over. Replace the constructor address, create and fund a v2.5 subscription, and authorize the new consumer. Make every coordinator address, key hash, and other network-specific value in migrated code a constructor or function parameter. If a value must be hardcoded, explicitly state that it was verified and link https://docs.chain.link/vrf/v2-5/supported-networks.md; never hardcode one without that note and link.
 
 ## Compile-Error Map
 

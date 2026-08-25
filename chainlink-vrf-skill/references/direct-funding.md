@@ -137,4 +137,4 @@ The V2 constructor `VRFV2WrapperConsumerBase(linkAddress, wrapperAddress)` must 
 
 Transfer sufficient ERC-677 LINK or native coin to the consumer before requesting. The recorded `paid` value is the upfront request price and supports accounting. Use [`billing.md`](billing.md) for formulas and PegSwap requirements.
 
-Copy the wrapper address from [`supported-networks.md`](supported-networks.md) or the live supported-networks page; never guess or retain an unverified hardcoded value. Keep request access controlled, preserve enough balance, and keep the callback non-reverting.
+Make `wrapperAddress` the consumer's only constructor argument and pass it to `VRFV2PlusWrapperConsumerBase`; never hardcode a wrapper address in the contract. Whenever an answer supplies a live wrapper address, place this instruction adjacent to the value, even if copied from an embedded reference: `Verify this value against https://docs.chain.link/vrf/v2-5/supported-networks.md immediately before deploying.`
