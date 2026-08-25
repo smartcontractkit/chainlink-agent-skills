@@ -36,7 +36,43 @@ const readBalance = (runtime: Runtime<Config>, owner: Address): bigint => {
 }
 ```
 
-Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. `LAST_FINALIZED_BLOCK_NUMBER` is exactly the TypeScript `0n` finalized sentinel; `-1n` is latest, `-2n` safe, `-3n` pending, and a positive value selects an exact block. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). See [concepts.md](concepts.md) for Go's distinct generated/low-level constants.
+Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. `LAST_FINALIZED_BLOCK_NUMBER` is the SDK's exported opaque finalized sentinel; import and use it directly rather than replacing it with a numeric literal. `-1n` is latest, `-2n` safe, `-3n` pending, and a positive value selects an exact block. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). See [concepts.md](concepts.md) for Go's distinct generated/low-level constants.
+
+### Multi-output reads: tuple-to-object decoding
+
+`viem`'s `decodeFunctionResult` returns a **readonly positional tuple** for a function with multiple named outputs, never a named object — destructure it in ABI order and map it into a domain type yourself. `AggregatorV3Interface.latestRoundData()` is the canonical example:
+
+```typescript
+const priceFeedAbi = parseAbi([
+  'function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)',
+])
+
+type RoundData = {
+  roundId: bigint; answer: bigint; startedAt: bigint; updatedAt: bigint; answeredInRound: bigint
+}
+
+const readLatestRoundData = (runtime: Runtime<Config>): RoundData => {
+  const network = getNetwork({
+    chainFamily: 'evm', chainSelectorName: runtime.config.chainSelectorName,
+  })
+  if (!network) throw new Error(`Unknown selector: ${runtime.config.chainSelectorName}`)
+  const client = new EVMClient(network.chainSelector.selector)
+  const reply = client.callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress, to: runtime.config.feedAddress as Address,
+      data: encodeFunctionData({ abi: priceFeedAbi, functionName: 'latestRoundData' }),
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  }).result()
+  // decodeFunctionResult is a readonly tuple in declared-output order; destructure positionally,
+  // then build the named object — never declare/return the tuple as an object directly.
+  const [roundId, answer, startedAt, updatedAt, answeredInRound] = decodeFunctionResult({
+    abi: priceFeedAbi, functionName: 'latestRoundData', data: bytesToHex(reply.data),
+  })
+  if (roundId === 0n || answeredInRound < roundId) throw new Error('round not yet answered')
+  return { roundId, answer, startedAt, updatedAt, answeredInRound }
+}
+```
 
 ## Write/report flow
 
@@ -118,36 +154,40 @@ Stable signature: `WriteReport(runtime cre.Runtime, input *evm.WriteCreReportReq
 
 ## Consumer contract requirements
 
-A consumer receives the report through `KeystoneForwarder` and implements:
+Every consumer must enforce the generic onchain trust boundary: authenticate the configured forwarder, decode the report with the exact ABI types and order emitted by the workflow, and provide a complete compiling receiver implementation. These requirements apply regardless of business policy.
 
 ```solidity
 interface IReceiver {
     function onReport(bytes calldata metadata, bytes calldata report) external;
 }
-```
 
-`metadata` carries workflow/DON/execution metadata; `report` is the exact ABI payload. Validate `msg.sender` against the immutable configured `KeystoneForwarder` on every call. Prefer the documented `ReceiverTemplate`/`onlyForwarder`, or enforce the same check directly:
-
-```solidity
-contract PriceConsumer is IReceiver {
+contract ResourceConsumer is IReceiver {
     address public immutable forwarder;
-    uint256 public price;
+    uint256 public lastObservedValue;
     error UnauthorizedForwarder(address caller);
 
-    constructor(address forwarder_) { forwarder = forwarder_; }
+    constructor(address forwarder_) {
+        forwarder = forwarder_;
+    }
 
-    function onReport(bytes calldata, bytes calldata report) external {
+    function onReport(bytes calldata, bytes calldata report) external override {
         if (msg.sender != forwarder) revert UnauthorizedForwarder(msg.sender);
-        price = abi.decode(report, (uint256));
+        lastObservedValue = abi.decode(report, (uint256));
     }
 }
 ```
 
-Match `abi.decode` types exactly to workflow encoding; keep `onReport` within configured gas; emit indexing/audit events where needed. `ReceiverTemplate` also supplies forwarder validation and ERC165/IReceiver support. CRE receiver interfaces are not Forge/npm packages: copy `IReceiver.sol`, `IERC165.sol`, and `ReceiverTemplate.sol` from the official consumer-contract page, then use the local import; `ReceiverTemplate` depends on OpenZeppelin `Ownable`.
+`metadata` carries workflow/DON/execution metadata; `report` is the exact ABI payload. Prefer the documented `ReceiverTemplate`/`onlyForwarder`, or enforce the same sender check directly as above.
 
-For interval-gated actions, the consumer—not only the workflow—must enforce the minimum interval, reject a report whose `requestedAt` is in the future, and update the last-execution timestamp only after successful validation. Use DON time in the report, but compare against `block.timestamp` at the onchain trust boundary.
+Match `abi.decode` types exactly to workflow encoding and keep `onReport` within configured gas. Always declare `function onReport(bytes calldata, bytes calldata report) external override`, whether the contract implements `IReceiver` directly, as above, or extends `ReceiverTemplate` — every generated consumer must compile as a complete unit, and `override` is required on `ReceiverTemplate` (its base already declares the function virtual) and on a direct `IReceiver` implementation. `ReceiverTemplate` also supplies forwarder validation and ERC165/IReceiver support. CRE receiver interfaces are not Forge/npm packages: copy `IReceiver.sol`, `IERC165.sol`, and `ReceiverTemplate.sol` from the official consumer-contract page, then use the local import; `ReceiverTemplate` depends on OpenZeppelin `Ownable`.
 
-Simulation consumers trust `MockKeystoneForwarder`; deployed consumers trust `KeystoneForwarder`. They are different addresses. Pass the correct address to the constructor and change it when moving environments. All address rows are in [chain-selectors.md](chain-selectors.md); do not duplicate or guess them here.
+Do not invent owner-controlled thresholds, interval gates, actions, events, setters, or similar business policy for a generic workflow. Add them only when the user's requested behavior needs them, and emit indexing/audit events only where needed.
+
+If the requested behavior gates an action by a threshold, limit, or eligibility value, never trust a value carried by the report as authoritative — a compromised or buggy workflow could report anything. Keep that policy owner-controlled onchain and gate the action in `onReport` against the stored value.
+
+For requested interval-gated actions, the consumer—not only the workflow—must enforce the minimum interval, reject a report whose `requestedAt` is in the future, and update the last-execution timestamp only after successful validation. Use DON time in the report, but compare against `block.timestamp` at the onchain trust boundary.
+
+Simulation consumers trust `MockKeystoneForwarder`; deployed consumers trust `KeystoneForwarder`. They are different addresses. Pass the correct address to the constructor and change it when moving environments. All address rows are in [chain-selectors.md](chain-selectors.md); do not duplicate or guess them here — verify a forwarder address against the official forwarder-directory page in [official-sources.md](official-sources.md) before a live deployment. Deploying this consumer and the workflow that writes to it also requires the [operations.md](operations.md) prerequisites — CRE Early Access, a funded linked wallet, and a passing simulation — state these explicitly whenever giving deploy guidance, not only the forwarder address.
 
 ## Type mapping
 
@@ -160,6 +200,8 @@ Simulation consumers trust `MockKeystoneForwarder`; deployed consumers trust `Ke
 | array | typed array |
 
 Use `viem` `parseUnits`/`formatUnits` for decimal scaling.
+
+This includes narrow metadata integers such as a decoded `uint8 decimals()`: keep them as `bigint` and never wrap `decodeFunctionResult` in `Number(...)`. JSON configuration cannot contain a bigint, so represent the counterpart as a decimal string and convert that string to `BigInt` for comparison.
 
 ## Sources
 

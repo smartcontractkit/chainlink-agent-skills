@@ -1,6 +1,6 @@
 # Confidential Workflows
 
-Use for whole-handler execution inside a TEE/enclave (`handlerInTee`/`cre.HandlerInTee`, `TeeRuntime`). This is not Confidential HTTP; their APIs do not mix.
+Use when the user wants a workflow handler to execute inside a TEE/enclave, mentions `handlerInTee`/`cre.HandlerInTee`, `TeeRuntime`, enclave attestation or access, or asks to hide workflow data from node operators. This is not Confidential HTTP; their APIs do not mix.
 
 ## Choose the boundary
 
@@ -16,13 +16,15 @@ Use for whole-handler execution inside a TEE/enclave (`handlerInTee`/`cre.Handle
 
 ## Availability and boundary
 
-Deployment requires separate private-beta enrollment through `https://docs.chain.link/cre/account/confidential-workflows-access`; local development and simulation do not. Only AWS Nitro in `us-west-2` is registered—do not invent TEE names/regions.
+Every Confidential Workflows answer must state both availability facts explicitly: live deployment requires separate private-beta enrollment through `https://docs.chain.link/cre/account/confidential-workflows-access`; local development and simulation do not. Only AWS Nitro in `us-west-2` is registered—do not invent TEE names/regions.
 
 Confidential: Vault DON secrets released into the attested enclave, capability request/response payloads issued inside it, and intermediate enclave memory. Not confidential: the workflow binary/logic (revealed to the DON), triggers, chain reads/writes, logs, or anything passed through `usingTheDons()`/`UsingTheDons()`. DON consensus verifies enclave attestations; it does not make exported data private. Multiple confidential workflows may currently share an enclave; dedicated per-workflow isolation is planned, not available.
 
 Keep TEE logging for simulation only and remove it before production. Every shown TEE handler crosses back with `usingTheDons()`/`UsingTheDons()` and carries only derived non-sensitive conclusions—never secrets or raw confidential payloads; show both TypeScript and Go equivalents when explaining this boundary. Preserve per-item or per-position threshold cardinality inside the enclave and fail closed if any required threshold is missing. Chain writes happen after crossing back.
 
 ## Canonical TypeScript workflow
+
+The workflow below is a structural scaffold for the TEE handler/secret/HTTP/crossover mechanics, using a generic score-and-threshold check as its running example — it is not a literal deliverable. Always rebuild the handler body, `Config` fields, and business logic around the user's own named resource and action (an LLM prompt/response call, a different API, etc.); never hand back this score/threshold example, or any other reference's worked example, in place of what the user asked for.
 
 ```typescript
 import {

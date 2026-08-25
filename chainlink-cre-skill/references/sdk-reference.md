@@ -212,7 +212,7 @@ HTTP client: `creHttp.NewHTTPClient()`; `RunInNodeMode(runtime,fetchFn,aggregati
 | Trigger | API / payload |
 |---|---|
 | cron | `cron.Trigger(&cron.Config{Schedule: ...})`; `*cron.Payload` |
-| HTTP | `webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: ...})`; webhook payload |
+| HTTP | `http.Trigger(&http.Config{AuthorizedKeys: []*http.AuthorizedKey{...}})`; `*http.Payload` (`Input []byte`, `Key`) |
 | EVM log | generated helper preferred; low-level `evmlogtrigger` config/filter types |
 
 ## Sources

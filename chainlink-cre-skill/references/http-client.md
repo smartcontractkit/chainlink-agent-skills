@@ -30,10 +30,13 @@ const fetchPrice = (sender: HTTPSendRequester, url: string): number => {
   return schema.parse(json(response)).price
 }
 
-const onCron = (runtime: Runtime<Config>) => new HTTPClient()
-  .sendRequest(runtime, fetchPrice, consensusMedianAggregation<number>())(
-    runtime.config.apiUrl,
-  ).result()
+const onCron = (runtime: Runtime<Config>): string => {
+  const price = new HTTPClient()
+    .sendRequest(runtime, fetchPrice, consensusMedianAggregation<number>())(
+      runtime.config.apiUrl,
+    ).result()
+  return JSON.stringify({ price })
+}
 
 const initWorkflow = (config: Config) => [
   handler(new CronCapability().trigger({ schedule: config.schedule }), onCron),
@@ -45,13 +48,15 @@ export async function main() {
 main()
 ```
 
-The callback's first argument is the SDK-supplied `HTTPSendRequester`; caller arguments follow through the function returned by `sendRequest`. There is no workflow-global fetch. `.result()` returns a `Response`: `statusCode` is numeric, `body` is bytes; use `ok`, `json` (returns `unknown`), `text`, and `getHeader`.
+The callback's first argument is the SDK-supplied `HTTPSendRequester`; every remaining callback parameter must match the arguments passed to the function returned by `sendRequest`, one-for-one and in the same order. There is no workflow-global fetch. `.result()` returns a `Response`: `statusCode` is numeric, `body` is bytes; use `ok`, `json` (returns `unknown`), `text`, and `getHeader`.
+
+Every handler callback declares and returns `string` — serialize a numeric or structured result with `JSON.stringify` as above rather than returning the raw aggregated value; a bare `number`/object return does not satisfy the trigger workflow's output contract.
 
 ## Aggregation and node mode
 
-Whole-value aggregators are called: `consensusMedianAggregation<T>()`, `consensusIdenticalAggregation<T>()`, `consensusCommonPrefixAggregation<T>()`, `consensusCommonSuffixAggregation<T>()`, `consensusFrequencyListAggregation<T>()`. Field maps call `ConsensusAggregationByFields<T>({ price: median, symbol: identical })`; values are bare function references, not calls or `{method: ...}` objects. Other fields: `commonPrefix`, `commonSuffix`, `frequencyList`, `ignore`. There is no `mode`.
+Whole-value aggregators are called: `consensusMedianAggregation<T>()`, `consensusIdenticalAggregation<T>()`, `consensusCommonPrefixAggregation<T>()`, `consensusCommonSuffixAggregation<T>()`, `consensusFrequencyListAggregation<T>()`. Median aggregation is only for numeric `number` or `bigint` observations; strings, booleans, addresses, and hashes use identical aggregation. Field maps call `ConsensusAggregationByFields<T>({ price: median, symbol: identical })`; values are bare function references, not calls or `{method: ...}` objects. Other fields: `commonPrefix`, `commonSuffix`, `frequencyList`, `ignore`. There is no `mode`.
 
-`runInNodeMode` belongs to `Runtime`, not `HTTPClient`:
+Every node-mode or secret-backed HTTP call — including a quick "how do I use an API key" example — passes a consensus aggregator; there is no unaggregated shortcut, because each DON node runs the callback independently and the results must reach BFT agreement. `runInNodeMode` belongs to `Runtime`, not `HTTPClient`:
 
 ```typescript
 const fetchWithAuth = (node: NodeRuntime<Config>, token: string): number => {
@@ -70,7 +75,14 @@ const price = runtime
   .result()
 ```
 
-`NodeRuntime` has no secrets API, and closing over DON runtime raises `DonModeError`; read secrets before entering node mode and pass them as arguments. The node-mode HTTP overload is `httpClient.sendRequest(nodeRuntime, request).result()`.
+`NodeRuntime` has no secrets API, and closing over DON runtime raises `DonModeError`; read secrets before entering node mode and pass them as arguments. The SDK supplies `node` to `fetchWithAuth`, while the invocation's `(token)` argument supplies its matching `token` parameter; the request URL remains `node.config.apiUrl`. The node-mode HTTP overload is `httpClient.sendRequest(nodeRuntime, request).result()`.
+
+Every `getSecret`/`GetSecret` call must be paired with the matching root `secrets.yaml` mapping, or the referenced ID cannot resolve at simulation or deploy time — retrieval code without it is incomplete:
+
+```yaml
+secretsNames:
+  API_KEY: API_KEY_VAR
+```
 
 Go's high-level client is `creHttp.NewHTTPClient()` and resolves `RunInNodeMode(runtime, fetchFn, aggregation).Await()`. Node callbacks receive `cre.NodeRuntime`, whose `Fetch(*http.Request)` performs the request; use Go consensus/field aggregation types from the installed SDK. Capability completion is always `.Await()`.
 
@@ -91,6 +103,8 @@ sender.sendRequest({
 `cacheSettings` belongs on the request, not as a fourth client argument; there is no `{cache:false}`. Disable storage for non-idempotent POST/PUT/DELETE. `cacheSettings.maxAge` accepts a `Duration`.
 
 For alerts, prefer a user-owned relay that holds the real webhook URL, authenticates, rate-limits, and deduplicates by stable fields such as workflow ID, condition, round ID, and bucket timestamp. Direct Slack/Discord webhooks are for simulation/prototypes only and remain secret references.
+
+For node-mode side effects, aggregate a stable semantic acknowledgement, never raw HTTP status codes. The relay must return the same acknowledgement for the first accepted submission and a deduplicated replay, or the callback must normalize every accepted response to the same small value before identical consensus.
 
 ## Reports over HTTP
 

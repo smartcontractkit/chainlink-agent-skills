@@ -53,7 +53,6 @@ MY_API_KEY_REF=op://my-vault/my-item/api-key
 ```
 
 ```bash
-op run --env-file ../.env -- cre secrets create <dir> --target <target>
 cre secrets create <dir> --target <target>
 op read op://my-vault/my-item/api-key | some-store set MY_API_KEY --stdin
 cre login

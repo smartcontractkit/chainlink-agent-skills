@@ -16,6 +16,8 @@ A trigger runs the workflow independently on DON nodes; capability/node-mode res
 
 There is no TypeScript `mode` aggregator; use `frequencyList`. Exact SDK constructors are in [sdk-reference.md](sdk-reference.md).
 
+For an HTTP request specifically: each node performs the request independently through an HTTP capability, then CRE aggregates the per-node responses using the rule you choose. If a node returns a materially different response: with **median**, outliers are naturally tolerated as long as enough nodes still produce compatible numeric results; with **identical**, the differing node's value prevents agreement unless the required BFT supermajority still agrees on one exact value; if too many nodes disagree or return incompatible data so the threshold cannot be met, consensus fails and that execution fails for the trigger event rather than producing an untrusted result. Keep post-aggregation workflow logic deterministic, but the disagreement-handling above belongs to the aggregation step itself, not the DON-mode determinism rules below.
+
 ## Finality constants
 
 Finality semantics vary by chain. Prefer finalized for high-value reads and decisions that lead to writes; latest trades reorg safety for freshness; avoid pending in production.
@@ -24,7 +26,7 @@ TypeScript `EVMClient.callContract` block numbers:
 
 | Value | Level |
 |---|---|
-| `0n` / `LAST_FINALIZED_BLOCK_NUMBER` | finalized (default/recommended) |
+| `LAST_FINALIZED_BLOCK_NUMBER` | exported opaque finalized sentinel (default/recommended) |
 | `-1n` | latest |
 | `-2n` | safe |
 | `-3n` | pending |
@@ -44,14 +46,7 @@ Avoid in DON mode:
 - TypeScript `Date.now()`, `new Date()`, `Math.random()`, `Promise.race`, `Promise.any`, or order-dependent mixed numeric/string object keys
 - free-form values whose nondeterministic formatting enters consensus
 
-Safe pattern: sort Go keys, resolve capability calls in a deterministic order, use scaled integers/decimal strings for business comparisons, and use `bigint` for Solidity integers.
-
-```go
-keys := make([]string, 0, len(values))
-for k := range values { keys = append(keys, k) }
-sort.Strings(keys)
-for _, k := range keys { consume(k, values[k]) }
-```
+Safe pattern: sort Go keys (`sort.Strings` over the collected map keys before iterating), resolve capability calls in a deterministic order, use scaled integers/decimal strings for business comparisons, and use `bigint` for Solidity integers. The CRE Go SDK core package is `github.com/smartcontractkit/cre-sdk-go/cre` — `runtime cre.Runtime` supplies `Now()`/`Rand()`; never import `chainlink-evm/pkg/cre` or any other path for it. These determinism rules apply only when logic in the DON path actually needs them; do not lead with them when the user's question is about HTTP/capability consensus behavior, which the table above owns.
 
 ## TypeScript WASM runtime
 

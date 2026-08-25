@@ -38,10 +38,16 @@ Deployment requires Early Access. After login, `cre account access` checks statu
 
 ## Tutorial path
 
-1. Initialize/configure a project and simulate it.
+1. Initialize/configure a project and simulate it — read [project-scaffolding.md](project-scaffolding.md) for this step; it owns the Bun/Go prerequisite versions, non-interactive `cre init` flags, and the target-derivation command, so do not restate or re-derive them here.
 2. Fetch offchain data through HTTP consensus.
 3. Read a contract through the EVM client.
 4. Generate a report and write through a consumer contract.
+
+Every CLI getting-started answer that initializes a project must also show the first simulation, using [project-scaffolding.md](project-scaffolding.md)'s programmatic target derivation (never a `<placeholder>` or a manual copy step) substituted into:
+
+```bash
+cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive --trigger-index 0
+```
 
 The complete loop is trigger → offchain/onchain reads → consensus → deterministic compute → report/write. Use the capability references rather than copying tutorial scaffolding.
 
