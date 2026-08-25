@@ -9,13 +9,13 @@ Sources: tools aggregate `https://docs.chain.link/ccip/tools/llms.txt`; API `htt
 | Surface | Use |
 |---|---|
 | `GET /v2/messages/{messageId}` | One full message |
-| `GET /v2/messages` | Search by sender, receiver, selectors, source transaction/token, manual-exec readiness, or `q` |
-| `GET /v2/messages/{messageId}/execution-inputs` | Read user manual-execution inputs |
+| `GET /v2/messages` | Search by sender, receiver, selectors, source transaction/token, or `q`; manual-exec readiness filters are failure-remediation-only |
+| `GET /v2/messages/{messageId}/execution-inputs` | Read user manual-execution inputs only for a confirmed failed/ready message |
 | `GET /v2/lanes`, `/v2/lanes/latency` | Existence and trimmed-median `totalMs` estimate |
 | CLI `show`, `search messages`, `lane-latency` | Command-line equivalents |
 | CLI `parse` | Decode errors, reverts, calldata, or events |
 
-Use `--format json` for parsed CLI output. `manual-exec` is a separate write, never a routine monitoring action or agent-executed remediation.
+Use `--format json` for parsed CLI output. Normal lookup and monitoring report status and failure details only: do not mention manual-execution readiness, execution inputs, or `manual-exec` as a routine next step. Manual execution is a separate write considered only after current message data shows an actual failed message that is ready for it, never an agent-executed remediation.
 
 ## Workflow
 
@@ -32,6 +32,6 @@ A source OnRamp emits the ID; a send call does not return it directly. In the re
 
 Use `/lanes` for existence and `/lanes/latency` for current performance; do not confuse either with token support, which [discovery](ccip-discovery.md) owns.
 
-For failure: read the message; check `status` and `readyForManualExecution`; decode the revert with CLI `parse`; explain the diagnosis before suggesting action. Side-effecting remediation gets only a permitted user-run artifact after the main preflight, and mainnet remediation/artifacts are refused.
+For an actual failure: read the message, check `status`, and decode the revert with CLI `parse`; explain the diagnosis before suggesting action. Check `readyForManualExecution` or execution inputs only after the current status confirms failure and the user is diagnosing remediation—never during ordinary status monitoring. Side-effecting remediation gets only a permitted user-run artifact after the main preflight, and mainnet remediation/artifacts are refused.
 
 Treat API responses as current truth for state/metrics; use current CLI docs for commands and Explorer for explorer-style views. Never hardcode state, latency, or availability.

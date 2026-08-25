@@ -1,6 +1,6 @@
 # Chainlink Local
 
-Use only for Chainlink CCIP EVM local simulation/tests or forked environments. Always name CCIP and the no-fork `CCIPLocalSimulator`, even when asking for Hardhat files. Retain the repository's Foundry/Hardhat framework, otherwise Foundry. If the repository/contract is referenced but not shown, never invent its interface: present the official no-fork floor test verbatim, state the repo framework governs, ask the one binding question. Answer no-fork-vs-fork questions directly.
+Use only for Chainlink CCIP EVM local simulation/tests or forked environments. Within an already-activated CCIP skill, a local simulator test request in an established Hardhat or Foundry repository is sufficient CCIP intent: do not ask which Chainlink product; activate Chainlink Local's no-fork CCIP simulator (`CCIPLocalSimulator`) and use that established framework. Otherwise, bare ambiguous Chainlink Local mentions remain subject to the main ownership gate. Always name CCIP and the no-fork `CCIPLocalSimulator`. Preserve the repository's established or explicitly requested framework exactly: Hardhat stays Hardhat and Foundry stays Foundry; otherwise default to Foundry. When the user requests coverage, tests, or files, output the actual runnable artifacts in that framework—not a plan, mapping, completion summary, or example from the other framework. For an existing or referenced repository/contract, inspect the actual source before writing its test; if the source is not accessible or pasted, ask for its contract path/source and test path instead of inventing contract names, constructors, methods, events, getters, or allowlist APIs. Answer no-fork-vs-fork questions directly.
 
 Official guides: overview `https://docs.chain.link/chainlink-local.md`; Foundry no-fork `https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator.md`; Foundry fork `.../foundry/local-simulator-fork.md`; Hardhat no-fork `.../hardhat/local-simulator.md`; Hardhat fork `.../hardhat/local-simulator-fork.md`. Types: `CCIPLocalSimulator`, `CCIPLocalSimulatorFork`, and the JS fork interface for Hardhat.
 
@@ -24,7 +24,7 @@ Hardhat uses `npm install @chainlink/local`; follow the official Hardhat guide/s
 
 ## Full Foundry no-fork floor
 
-Complete EOA→EOA CCIP-BnM transfer paying fees in LINK, based on `https://github.com/smartcontractkit/ccip-starter-kit-foundry`:
+Complete EOA→EOA CCIP-BnM transfer paying fees in LINK for Foundry requests or the no-framework default, based on `https://github.com/smartcontractkit/ccip-starter-kit-foundry`. Never return this Solidity/Foundry floor for a Hardhat request:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -95,9 +95,22 @@ contract CCIPLocalTest is Test {
 
 Run: `forge test --match-contract CCIPLocalTest`. `configuration()` supplies predeployed contracts; `requestLinkFromFaucet` supplies LINK and `drip` supplies test tokens. LINK fees require router approval; native fees instead use `feeToken: address(0)` and `router.ccipSend{value: fees}(...)`.
 
+The floor above sends straight through the router so it stays runnable with no other contracts. When the user has their own token-transfer sender contract, deploy and call through that contract instead of calling `router.ccipSend` directly from the test, so the test actually exercises the user's contract:
+
+```solidity
+sender = new TokenSender(address(sourceRouter), address(link)); // the user's actual sender contract
+sender.allowlistDestinationChain(destinationChainSelector, true);
+ccipBnMToken.drip(address(sender));
+simulator.requestLinkFromFaucet(address(sender), 5 ether);
+
+sender.transferTokens(destinationChainSelector, bob, address(ccipBnMToken), amount); // through the user's contract, not the router
+```
+
+Fund and call the deployed sender/receiver contracts, never the router, whenever the request targets an existing or generated contract. A token-transfer test must send at least one nonzero token amount and assert token balances or the receiver's complete accounting; an empty `tokenAmounts` array tests data-only delivery and never satisfies it. Exercise receiver success and failure through `CCIPLocalSimulator` delivery—never impersonate the router or call `ccipReceive` directly.
+
 ## Hardhat mapping
 
-Use the same official guide with `const config = await simulator.configuration()` and map:
+For a Hardhat request, output an actual runnable JavaScript or TypeScript test based on the official Hardhat guide/starter; never return the Foundry example above or this mapping alone. Use `const config = await simulator.configuration()` and map:
 
 | Field | Hardhat use |
 |---|---|

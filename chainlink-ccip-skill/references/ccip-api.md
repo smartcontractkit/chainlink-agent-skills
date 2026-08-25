@@ -14,7 +14,7 @@ Chain selectors are `uint64` transported as strings. Keep query/response selecto
 |---|---|
 | `GET /v2/messages/{messageId}` | Full message detail |
 | `GET /v2/messages` | Filtered, cursor-paginated messages |
-| `GET /v2/messages/{messageId}/execution-inputs` | User manual-execution inputs |
+| `GET /v2/messages/{messageId}/execution-inputs` | Confirmed failed/ready-message remediation inputs only |
 | `GET /v2/lanes` | Lane inventory |
 | `GET /v2/lanes/latency` | Trimmed-median lane latency |
 | `GET /v2/chains[/{selector}]` | Supported chains / one chain plus family `chainConfig` |
@@ -29,7 +29,7 @@ Chain selectors are `uint64` transported as strings. Keep query/response selecto
 
 | Field | Meaning |
 |---|---|
-| `status`, `readyForManualExecution` | Lifecycle state and whether the user can act |
+| `status`, `readyForManualExecution` | Lifecycle state; inspect readiness only for confirmed-failure remediation |
 | `sourceNetworkInfo`, `destNetworkInfo` | `name`, `displayName`, `chainSelector`, `chainId`, `chainFamily`, `environment`, `isPrivate` |
 | `sender`, `receiver`, `origin` | Family-formatted parties |
 | `sendTransactionHash`, `sendTimestamp`, `sendBlockNumber`, `sendLogIndex` | Source anchors |
@@ -54,11 +54,11 @@ Filters: `sender`, `receiver`, `sourceChainSelector`, `destChainSelector`, `sour
 - `q` searches several roles; use named filters when role matters. Comma-separated terms must all match.
 - A cursor only accepts the filters encoded in it; changed filters return `400`. Start changed searches without a cursor.
 - If `isCountCapped`, report "at least N". Follow cursors until `hasNextPage` is false; never invent offsets.
-- Summaries include `messageId`, parties, `status`, `readyForManualExecution`, network info, send/receipt hashes and timestamps, and `sourceTokenAmount`. Fetch by ID for fees, `extraArgs`, or ramps.
+- Summaries include `messageId`, parties, `status`, `readyForManualExecution`, network info, send/receipt hashes and timestamps, and `sourceTokenAmount`. In ordinary monitoring report status and failure details without surfacing manual-execution readiness; inspect that field only for confirmed-failure remediation. Fetch by ID for fees, `extraArgs`, or ramps.
 
 ### Execution inputs
 
-V1.x returns `offramp`, `merkleRoot`, and `messageBatch`; v2.0+ also returns verifier addresses, CCV data, and `verificationComplete`. On v2 require `verificationComplete` before calling it executable. `409` means not committed; retry later. This is read-only; hand off a `ccip-cli manual-exec` template, never run it.
+V1.x execution-input responses contain `offramp`, `merkleRoot`, and `messageBatch`; v2.0+ also returns verifier addresses, CCV data, and `verificationComplete`. Request them only after current message data confirms a failed message is ready for manual execution and the user is diagnosing remediation. On v2 require `verificationComplete` before calling it executable. `409` means not committed; retry later. This is read-only; any `ccip-cli manual-exec` template is a separate user-run write and never part of normal monitoring.
 
 ### Lanes
 
@@ -88,7 +88,7 @@ SDK `MessageStatus` differs by lane version:
 | 4 | `BLESSED` | `VERIFIED` |
 | 5 | `SUCCESS` / `FAILED` | `SUCCESS` / `FAILED` |
 
-A message never reports both v1 `COMMITTED/BLESSED` and v2 `VERIFIED`. Explain: `SENT/SOURCE_FINALIZED` waits for source finality; `COMMITTED/VERIFYING/VERIFIED/BLESSED` is committed/in flight; `SUCCESS` exposes the destination receipt; `FAILED` reverted on destination and needs diagnosis. `readyForManualExecution`, not status alone, decides whether the user can act.
+A message never reports both v1 `COMMITTED/BLESSED` and v2 `VERIFIED`. Explain: `SENT/SOURCE_FINALIZED` waits for source finality; `COMMITTED/VERIFYING/VERIFIED/BLESSED` is committed/in flight; `SUCCESS` exposes the destination receipt; `FAILED` reverted on destination and needs diagnosis. During normal monitoring stop at that status explanation. Only for confirmed-failure remediation does `readyForManualExecution`, not status alone, decide whether the user can act.
 
 ## Errors and retry
 

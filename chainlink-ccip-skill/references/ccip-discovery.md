@@ -1,6 +1,6 @@
 # CCIP Discovery
 
-Use only for route connectivity, mainnet/testnet classification, or supported-token discovery—not status, performance, send execution, or contracts.
+Use only for route connectivity, mainnet/testnet classification, or supported-token discovery—not status, performance, send execution, or contracts. A discovery-only prompt stays read-only and loads only this workflow and the matching current CCIP Directory; never answer it with contract imports, package installation, remappings, or project setup.
 
 ## Sources and workflow
 
@@ -14,10 +14,11 @@ For machine-readable lane/network/active-contract facts use `GET https://api.cci
 `ccip-cli get-supported-tokens` is an optional command-level check when router/network context exists. It requires `--network`, `--address`; accepts `--token`, `--fee-tokens`, `--only-fee-tokens`; supports non-EVM; use `--format json` for parsing. Current flags: `https://docs.chain.link/ccip/tools/llms.txt` and `https://docs.chain.link/ccip/tools/cli/`.
 
 1. Establish mainnet or testnet; ask once if absent.
-2. Check the matching Directory and confirm both chains plus their direct lane.
-3. For token questions, distinguish: lane with unsupported token; missing lane; token supported only elsewhere.
-4. If the user asks only route existence/environment, answer only that with source—do not add token lists, counts, selectors, addresses, commands, or performance.
-5. Never infer environment from names when the Directory can confirm it. Use CLI only as an additional check.
-6. Route latency/performance to [monitoring](ccip-monitoring.md).
+2. Check the matching current Directory and confirm both chains plus their direct lane before answering whether the route is supported.
+3. Until that official current check succeeds, never answer “yes” or otherwise assert support and then qualify it as unverified; say that live support cannot be verified here and name the matching Directory URL. An inconclusive or unavailable source is not evidence of support.
+4. For token questions, distinguish: lane with unsupported token; missing lane; token supported only elsewhere.
+5. If the user asks only route existence/environment, answer only the facts the current source verified—do not add token lists, counts, selectors, addresses, commands, or performance.
+6. Never infer environment from names when the Directory can confirm it. Use CLI only as an additional check.
+7. Route latency/performance to [monitoring](ccip-monitoring.md).
 
 Re-check live questions; do not hardcode counts or availability. The Directory, not the lanes API, is the sole route/token authority; the API reports inventory/status only. If CLI and Directory disagree, prefer Directory and say so. Discovery is read-only and neither proves performance nor licenses guesses when the official source is inconclusive.

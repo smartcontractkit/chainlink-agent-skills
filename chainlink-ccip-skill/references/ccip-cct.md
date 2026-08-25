@@ -4,9 +4,9 @@ Use only to create or register a Cross-Chain Token (CCT), configure pools/rate l
 
 ## Decision and source map
 
-Name this Chainlink CCIP CCT onboarding and check the current CCIP Directory. Before any write artifact, if source, destination, or mainnet/testnet is missing, ask one focused question that establishes those route facts.
+Name this Chainlink CCIP CCT onboarding and verify source, destination, and mainnet/testnet against the current [CCIP Directory](https://docs.chain.link/ccip/directory/testnet) — the source of truth for route and token availability. Before any write artifact, if source, destination, or mainnet/testnet is missing, ask one focused question that establishes those route facts.
 
-At the token stage, establish whether the token is new or existing and who controls token ownership and mint/burn authority. Then choose Token Manager or the repository's framework and burn-and-mint or lock-and-mint from those facts. At the registration stage, establish pool ownership and administrator permissions. Never guess the control model or authority. Sources:
+At the token stage, establish whether the token is new or existing and who controls token ownership and mint/burn authority. When the user asks for the simplest registration path, immediately offer **Chainlink Token Manager** before asking for route or authority details, then collect those facts to confirm it fits; otherwise choose Token Manager or the repository's official framework and burn-and-mint or lock-and-mint from those facts. At the registration stage, establish pool ownership and administrator permissions. Never guess the control model or authority.
 
 - overview: `https://docs.chain.link/ccip/concepts/cross-chain-token/overview.md`
 - registration/admin: `https://docs.chain.link/ccip/concepts/cross-chain-token/evm/registration-administration.md`
@@ -18,10 +18,10 @@ At the token stage, establish whether the token is new or existing and who contr
 
 ## Auditable sequence
 
-1. Establish the source, destination, and testnet/mainnet environment, then verify the route and token support with [discovery](ccip-discovery.md).
-2. At the current token or registration stage, establish only the authority facts it needs and choose the matching Token Manager or official Foundry/Hardhat flow.
+1. Establish the source, destination, and testnet/mainnet environment, then verify the route and token support against the CCIP Directory — see [discovery](ccip-discovery.md) for the full workflow.
+2. At the current token or registration stage, offer Token Manager first when simplicity is requested; then establish only the authority facts needed to confirm it or choose the matching official Foundry/Hardhat flow.
 3. Explain the whole sequence, but request approval only for the current stage.
-4. After explicit approval, emit the [main preflight](../SKILL.md#boundary-and-preflight) for that step. The user runs it from their own wallet; this skill never signs or sends. Verify the result before preparing the next approved step.
+4. After explicit approval, emit the [main preflight](../SKILL.md#boundary-and-preflight) for that step. Every CCT registration or administrative write artifact is signed and broadcast by the user outside this skill's runtime and must end, after all commands and steps, with exactly: “This skill never signs or sends. You must sign and broadcast from your own wallet.” Verify the result before preparing the next approved step.
 
 CCT registration and pool configuration require their own user-run approval and execution.
 
