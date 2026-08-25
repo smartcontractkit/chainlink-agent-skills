@@ -1,12 +1,14 @@
 # Chainlink Confidential AI — API Reference
 
-## Base URL
+## Service URL and authentication
 
-```
-https://confidential-ai-dev-preview.cldev.cloud
+Set the service URL in an environment variable before using it in commands or code; never inline the service base:
+
+```bash
+export BASE_URL="https://confidential-ai-dev-preview.cldev.cloud"
 ```
 
-Auth on every request: `Authorization: Bearer $API_KEY`
+Use `${BASE_URL}/v1/...` with `Authorization: Bearer $API_KEY` on every request.
 
 ---
 

@@ -1,5 +1,7 @@
 # Chainlink Confidential AI — Prompt Templates
 
+When answering a prompt-design request, emit the requested `system_prompt`, user `prompt`, and exact JSON schema in full; never substitute a summary.
+
 Prompts need two layers:
 
 1. **System prompt** — domain role
