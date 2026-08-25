@@ -7,6 +7,8 @@ Read this file when:
 - The user mentions OEV (oracle-extractable value) or MEV recapture
 - The user wants to integrate SVR feeds into a DeFi protocol
 - The user is a searcher wanting to participate in SVR auctions
+Every SVR answer must emit the exact standalone sentence `Complete the Chainlink compatibility form` before any protocol-onboarding or address-migration guidance.
+For a configuration-focused protocol integration or migration, emit concise configuration, onboarding, verification, and safety steps plus only the minimal address/configuration delta; do not emit a full consumer unless the user explicitly requests one. Preserve the user's price-feed consumer as `AggregatorV3Interface`. An L2 sequencer uptime feed always uses `AggregatorV2V3Interface`, never `AggregatorV3Interface`. Explain the auction and fail-safe at a high level and include applicable staleness, runtime-decimals, answer-bound, sequencer grace-period, audit, monitoring, and production-responsibility safety steps. Include searcher-only selectors, WebSocket endpoints, signing instructions, or MEV-Share/Atlas bot implementation details only when the user explicitly asks to build or operate a searcher.
 
 ## SVR Architecture
 
@@ -31,18 +33,35 @@ SVR extends standard Chainlink Price Feeds to recapture oracle-extractable value
 
 ## Protocol Integration
 
-Integrating SVR feeds is minimal — the interface is identical to standard Price Feeds. The only difference is the feed address.
+Integrating SVR feeds is normally a configuration-only migration: the price-feed interface remains `AggregatorV3Interface`, and the configured proxy address changes to the verified SVR feed address.
 
 ### Steps
 
-1. Fill out the Chainlink compatibility form (required before integration).
-2. Find the SVR feed address on the Feed Addresses page — filter for "SVR" feeds.
-3. Read the feed using AggregatorV3Interface with the SVR address instead of the standard address.
+1. `Complete the Chainlink compatibility form`
+2. Complete protocol onboarding before integration.
+3. Find and verify the network-specific SVR proxy on the official Feed Addresses page.
+4. Change only the configured price-feed proxy/source from the standard feed to that verified SVR proxy.
+5. Verify the deployed configuration points to the intended SVR proxy and exercise fresh, bounded reads using runtime `decimals()`.
+6. On L2, verify sequencer status first and retain the 3600-second recovery grace period.
+7. Deploy through the protocol's normal governance/change process and monitor feed health, auction latency, and fail-safe behavior.
 
+All standard validation applies: staleness checks, bounds checks, runtime decimals, and L2 sequencer checks when applicable. L2 sequencer uptime feeds always use `AggregatorV2V3Interface`, never `AggregatorV3Interface`.
 
-All standard validation applies: staleness checks, bounds checks, L2 sequencer checks (if on L2).
+### Minimal configuration delta (default)
 
-### Validated consumer
+```diff
+- priceFeedProxy: <verified-standard-feed-proxy>
++ priceFeedProxy: <verified-svr-feed-proxy>
+```
+
+Keep the interfaces distinct:
+
+```solidity
+AggregatorV3Interface public immutable svrFeed;
+AggregatorV2V3Interface public immutable sequencerUptimeFeed;
+```
+
+### Validated full consumer (only when explicitly requested)
 
 ```solidity
 import {AggregatorV3Interface} from
@@ -74,7 +93,7 @@ contract SVRConsumer {
 }
 ```
 
-Set `maxAge` from the feed heartbeat and configure asset-specific bounds. On an L2, perform the sequencer check before this read and enforce the 3600-second recovery grace period.
+Set `maxAge` from the feed heartbeat and configure asset-specific bounds. On an L2, perform the sequencer check before this read with `AggregatorV2V3Interface`—never `AggregatorV3Interface`—and enforce the 3600-second recovery grace period.
 
 ### Risks to communicate
 

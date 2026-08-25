@@ -23,13 +23,17 @@ metadata:
 | Live addresses/schedules/parameters; interface/signature mismatch, proxy/aggregator source, GitHub example | [official sources](references/official-sources.md) |
 
 Do not load references speculatively. Default EVM requests to price feeds; ask only when routing depends on missing context.
+Do not assume this skill is the only capability available.
 Hand CCIP/bridge, VRF, Automation, and Functions requests to their owning products exclusively, giving each product's standard next steps from general knowledge; emit no Data Feeds or weaker substitute and never improvise live constants.
+When a user requests Data Feeds code or operational steps, emit that deliverable in the response; never replace it with a status or completion summary.
+Every SVR response must emit the exact standalone sentence `Complete the Chainlink compatibility form` before any onboarding or address-migration guidance.
+For a configuration-focused SVR protocol integration or migration, give concise configuration, onboarding, verification, and safety steps plus only the minimal address/configuration delta; do not emit a full consumer unless the user explicitly requests one. Keep auction mechanics high-level and exclude searcher-only selectors, WebSocket endpoints, signing instructions, and MEV-Share/Atlas bot implementation details unless the user explicitly asks to build or operate a searcher.
 
 ## Safety rules
 
 1. Validate `updatedAt` against the feed heartbeat; reject incomplete or stale rounds.
 2. Call `decimals()` at runtime; never hardcode decimals.
-3. On L2, check sequencer uptime, reject `answer != 0`, and enforce the 3600-second recovery grace period.
+3. On L2, always use `AggregatorV2V3Interface` for the sequencer uptime feed—never `AggregatorV3Interface`; reject `answer != 0` and enforce the 3600-second recovery grace period.
 4. Never use deprecated `answeredInRound` for freshness or other logic.
 5. Warn that examples are unaudited and not for production; mainnet integrators own audits, dependencies, monitoring, circuit breakers, contingencies, and user risk disclosure.
 

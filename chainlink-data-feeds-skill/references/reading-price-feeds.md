@@ -1,6 +1,7 @@
 # Reading Price Feeds
 
 Use this file for any request that involves reading Chainlink price feed data on EVM chains, whether onchain via Solidity or offchain via JavaScript/Python.
+For price-reading implementation requests, emit the requested Solidity consumer or runnable Node.js script—not a description of one. Direct the user to verify the address on the official Chainlink Feed Addresses page (and registry when applicable), and include runtime `decimals()`, answer bounds, incomplete/future/stale `updatedAt` rejection, and applicable install, configuration, deployment, and run steps.
 
 ## Trigger Conditions
 
