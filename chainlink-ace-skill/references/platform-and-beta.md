@@ -11,7 +11,7 @@ Current product sources:
 - Coordinator: `https://docs.chain.link/ace/reference/api/coordinator.md`
 - Reporting API/concept: `https://docs.chain.link/ace/reference/api/reporting.md`, `https://docs.chain.link/ace/concepts/reporting.md`
 
-Verify live docs before definitive claims about availability, networks, mainnet, APIs, or Beta limitations.
+Before answering, fetch and cite the exact live official page for every current managed claim—including resources, `as_of`, availability, networks, mainnet, and Beta limits—and state when it was verified. Make network feasibility conditional on the current supported-network list and ask for the target chain when it changes the answer.
 
 | Surface | Authority and scope |
 | --- | --- |
@@ -22,11 +22,12 @@ Never infer managed support from a repository capability, or infer that a manage
 
 ## Beta Defaults
 
-As documented April 28, 2026:
-- The Platform is private Beta and requires access/provisioning; the Beta scope describes it as testnet-only.
-- Supported contract types, attestation-only credentials, self-deployed contract visibility, custom policies/extractors, signing model, and contract upgradeability are scoped or limited areas.
-- Do not claim managed mainnet readiness or UI/API support for custom policies, custom extractors, custom fraud-score configuration, or custom Credential Data Validator logic unless current docs do.
-- For production/mainnet, lead with the managed limitation. Then distinguish self-deployed OSS evaluation, which still needs BUSL/commercial-license review, audits, operational ownership, legal/compliance review, and deployment approval.
+As verified against the official Beta scope, August 24, 2026:
+- The Platform is a provisioned private Beta for selected mainnet and testnet networks; confirm the requested chain against the live supported-network list.
+- Users can register custom policies. Custom extractors and mappers are unavailable through the Platform, so the full managed experience is limited to the documented ERC-20 and ERC-3643 function signatures.
+- Contracts deployed outside the Platform can function onchain but do not appear in its UI, API responses, reporting, or monitoring; do not propose registration or indexing unless current official docs explicitly add it.
+- Credential Data Validators come from Chainlink's curated catalog; do not promise a user-deployed validator. Re-fetch the Beta page because all product scope can change.
+- For production, distinguish managed availability from self-deployed OSS, which still needs current license review, audits, operational ownership, deployment approval, and legal/compliance review.
 
 ## Managed Surfaces
 
@@ -36,7 +37,7 @@ As documented April 28, 2026:
 
 ### Coordinator API
 
-Privileged write/control-plane API for supported management operations:
+Privileged write/control-plane API for the management operations currently listed at `https://docs.chain.link/ace/reference/api/coordinator`; cite that page rather than extrapolating a resource from the UI or OSS contracts:
 - delegated signing-wallet creation where supported;
 - PolicyEngine deployment/configuration on supported networks;
 - policy-library instance creation and parameters;
@@ -50,11 +51,17 @@ It changes ACE resources and is not the auditor evidence API.
 
 ### Reporting API
 
-Read-only audit/monitoring plane for **Transactions, Policies, Targets, and Identities**. Use `as_of` or equivalent point-in-time fields when exposed to show state at a transaction/cutoff. For audit evidence, reconcile its records with onchain logs, deployed addresses, policy snapshots, credential-issuer records, and governance/admin history.
+Read-only audit/monitoring plane for the resources currently listed at `https://docs.chain.link/ace/reference/api/reporting`. As verified August 24, 2026, these are **Transactions, Policies, Targets, Identities, and Permits**; `as_of` point-in-time queries are documented for Policies, Targets, and Identities, not every resource. Cite and re-check the page before repeating either list. Reporting data is indexed evidence, not a substitute for chain state: reconcile it with onchain logs, deployed addresses, policy wiring/snapshots, credential-issuer records, and governance/admin history.
+
+Do not invent exact event names: identify the deployed contract and verify its ABI or pinned source before naming logs. Do not equate a managed Reporting `Identities` record with an OSS CCID registry record; state the boundary and reconcile each against its actual onchain registry.
 
 ## External Deployments
 
-Do not assume Foundry/self-deployed contracts automatically appear in Platform UI. Visibility generally depends on managed registration, provisioning, or indexing. Check Beta docs or the team's Chainlink contact for external registration, indexing behavior, and required metadata.
+Current Beta docs say Foundry/self-deployed contracts do not appear in Platform UI, API responses, reporting, or monitoring because the Platform tracks contracts it deploys. Cite the live Beta page and do not claim an external registration/indexing path unless that page explicitly documents one.
+
+## Managed-Answer Guardrails
+
+Every managed workflow must state the applicable private-Beta/access and feature limits. Require authorized access and explicit human or governance approval before Coordinator operations or onchain writes; keep PII and raw identity evidence offchain; apply least-privilege access and documented retention to reports; and include legal/compliance review where the design governs regulated activity. Always include the onchain reconciliation step for audit or reporting guidance and review policy order because an earlier `Allowed` result can skip later controls.
 
 ## Credential Modes
 

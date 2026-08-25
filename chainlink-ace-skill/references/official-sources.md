@@ -4,7 +4,7 @@ Use for current repository/product facts, exact source or interface locations, s
 
 ## Freshness
 
-Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Prefer live official source over a bundled reference, identify the change, and cite the exact URL. Fetch before production code, compilation/ABI debugging, custom implementation details, or interface/license review.
+Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Every current managed-product claim must cite the exact live official URL and state the verification date. Before listing Coordinator or Reporting resources/capabilities or `as_of` support, fetch both API pages, report only what each currently documents, and say which resource types support `as_of`; never generalize it to every endpoint. Prefer live official source over a bundled reference and name any change from it.
 
 ## Product Docs
 
@@ -77,6 +77,8 @@ Paths below are relative to the repository root. These rows are the canonical pa
 | ERC-3643 Compliance Token | `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens/erc-3643` | T-REX-style token using ACE identity and compliance; automatically unfreezes as needed during burns/forced transfers |
 
 Tokens root: `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens`; deployment scripts: `https://github.com/smartcontractkit/chainlink-ace/tree/main/scripts`.
+
+Token examples are implementation references, not a compliance determination. Forced transfer, burn, freeze, recovery, and issuer powers require strict authorization, governance approval, auditability, and legal/compliance review; keep PII and raw identity evidence offchain. Never imply that using ERC-3643 or the T-REX example itself establishes regulatory or legal compliance.
 
 ## Selection
 

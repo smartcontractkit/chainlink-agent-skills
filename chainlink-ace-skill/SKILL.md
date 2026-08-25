@@ -15,7 +15,7 @@ metadata:
 
 Classify each request as OSS/self-deployed, managed Platform, or both. Load only matching rows. Ask one focused question when contract type, function, chain/network, rule, or upgradeability is unclear; read-only explanation, review, code, policy selection, source lookup, and local-test planning need no approval. Use adjacent skills for Proof of Reserve/Data Feeds, frameworks, or generic tests.
 
-If the user mentions none of ACE, Automated Compliance Engine, `chainlink-ace`, ERC-3643, or onchain compliance rules, do not introduce ACE. Route any non-ACE request (CCIP, CRE, Data Feeds, generic Solidity, or another product) to its own skill: name the owning product, give a one-paragraph recommended default using its public pattern, and leave detailed procedure to that skill.
+For any request that does not match this skill's positive trigger sentence, route directly to the owning product or generic domain: name it, give a one-paragraph recommended default using its public pattern, and leave detailed procedure to its own skill. The final answer MUST NOT contain `ACE`, `Automated Compliance Engine`, `PolicyProtected`, or any component from this skill, even to contrast or negate. Answer only in the owning product or generic domain; for generic Solidity, do not add policy hooks or compliance components.
 
 | Trigger or ask | Read |
 | --- | --- |

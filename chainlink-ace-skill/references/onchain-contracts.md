@@ -26,6 +26,8 @@ This path carries the user's licensing, audit, engineering, and operational resp
 
 For the current `pnpm build`, `test`, `fmt`, `fmt:check`, `lint`, and `deploy:token:erc20`, `deploy:token:erc3643`, `deploy:token:simple` command bodies, fetch live `package.json` through [official-sources.md](official-sources.md); do not copy a stale scripts block.
 
+Before giving proxy or upgrade instructions, establish that the target is actually upgradeable and identify its proxy pattern. Apply `UPGRADE_GUIDE.md`, reinitializers, and `upgradeToAndCall` only to a confirmed compatible proxy; otherwise give the non-upgradeable integration choices and never invent an upgrade path.
+
 ## New Integration
 
 In an existing Foundry project, run `forge install smartcontractkit/chainlink-ace@<reviewed-commit>`; keep that commit pinned, preserve its required remappings, and do not make a separate clone/build the primary path.
@@ -39,6 +41,8 @@ In an existing Foundry project, run `forge install smartcontractkit/chainlink-ac
 
 Use the token examples rather than recreating regulated-token behavior. Direct users can deploy on EVM, use/write policies, extractors, and mappers, integrate custom dApps/vaults/DEXs/lending/tokens, and use Cross-Chain Identity.
 
+Policy rejection is a revert with the `PolicyRejected` error, never a returned `PolicyResult`. `PolicyResult` contains only `None`, `Allowed`, and `Continue`; integrations must handle a rejection as a reverted/error path.
+
 ## Existing Contracts
 
 For an existing upgradeable contract, extend `PolicyProtectedUpgradeable` and call the pinned commit's exact `packages/policy-management/src/core` init from the reinitializer (e.g. `__PolicyProtected_init(policyEngine)`) — never leave it empty or guess the name. Protect every privileged entry point compliance rules cover, not only `transfer`/`transferFrom` — also `mint`, `burn`, forced-transfer, freeze/unfreeze, and recovery — each with its own extractor; never nest `runPolicy` on an outer call and the invoked function, which double-runs the policy. Restrict the reinitializer to owner/admin and call it atomically via `upgradeToAndCall` (see Production, Upgrade, and Security below); test storage-layout compatibility, preserved balances/allowances, `transferFrom` `from`/`to` extraction, single-run execution, ordering, and rollback.
@@ -50,5 +54,6 @@ Implement `IPolicyProtected` directly only for bytecode/custom constraints; then
 - Cite the current repository `LICENSE` and `chainlink-ace-License-grants`; do not infer specific permissions or an MIT flip date. Production/commercial use requires Chainlink contact and counsel review.
 - Treat PolicyEngine administration as critical; unauthorized changes can bypass controls. Prefer built-ins; audit/test custom policies, extractors, mappers, and complete chains.
 - Review ordering because `Allowed` skips later checks; audit state-mutating `postRun()`; verify extractors decode honestly.
+- Never put PII or raw identity evidence onchain; use minimal non-sensitive commitments or references and obtain legal/compliance review for regulated controls.
 - Before upgrades verify proxy compatibility, storage layout, bytecode size, access-restricted reinitializer executed via `upgradeToAndCall`, and preserved state.
 - Run repository and integration tests against the actual chain/configuration before production.
