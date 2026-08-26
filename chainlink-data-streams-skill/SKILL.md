@@ -29,7 +29,7 @@ Read only the matching row; never speculatively load references. Other skills ow
 
 Do not assume this skill is the only capability available.
 
-`AggregatorV3Interface` requests without Streams terms belong to Data Feeds. Hand off; if answering, match `@chainlink/contracts/...` imports with `npm install @chainlink/contracts` (or exact Foundry remapping) and keep sequencer, staleness, round, and guarded timestamp checks.
+`AggregatorV3Interface` requests without Streams terms belong to Data Feeds. Hand off; if answering, match `@chainlink/contracts/...` imports with `npm install @chainlink/contracts` (or exact Foundry remapping) and keep sequencer, staleness, round, and guarded timestamp checks. For that handoff, deliver the requested contract and checks but never instruct or recommend mainnet deployment: mainnet feed/sequencer addresses are read-only lookup/configuration context only, and deployment commands/artifacts must target testnet or be omitted.
 
 Never translate EVM patterns to Solana/Stellar. Ask one focused question, rather than assume, when a required network, chain/runtime, environment, verifier/contract, feed ID, schema, signer, language, or integration shape is unknown.
 
