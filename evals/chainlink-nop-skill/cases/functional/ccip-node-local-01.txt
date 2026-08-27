@@ -1,0 +1,1 @@
+Classify the attached synthetic CCIP evidence for node-alpha. Report the observed node-local setup, reader, and launcher facts; separate evidence from inference; and continue to the supported conclusion. Do not claim message or lane finality, destination execution, receiver behavior, quorum, congestion, or gas causes, and do not propose a node mutation.

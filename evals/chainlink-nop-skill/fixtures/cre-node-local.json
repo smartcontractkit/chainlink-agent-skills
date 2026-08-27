@@ -1,0 +1,26 @@
+{
+  "scenario_id": "cre-node-local",
+  "node": "node-alpha",
+  "observations": [
+    {
+      "fact": "The capability registry facade is available on the node."
+    },
+    {
+      "fact": "The node is a member of the configured local capability DON and selected the local route."
+    },
+    {
+      "fact": "The local capability manager failed while starting capability binary cap-alpha."
+    }
+  ],
+  "expected": {
+    "classification": "node-local",
+    "conclusion": "The supplied evidence supports a node-local capability lifecycle/start failure.",
+    "stop_reason": "evidence-backed conclusion",
+    "unsupported_claims": [
+      "dashboard status",
+      "external endpoint behavior",
+      "workflow execution root cause",
+      "consensus or secret failure"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+schema_version: 1
+node_api:
+  url: https://node.example
+  api_key:
+    env: CHAINLINK_API_KEY
+  api_secret:
+    env: CHAINLINK_API_SECRET

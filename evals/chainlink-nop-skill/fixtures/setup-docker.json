@@ -1,0 +1,32 @@
+{
+  "scenario_id": "setup-connection",
+  "command": "/chainlink-nop-skill setup",
+  "skill_root": "<skill-root>",
+  "config_exists": false,
+  "submitted_form": {
+    "node_api_url": "https://node.example.test",
+    "api_key_ref": "env:CHAINLINK_NODE_API_KEY",
+    "api_secret_ref": "file:/absolute/path/to/chainlink-node-api-secret"
+  },
+  "expected": {
+    "required_text_fields": ["node_api_url", "api_key_ref", "api_secret_ref"],
+    "reference_formats": ["env:NAME", "file:/absolute/path"],
+    "config_path": "<skill-root>/config.yaml",
+    "stored_config": {
+      "schema_version": 1,
+      "node_api": {
+        "url": "https://node.example.test",
+        "api_key": {
+          "env": "CHAINLINK_NODE_API_KEY"
+        },
+        "api_secret": {
+          "file": "/absolute/path/to/chainlink-node-api-secret"
+        }
+      }
+    },
+    "write_after_submit": true,
+    "atomic_write": true,
+    "existing_config_without_update": "do not overwrite",
+    "update_behavior": "--update pre-fills the same three-field form and replaces config.yaml after submit"
+  }
+}

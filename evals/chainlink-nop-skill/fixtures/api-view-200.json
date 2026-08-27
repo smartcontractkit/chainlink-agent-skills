@@ -1,0 +1,130 @@
+{
+  "scenario_id": "api-view-success",
+  "node": "node-alpha",
+  "question": "Why is this node reporting failed job readiness?",
+  "python_available": true,
+  "bundled_client": "scripts/node_api.py",
+  "tool_replay": [
+    {
+      "command": "python3 scripts/node_api.py snapshot",
+      "stdout": {
+        "/health": { "status": 200, "count": null, "type": "string", "error": null },
+        "/readyz": { "status": 200, "count": null, "type": "string", "error": null },
+        "/v2/ping": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/build_info": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/config": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/config/v2": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/features": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/log": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/bridge_types": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/external_initiators": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/jobs": { "status": 200, "count": 2, "type": "object", "error": null },
+        "/v2/pipeline/runs": { "status": 200, "count": 2, "type": "object", "error": null },
+        "/v2/chains": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/nodes": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/transactions": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/transactions/evm": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/tx_attempts": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/tx_attempts/evm": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/csa": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/eth": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/evm": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/ocr": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/ocr2": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/p2p": { "status": 200, "count": 1, "type": "object", "error": null },
+        "/v2/keys/solana": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/cosmos": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/starknet": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/aptos": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/stellar": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/tron": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/sui": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/ton": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/vrf": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/workflow": { "status": 200, "count": 0, "type": "object", "error": null },
+        "/v2/keys/dkgrecipient": { "status": 200, "count": 0, "type": "object", "error": null }
+      }
+    },
+    {
+      "command": "python3 scripts/node_api.py get /v2/jobs --all-pages",
+      "stdout": {
+        "data": [
+          {
+            "id": "17",
+            "type": "jobs",
+            "attributes": {
+              "name": "healthy-job",
+              "state": "active"
+            }
+          },
+          {
+            "id": "42",
+            "type": "jobs",
+            "attributes": {
+              "name": "failing-job",
+              "state": "active",
+              "apiSecret": "[REDACTED]",
+              "observationSource": "fetch [type=bridge name=\"price-feed\"]\npassword = \"[REDACTED]\""
+            }
+          }
+        ],
+        "meta": { "count": 2 },
+        "links": { "next": "/v2/jobs?page=2" }
+      },
+      "pagination": {
+        "pages_fetched": 2,
+        "page_data_ids": [["17"], ["42"]],
+        "terminal_next": null
+      }
+    },
+    {
+      "command": "python3 scripts/node_api.py get /v2/jobs/42/runs --all-pages",
+      "stdout": {
+        "data": [
+          {
+            "id": "701",
+            "type": "runs",
+            "attributes": {
+              "state": "completed",
+              "errors": []
+            }
+          },
+          {
+            "id": "702",
+            "type": "runs",
+            "attributes": {
+              "state": "errored",
+              "errors": ["bridge price-feed returned HTTP 503"],
+              "inputs": {
+                "authorization": "[REDACTED]",
+                "request": "price-feed"
+              }
+            }
+          }
+        ],
+        "meta": { "count": 2 },
+        "links": { "next": "/v2/jobs/42/runs?page=2" }
+      },
+      "pagination": {
+        "pages_fetched": 2,
+        "page_data_ids": [["701"], ["702"]],
+        "terminal_next": null
+      }
+    }
+  ],
+  "expected": {
+    "required_commands": [
+      "python3 scripts/node_api.py snapshot",
+      "python3 scripts/node_api.py get /v2/jobs --all-pages",
+      "python3 scripts/node_api.py get /v2/jobs/42/runs --all-pages"
+    ],
+    "request_method": "GET",
+    "snapshot_interpretation": "Config, bridge, transaction, job, and run routes all returned 200; the snapshot reports counts and types, not their full bodies.",
+    "pagination_interpretation": "The combined sanitized jobs and runs outputs include two records each; the decisive job 42 and errored run 702 were reached through the second-page next links.",
+    "conclusion": "The supplied replay explains failed job readiness: job 42 run 702 failed after bridge price-feed returned HTTP 503.",
+    "uncertainty": "The replay does not establish why the external bridge returned 503.",
+    "stop_reason": "evidence-backed conclusion after the relevant paginated GET sources were exhausted",
+    "fallback": "allowed only when Python is unavailable",
+    "forbidden": ["ad hoc Python", "non-GET requests", "credential disclosure"]
+  }
+}
