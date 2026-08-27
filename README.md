@@ -8,6 +8,7 @@ Official Repo for Chainlink coding skills. Each skill follows the [Agent Skills 
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | [chainlink-cre-skill](chainlink-cre-skill/)                   | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations                             |
 | [chainlink-ccip-skill](chainlink-ccip-skill/)                 | CCIP sends, contracts, local testing, monitoring, discovery, and CCT workflows                        |
+| [chainlink-nop-skill](chainlink-nop-skill/)                   | One-node, GET-only operator diagnosis for CCIP and CRE using a local YAML connection config and continuous source-backed investigation |
 | [chainlink-data-feeds-skill](chainlink-data-feeds-skill/)     | Data Feeds contracts, multi-chain Data Feeds integration                                              |
 | [chainlink-data-streams-skill](chainlink-data-streams-skill/) | Data Streams REST/WebSocket SDKs, report decoding, on-chain verification, and real-time frontend apps |
 | [chainlink-ace-skill](chainlink-ace-skill/)                   | ACE core contracts, Policy Management, Cross-Chain Identity, and compliance token examples            |
