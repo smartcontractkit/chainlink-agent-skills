@@ -1,0 +1,7 @@
+I'm building a confidential CRE workflow for tokenized-asset settlement.
+
+An external HTTP gateway accepts claims and an EIP-191 authorization artifact. Right now my design lets the address inside the authorization artifact become the trusted signer, marks the claim AUTHORIZED as soon as the signature verifies, immediately performs settlement, and stores claim state only in memory.
+
+Redesign this safely.
+
+Cover trusted signer provenance, pristine claim state, signature verification ordering, issued-at and expiry binding, persistence across gateway restarts, secrets handling, and the boundary between verification, authorization, state mutation, and settlement.
