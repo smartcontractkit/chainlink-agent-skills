@@ -1,87 +1,30 @@
 # Chainlink Local
 
-Use this file only for CCIP local simulation, local contract tests, or forked-environment testing.
+Use only for Chainlink CCIP EVM local simulation/tests or forked environments. Within an already-activated CCIP skill, a local simulator test request in an established Hardhat or Foundry repository is sufficient CCIP intent: do not ask which Chainlink product; activate Chainlink Local's no-fork CCIP simulator (`CCIPLocalSimulator`) and use that established framework. Otherwise, bare ambiguous Chainlink Local mentions remain subject to the main ownership gate. Always name CCIP and the no-fork `CCIPLocalSimulator`. Preserve the repository's established or explicitly requested framework exactly: Hardhat stays Hardhat and Foundry stays Foundry; otherwise default to Foundry. When the user requests coverage, tests, or files, output the actual runnable artifacts in that framework—not a plan, mapping, completion summary, or example from the other framework. For an existing or referenced repository/contract, inspect the actual source before writing its test; if the source is not accessible or pasted, ask for its contract path/source and test path instead of inventing contract names, constructors, methods, events, getters, or allowlist APIs. Answer no-fork-vs-fork questions directly.
 
-## Trigger Conditions
+Official guides: overview `https://docs.chain.link/chainlink-local.md`; Foundry no-fork `https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator.md`; Foundry fork `.../foundry/local-simulator-fork.md`; Hardhat no-fork `.../hardhat/local-simulator.md`; Hardhat fork `.../hardhat/local-simulator-fork.md`. Types: `CCIPLocalSimulator`, `CCIPLocalSimulatorFork`, and the JS fork interface for Hardhat.
 
-Use this workflow for requests like:
+## Setup
 
-- "Add local CCIP tests for these contracts."
-- "Simulate this CCIP flow locally before testnet."
-- "Use Chainlink Local in this Foundry project."
-- "This is a Hardhat repo. Add CCIP local simulator tests."
-- "Run this in a forked environment first."
-
-Do not use this workflow for live-network execution, message monitoring, or basic contract generation without a local-testing goal.
-
-## Default Path
-
-1. Prefer Chainlink Local for local simulation and local contract tests.
-2. Prefer the no-fork local simulator first.
-3. Use the current repo framework when it is already clearly Foundry or Hardhat.
-4. If the repo is not already committed to a framework and the user does not ask for one, default to Foundry.
-5. Use forked environments only when the user needs higher realism or specifically asks for a forked-network workflow.
-6. Before generating tests for existing contracts, inspect their paths, constructors, methods, and errors. If those details are unavailable, ask for them in one focused question and stop instead of generating a speculative test.
-
-## Official References
-
-Start from these official docs:
-
-- Overview: `https://docs.chain.link/chainlink-local.md`
-- Foundry local simulator: `https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator.md`
-- Foundry forked environments: `https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator-fork.md`
-- Hardhat local simulator: `https://docs.chain.link/chainlink-local/build/ccip/hardhat/local-simulator.md`
-- Hardhat forked environments: `https://docs.chain.link/chainlink-local/build/ccip/hardhat/local-simulator-fork.md`
-
-Core simulator types:
-
-- `CCIPLocalSimulator`
-- `CCIPLocalSimulatorFork`
-- `CCIPLocalSimulatorFork JS` - for Hardhat users who want a JavaScript interface to the forked simulator
-
-## Setup Guidance
-
-### Common package
-
-Use the official local package:
-
-- npm or yarn: `@chainlink/local`
-
-### Foundry
-
-Use the official Foundry install path:
+Foundry:
 
 ```bash
 forge install smartcontractkit/chainlink-local
 ```
 
-Add the remapping:
-
 ```text
 @chainlink/local/=lib/chainlink-local/
 ```
-
-Import the simulator from the local package:
 
 ```solidity
 import {CCIPLocalSimulator} from "@chainlink/local/src/ccip/CCIPLocalSimulator.sol";
 ```
 
-### Hardhat
+Hardhat uses `npm install @chainlink/local`; follow the official Hardhat guide/starter rather than maintaining a parallel harness here.
 
-Use the existing Hardhat repo if the project is already Hardhat or the user explicitly wants Hardhat.
+## Full Foundry no-fork floor
 
-Install the package:
-
-```bash
-npm install @chainlink/local
-```
-
-Prefer the starter-kit structure from the official docs when the user wants the quickest working path.
-
-## Foundry No-Fork Example
-
-Complete test showing EOA-to-EOA token transfer with LINK fee payment. Based on the official [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry).
+Complete EOA→EOA CCIP-BnM transfer paying fees in LINK for Foundry requests or the no-framework default, based on `https://github.com/smartcontractkit/ccip-starter-kit-foundry`. Never return this Solidity/Foundry floor for a Hardhat request:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -93,18 +36,16 @@ import {CCIPLocalSimulator, IRouterClient, LinkToken, BurnMintERC677Helper} from
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 
 contract CCIPLocalTest is Test {
-    CCIPLocalSimulator public ccipLocalSimulator;
-    uint64 public destinationChainSelector;
-    IRouterClient public router;
-    LinkToken public linkToken;
-    BurnMintERC677Helper public ccipBnMToken;
-
+    CCIPLocalSimulator simulator;
+    uint64 destinationChainSelector;
+    IRouterClient router;
+    LinkToken linkToken;
+    BurnMintERC677Helper ccipBnMToken;
     address alice;
     address bob;
 
     function setUp() public {
-        ccipLocalSimulator = new CCIPLocalSimulator();
-
+        simulator = new CCIPLocalSimulator();
         (
             uint64 chainSelector,
             IRouterClient sourceRouter,
@@ -112,36 +53,31 @@ contract CCIPLocalTest is Test {
             ,
             LinkToken link,
             BurnMintERC677Helper ccipBnM,
-        ) = ccipLocalSimulator.configuration();
-
+        ) = simulator.configuration();
         destinationChainSelector = chainSelector;
         router = sourceRouter;
         linkToken = link;
         ccipBnMToken = ccipBnM;
-
         alice = makeAddr("alice");
         bob = makeAddr("bob");
     }
 
     function test_transferTokensPayFeesInLink() public {
         ccipBnMToken.drip(alice);
-        uint256 amountToSend = 100;
-
-        uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
-        uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
+        uint256 amount = 100;
+        uint256 aliceBefore = ccipBnMToken.balanceOf(alice);
+        uint256 bobBefore = ccipBnMToken.balanceOf(bob);
 
         vm.startPrank(alice);
-        ccipLocalSimulator.requestLinkFromFaucet(alice, 5 ether);
+        simulator.requestLinkFromFaucet(alice, 5 ether);
+        ccipBnMToken.approve(address(router), amount);
 
-        ccipBnMToken.approve(address(router), amountToSend);
-
-        Client.EVMTokenAmount[] memory tokensToSend = new Client.EVMTokenAmount[](1);
-        tokensToSend[0] = Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
-
+        Client.EVMTokenAmount[] memory tokens = new Client.EVMTokenAmount[](1);
+        tokens[0] = Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amount});
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(bob),
             data: "",
-            tokenAmounts: tokensToSend,
+            tokenAmounts: tokens,
             extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
             feeToken: address(linkToken)
         });
@@ -149,157 +85,46 @@ contract CCIPLocalTest is Test {
         uint256 fees = router.getFee(destinationChainSelector, message);
         linkToken.approve(address(router), fees);
         router.ccipSend(destinationChainSelector, message);
-
         vm.stopPrank();
 
-        assertEq(ccipBnMToken.balanceOf(alice), balanceOfAliceBefore - amountToSend);
-        assertEq(ccipBnMToken.balanceOf(bob), balanceOfBobBefore + amountToSend);
-    }
-
-    function test_transferTokensPayFeesInNative() public {
-        ccipBnMToken.drip(alice);
-        uint256 amountToSend = 100;
-
-        uint256 balanceOfAliceBefore = ccipBnMToken.balanceOf(alice);
-        uint256 balanceOfBobBefore = ccipBnMToken.balanceOf(bob);
-
-        vm.startPrank(alice);
-        deal(alice, 5 ether);
-
-        ccipBnMToken.approve(address(router), amountToSend);
-
-        Client.EVMTokenAmount[] memory tokensToSend = new Client.EVMTokenAmount[](1);
-        tokensToSend[0] = Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
-
-        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-            receiver: abi.encode(bob),
-            data: "",
-            tokenAmounts: tokensToSend,
-            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
-            feeToken: address(0)
-        });
-
-        uint256 fees = router.getFee(destinationChainSelector, message);
-        router.ccipSend{value: fees}(destinationChainSelector, message);
-
-        vm.stopPrank();
-
-        assertEq(ccipBnMToken.balanceOf(alice), balanceOfAliceBefore - amountToSend);
-        assertEq(ccipBnMToken.balanceOf(bob), balanceOfBobBefore + amountToSend);
+        assertEq(ccipBnMToken.balanceOf(alice), aliceBefore - amount);
+        assertEq(ccipBnMToken.balanceOf(bob), bobBefore + amount);
     }
 }
 ```
 
-Run with:
+Run: `forge test --match-contract CCIPLocalTest`. `configuration()` supplies predeployed contracts; `requestLinkFromFaucet` supplies LINK and `drip` supplies test tokens. LINK fees require router approval; native fees instead use `feeToken: address(0)` and `router.ccipSend{value: fees}(...)`.
 
-```bash
-forge test --match-contract CCIPLocalTest
+The floor above sends straight through the router so it stays runnable with no other contracts. When the user has their own token-transfer sender contract, deploy and call through that contract instead of calling `router.ccipSend` directly from the test, so the test actually exercises the user's contract:
+
+```solidity
+sender = new TokenSender(address(sourceRouter), address(link)); // the user's actual sender contract
+sender.allowlistDestinationChain(destinationChainSelector, true);
+ccipBnMToken.drip(address(sender));
+simulator.requestLinkFromFaucet(address(sender), 5 ether);
+
+sender.transferTokens(destinationChainSelector, bob, address(ccipBnMToken), amount); // through the user's contract, not the router
 ```
 
-Key patterns: `CCIPLocalSimulator` provides all pre-deployed addresses via `configuration()`. Use `requestLinkFromFaucet` for LINK, `drip` for test tokens. Fees paid via LINK require `approve` to router; native fees use `{value: fees}`.
+Fund and call the deployed sender/receiver contracts, never the router, whenever the request targets an existing or generated contract. A token-transfer test must send at least one nonzero token amount and assert token balances or the receiver's complete accounting; an empty `tokenAmounts` array tests data-only delivery and never satisfies it. Exercise receiver success and failure through `CCIPLocalSimulator` delivery. A rejected simulator delivery exposes the outer `ReceiverError`, so assert that wrapper there; assert exact inner receiver errors separately with direct guard tests, using a minimal harness or authenticated-router context when the guard lies behind router authentication. Direct non-router calls must still prove router authentication; never impersonate the router merely to bypass it.
 
-## Hardhat No-Fork Example
+## Hardhat mapping
 
-Equivalent test in Hardhat using the `@chainlink/local` npm package:
+For a Hardhat request, output an actual runnable JavaScript or TypeScript test based on the official Hardhat guide/starter; never return the Foundry example above or this mapping alone. Use `const config = await simulator.configuration()` and map:
 
-```javascript
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+| Field | Hardhat use |
+|---|---|
+| `config.chainSelector_` | destination selector |
+| `config.sourceRouter_` | `ethers.getContractAt("IRouterClient", ...)` |
+| `config.linkToken_` | `ethers.getContractAt("LinkToken", ...)` |
+| `config.ccipBnM_` | `ethers.getContractAt("BurnMintERC677Helper", ...)` |
 
-describe("CCIP Local Simulator", function () {
-  let ccipSimulator, router, linkToken, ccipBnM;
-  let chainSelector;
-  let alice, bob;
+Full runnable starter: `https://github.com/smartcontractkit/ccip-starter-kit-hardhat`.
 
-  beforeEach(async function () {
-    [alice, bob] = await ethers.getSigners();
+## Fork and scope
 
-    const CCIPLocalSimulator = await ethers.getContractFactory("CCIPLocalSimulator");
-    ccipSimulator = await CCIPLocalSimulator.deploy();
+Use a fork only when no-fork is insufficient—for realistic chain state or current deployed contracts. Keep it narrow; compare `ccipLocalSimulatorFork.getNetworkDetails(block.chainid)` to the CCIP Directory, which wins on conflicts; repair missing/stale details with `setNetworkDetails(...)`. Do not add fork complexity when no-fork answers the question.
 
-    const config = await ccipSimulator.configuration();
-    chainSelector = config.chainSelector_;
-    router = await ethers.getContractAt("IRouterClient", config.sourceRouter_);
-    linkToken = await ethers.getContractAt("LinkToken", config.linkToken_);
-    ccipBnM = await ethers.getContractAt("BurnMintERC677Helper", config.ccipBnM_);
-  });
+Chainlink Local is EVM-only—Solana, Aptos, Sui, TON, and Canton test on testnets. Test in this order as relevant: happy path; token-only; data-only; receiver validation/reverts; defensive token-plus-data failure; fork/Directory alignment. Preserve production router/source/sender/access checks in local code. Every generated Foundry token-plus-data deliverable must use the complete defensive receiver from [Solidity examples](ccip-solidity-examples.md), never a small, passive, happy-path-only, or abridged receiver: preserve router authentication, pair-bound source/sender and token authorization, try/catch, complete failed-message plus reason/state persistence and read access, owner-only recovery, unknown/resolved rejection, all-token recovery, and failure/recovery events.
 
-  it("should transfer tokens paying fees in native", async function () {
-    await ccipBnM.drip(alice.address);
-    const amountToSend = 100;
-
-    const balanceBefore = await ccipBnM.balanceOf(bob.address);
-
-    await ccipBnM.connect(alice).approve(await router.getAddress(), amountToSend);
-
-    const message = {
-      receiver: ethers.AbiCoder.defaultAbiCoder().encode(["address"], [bob.address]),
-      data: "0x",
-      tokenAmounts: [{ token: await ccipBnM.getAddress(), amount: amountToSend }],
-      extraArgs: "0x",
-      feeToken: ethers.ZeroAddress,
-    };
-
-    const fees = await router.getFee(chainSelector, message);
-    await router.connect(alice).ccipSend(chainSelector, message, { value: fees });
-
-    const balanceAfter = await ccipBnM.balanceOf(bob.address);
-    expect(balanceAfter - balanceBefore).to.equal(amountToSend);
-  });
-});
-```
-
-## Starter Kits
-
-For the quickest working setup:
-
-- Foundry: `https://github.com/smartcontractkit/ccip-starter-kit-foundry`
-- Hardhat: `https://github.com/smartcontractkit/ccip-starter-kit-hardhat`
-
-## Local Testing Workflow
-
-### No-fork local simulator
-
-This is the default path.
-
-1. Start with the official local simulator guide for the current framework.
-2. Use the simulator to obtain local router, LINK, token, and chain-selector configuration via `configuration()`.
-3. Write or update tests for the specific CCIP path the user cares about.
-4. Keep the first test small and reproducible.
-5. Move to forked environments only after the no-fork path is working or when the user explicitly needs the fork.
-
-### Forked environments
-
-Use forked environments only when the user needs to test against realistic chain state or current deployed contracts.
-
-1. Confirm that the user actually needs a fork.
-2. Keep the fork scope narrow.
-3. Use the official forked-environment guide for the current framework.
-4. Compare config details from `ccipLocalSimulatorFork.getNetworkDetails(block.chainid);` against the CCIP Directory.
-5. If the simulator details differ from the CCIP Directory, treat the CCIP Directory as the source of truth.
-6. When fork-network details are missing or need correction, configure them explicitly with `setNetworkDetails(...)` using CCIP Directory values.
-7. Do not introduce fork complexity when the no-fork simulator already answers the question.
-
-## Scope
-
-Chainlink Local is EVM-only. There is no local simulator for Solana, Aptos, Sui, or TON. For non-EVM CCIP testing, deploy directly to testnet.
-
-## What To Test First
-
-Prioritize:
-
-1. sender and receiver happy path
-2. token-only transfer path
-3. data-only message path
-4. receiver validation and revert behavior
-5. defensive receiver behavior when token-plus-data flows can fail
-6. forked-network detail alignment against the CCIP Directory when forks are used
-
-## Security and Design Rules
-
-1. Local simulation is not a reason to relax security defaults in generated contracts.
-2. Preserve the same router, chain, sender, and access-control checks the contract should have outside local tests.
-3. If the local test exposes a risky receiver pattern, suggest the defensive programmable-token-transfer example.
-4. Keep test setup simple enough that a developer can rerun it quickly.
-5. In fork tests, prefer verified CCIP Directory values over simulator defaults when they differ.
-
+Generated sender/receiver examples require focused rejection and recovery coverage: non-owner and disallowed-destination sender calls; insufficient and correctly paid LINK fees, including `forceApprove`, `ccipSend`, and events on success; non-router, disallowed-source, disallowed-sender, and malformed receiver messages. Isolate insufficient LINK by first funding the sender with the full transfer-token amount and satisfying its setup/approval prerequisites, then withholding only the LINK fee—a token-transfer failure is not evidence of the fee guard. In simulator rejection tests assert the observable outer `ReceiverError`, and assert exact inner receiver errors in separate direct guard or harness tests. Force processing failure; assert persisted failure reason/state and the complete message (ID, source selector, sender, data, and every destination token amount); then cover owner-only recovery, unknown/already-resolved rejection, exact all-token transfers, resolved state, and events. The deliverable is incomplete until the focused `forge test` suite passes; run it, fix the generated contracts or tests, and rerun before presenting them. Scripts/tests must default to no broadcast, reject mainnet writes, and require explicit testnet send mode or confirmation; keep any mainnet alternative read-only, such as a placeholder-only fee quote.

@@ -1,97 +1,32 @@
 # CCT Workflow
 
-Use this file only when the user wants to create a token, register it as a CCT, configure token pools, set rate limits, or add networks for a CCT lane.
+Use only to create or register a Cross-Chain Token (CCT), configure pools/rate limits, or add networks. Generic sender/receiver, discovery, and monitoring use their dedicated references.
 
-## Trigger Conditions
+## Decision and source map
 
-Use this workflow for requests like:
+Name this Chainlink CCIP CCT onboarding and verify source, destination, and mainnet/testnet against the current [CCIP Directory](https://docs.chain.link/ccip/directory/testnet) — the source of truth for route and token availability. Before any write artifact, if source, destination, or mainnet/testnet is missing, ask one focused question that establishes those route facts.
 
-- "Create a token and enable it as a CCT."
-- "Register this token as a CCT using burn and mint."
-- "Enable this token on a CCIP lane."
-- "Set token pool rate limits for this CCT."
-- "Add another network to this CCT setup."
+At the token stage, establish whether the token is new or existing and who controls token ownership and mint/burn authority. When the user asks for the simplest registration path, immediately offer **Chainlink Token Manager** before asking for route or authority details, then collect those facts to confirm it fits; otherwise choose Token Manager or the repository's official framework and burn-and-mint or lock-and-mint from those facts. At the registration stage, establish pool ownership and administrator permissions. Never guess the control model or authority.
 
-Do not use this workflow for generic sender/receiver contracts, plain route discovery, or message-status monitoring.
-
-## Default Path
-
-1. Treat CCT work as a multi-step contract and administration workflow, not a one-shot action.
-2. If the user wants the fastest no-code or low-code path, prefer Token Manager first.
-3. If the user is already in a Hardhat or Foundry repo, stay in that framework and use the matching official tutorial path.
-4. If no framework is established and the user wants a code path, default to the simplest official registration tutorial path.
-5. Prepare each state-changing step as a user-run artifact. Do not execute, sign, broadcast, deploy, register, configure, approve, mint, or burn from agent tools.
-
-Reference points:
-
-- CCT overview: `https://docs.chain.link/ccip/concepts/cross-chain-token/overview.md`
-- Registration and administration: `https://docs.chain.link/ccip/concepts/cross-chain-token/evm/registration-administration.md`
+- overview: `https://docs.chain.link/ccip/concepts/cross-chain-token/overview.md`
+- registration/admin: `https://docs.chain.link/ccip/concepts/cross-chain-token/evm/registration-administration.md`
 - Token Manager: `https://docs.chain.link/ccip/tutorials/evm/token-manager.md`
-- Register from an EOA (Burn & Mint): `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat.md`
-- Register from an EOA (Lock & Mint): `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat.md`
-- Set token pool rate limits: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat.md`
-- Configure additional networks: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat.md`
+- EOA burn/mint: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat.md`
+- EOA lock/mint: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat.md`
+- rate limits: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat.md`
+- more networks: `https://docs.chain.link/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat.md`
 
-## Core Decisions
+## Auditable sequence
 
-Clarify these before preparing user-run artifacts:
+1. Establish the source, destination, and testnet/mainnet environment, then verify the route and token support against the CCIP Directory — see [discovery](ccip-discovery.md) for the full workflow.
+2. At the current token or registration stage, offer Token Manager first when simplicity is requested; then establish only the authority facts needed to confirm it or choose the matching official Foundry/Hardhat flow.
+3. Explain the whole sequence, but request approval only for the current stage.
+4. After explicit approval, emit the [main preflight](../SKILL.md#boundary-and-preflight) for that step. Every CCT registration or administrative write artifact is signed and broadcast by the user outside this skill's runtime and must end, after all commands and steps, with exactly: “This skill never signs or sends. You must sign and broadcast from your own wallet.” Verify the result before preparing the next approved step.
 
-1. Is the token new or existing?
-2. Does the user want a no-code or low-code path through Token Manager, or a repo-based code path?
-3. Which token handling mechanism fits the setup: burn and mint or lock and mint?
-4. Which source and destination networks are in scope?
-5. Does the user only want registration, or also rate limits and additional network configuration?
+CCT registration and pool configuration require their own user-run approval and execution.
 
-Ask exactly one missing question needed for the next safe step, then stop.
+Rate-limit changes require a separate user-run approval and execution.
 
-## Workflow
+Each additional-network configuration requires a separate user-run approval and execution.
 
-### Step 1: Choose the path
-
-1. If the user wants the simplest self-serve path, use Token Manager.
-2. If the user wants repo-based execution, use the matching official Hardhat or Foundry registration tutorial path.
-3. If the repo is already Hardhat, stay in Hardhat.
-4. If the repo is already Foundry, stay in Foundry.
-
-### Step 2: Choose the token handling mechanism
-
-1. Use burn and mint when that matches the token control model.
-2. Use lock and mint when that matches the token control model.
-3. Do not guess the mechanism if ownership or mint/burn authority is unclear.
-
-### Step 3: Verify networks and route
-
-1. Use [ccip-discovery.md](ccip-discovery.md) to verify route and network support before proposing any state-changing step.
-2. Confirm whether the user is working on testnet or mainnet.
-3. Refuse mainnet writes in this version.
-
-### Step 4: Register and configure
-
-1. Break the workflow into separate user-run steps.
-2. Present one non-custodial preflight package per state-changing step.
-3. After the user runs each step, verify the result before preparing the next step.
-4. Treat rate-limit changes as a distinct administrative step, not as a silent default.
-5. Treat additional-network configuration as a distinct step, not as a silent default.
-
-## Security and Administration Rules
-
-1. Keep ownership and administrative authority explicit.
-2. Do not guess token ownership, mint authority, pool ownership, or admin permissions.
-3. Prefer the official registration and administration flows over improvised custom admin scripts.
-4. Use rate limits deliberately and explicitly.
-5. Keep the step order small and auditable.
-6. If a safer smaller scope can satisfy the user, do not push them into a broader CCT rollout.
-
-## Freshness Rules
-
-1. Read [official-sources.md](official-sources.md) before using live route or network facts.
-2. Use [ccip-discovery.md](ccip-discovery.md) to confirm routes and token support before CCT steps that depend on them.
-3. Do not hardcode current route availability or token support.
-
-## Refusal Rules
-
-1. Refuse all mainnet write actions in this version.
-2. Refuse to collapse multiple CCT admin steps into a single implicit action.
-3. Refuse to guess burn-and-mint vs lock-and-mint when the token control model is unclear.
-4. Refuse to proceed when required ownership or admin permissions are not established.
-5. Refuse to execute state-changing CCT actions or handle wallet credentials from agent tools.
+Keep ownership/admin authority explicit; use rate limits deliberately; prefer official administration over improvised scripts and the smallest safe rollout. Never collapse admin operations into an implicit action or proceed without required permission. Prepare write artifacts only for testnets; refuse mainnet write artifacts.
