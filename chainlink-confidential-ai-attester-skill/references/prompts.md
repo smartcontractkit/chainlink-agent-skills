@@ -7,6 +7,10 @@ Prompts need two layers:
 1. **System prompt** — domain role
 2. **User prompt** — fact-extraction task + exact JSON schema
 
+A prompt cannot make the returned text cryptographically signed or independently attested. If a user requests a "signed summary," return the required structured facts, then use CRE-native report creation and Chainlink Forwarder delivery for an EVM workflow; do not claim the Attester API supplied a Chainlink or TEE signature.
+
+Every signed-summary or verify-later answer must state one credential rule: `API_KEY` comes from an environment variable or injected secret store, never a CLI argument.
+
 ---
 
 ## Undercollateralized DeFi Lending
@@ -103,3 +107,5 @@ If the output is wrapped in markdown fences (` ```json ... ``` `), add:
 ```
 Do not include markdown formatting, code fences, or any text outside the JSON object.
 ```
+
+Prompt wording is not output validation. Test the consuming workflow with plain prose, a refusal, fenced JSON, and malformed JSON, and require each non-JSON case to fail without creating a CRE report or triggering a downstream action.

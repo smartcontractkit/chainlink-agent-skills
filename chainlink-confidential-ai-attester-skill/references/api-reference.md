@@ -10,6 +10,8 @@ export BASE_URL="https://confidential-ai-dev-preview.cldev.cloud"
 
 Use `${BASE_URL}/v1/...` with `Authorization: Bearer $API_KEY` on every request.
 
+Load `API_KEY` from the environment or an injected secret store. Shell clients must feed the authorization header through standard input, a protected config, or a secret integration so the literal or expanded credential never appears in command-line arguments.
+
 ---
 
 ## POST /v1/inference
@@ -87,6 +89,12 @@ When `status` is `failed`, the `error` field is populated instead of `output`.
 | `failed` | Error — check `error` field |
 
 Poll every 2–5 seconds until `completed` or `failed`.
+
+## Verification Boundary
+
+Completed responses do not include an independently verifiable Chainlink signature or TEE attestation document. A hash computed over `output` or other response fields can support later integrity comparisons, but it is neither an independently verifiable Chainlink signature nor a TEE attestation and does not prove that the response came from an enclave.
+
+To deliver an accepted result to EVM, a CRE workflow validates the terminal response and required output schema, creates a CRE-native report, and sends that report through the Chainlink Forwarder. Failed or non-JSON output must not produce a report. Do not substitute a generic EIP-712 signer; a CRE report supports CRE delivery and does not turn the underlying Attester response into enclave proof.
 
 ---
 
