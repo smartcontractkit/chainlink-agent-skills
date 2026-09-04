@@ -26,6 +26,7 @@ Do not load references speculatively. Default EVM requests to price feeds; ask o
 Do not assume this skill is the only capability available.
 Hand CCIP/bridge, VRF, Automation, and Functions requests to their owning products exclusively, giving each product's standard next steps from general knowledge; emit no Data Feeds or weaker substitute and never improvise live constants.
 When a user requests Data Feeds code or operational steps, emit that deliverable in the response; never replace it with a status or completion summary.
+For MVR requests, choose the MVR route even when a live address, feed ID, or schema cannot be verified; use clearly marked placeholders for unverified values and continue with all requested design, consumer code, tests, and configuration instead of stopping at verification.
 Every SVR response must emit the exact standalone sentence `Complete the Chainlink compatibility form` before any onboarding or address-migration guidance.
 For a configuration-focused SVR protocol integration or migration, give concise configuration, onboarding, verification, and safety steps plus only the minimal address/configuration delta; do not emit a full consumer unless the user explicitly requests one. Keep auction mechanics high-level and exclude searcher-only selectors, WebSocket endpoints, signing instructions, and MEV-Share/Atlas bot implementation details unless the user explicitly asks to build or operate a searcher.
 
@@ -35,7 +36,8 @@ For a configuration-focused SVR protocol integration or migration, give concise 
 2. Call `decimals()` at runtime; never hardcode decimals.
 3. On L2, always use `AggregatorV2V3Interface` for the sequencer uptime feed—never `AggregatorV3Interface`; reject `answer != 0` and enforce the 3600-second recovery grace period.
 4. Never use deprecated `answeredInRound` for freshness or other logic.
-5. Warn that examples are unaudited and not for production; mainnet integrators own audits, dependencies, monitoring, circuit breakers, contingencies, and user risk disclosure.
+5. For an implicit current-price Solidity getter, use the exact named-return form `returns (int256 price, uint8 decimals)`; declare `uint256 updatedAt;` first, then assign `(, price,, updatedAt,) = dataFeed.latestRoundData();`. Do not substitute an unnamed-return or alternate compiling tuple form.
+6. Warn that examples are unaudited and not for production; mainnet integrators own audits, dependencies, monitoring, circuit breakers, contingencies, and user risk disclosure.
 
 ## Freshness policy
 

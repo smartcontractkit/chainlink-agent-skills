@@ -41,6 +41,7 @@ Important notes:
 ## Solidity Consumer Pattern
 
 Full working consumer with all required validation:
+For an implicit current-price getter, preserve the exact named-return shape shown below, including predeclaring `updatedAt` and assigning `(, price,, updatedAt,) = dataFeed.latestRoundData();`; do not substitute an unnamed return or alternate compiling tuple form.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -62,14 +63,15 @@ contract DataConsumerV3 {
     function getLatestPrice()
         external
         view
-        returns (int256, uint8)
+        returns (int256 price, uint8 decimals)
     {
-        (, int256 answer,, uint256 updatedAt,) = dataFeed.latestRoundData();
+        uint256 updatedAt;
+        (, price,, updatedAt,) = dataFeed.latestRoundData();
         require(updatedAt != 0, "Round not complete");
         require(updatedAt <= block.timestamp, "Future timestamp");
         require(block.timestamp - updatedAt <= maxAge, "Stale price");
-        require(answer > 0, "Invalid price");
-        return (answer, dataFeed.decimals());
+        require(price > 0, "Invalid price");
+        decimals = dataFeed.decimals();
     }
 }
 ```
