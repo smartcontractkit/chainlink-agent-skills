@@ -1,23 +1,18 @@
 # Credentials and Auth
 
-Use this file when the user asks how to get Data Streams credentials, how auth works, or how to configure SDK/API clients.
+Use this for access, authentication, SDK/API configuration, or auth failures. The secret-handling boundary is owned by [SKILL.md](../SKILL.md).
 
-## Official Access Process
+## Access and Names
 
-1. Explain that Data Streams access is requested through official Chainlink channels.
-2. Point users to `https://chain.link/contact?ref_id=datastreams` or the "Talk to an expert" link in the Data Streams docs.
-3. Explain that after onboarding, Chainlink provides API credentials and endpoint access for the environments they are approved to use.
-4. Do not invent credentials, feed entitlements, endpoint permissions, subscription terms, or billing details.
+Request access at `https://chain.link/contact?ref_id=datastreams` (the docs' “Talk to an expert” link). After onboarding, Chainlink provides credentials and approved endpoint access. Refer every subscription/billing question to that official Chainlink contact; never invent credentials, entitlements, permissions, terms, or billing.
 
-## Credential Names
+Names vary by interface:
 
-The docs and SDK examples use slightly different labels depending on language and interface:
-
-- API key / client ID / user ID: public identifier used in auth headers or SDK config.
-- API secret / user secret: secret used by SDKs or HMAC signing.
+- API key / client ID / user ID: public identifier used by headers or SDK config.
+- API secret / user secret: secret used by SDKs or HMAC.
 - Candlestick API: authorize with login/user ID and password/API key, then use the returned JWT bearer token.
 
-When generating project code, prefer environment variables such as:
+Use placeholders:
 
 ```text
 DATA_STREAMS_API_KEY=
@@ -26,42 +21,24 @@ DATA_STREAMS_REST_URL=
 DATA_STREAMS_WS_URL=
 ```
 
-Map these to SDK-specific fields in the generated code. Never commit real secrets.
+Map them to language-specific SDK fields. Endpoint defaults live in [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md) but remain configurable. Browser apps must keep credentials in a backend and forward sanitized data.
 
-For public endpoint defaults, read [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md). Keep endpoint values configurable through environment variables even when using documented defaults.
+## SDK and Manual Auth
 
-## SDK Auth Defaults
+Prefer official Go/Rust/TypeScript SDK authentication. Sign manually only for explicitly requested raw REST/WebSocket, an unsupported SDK operation/language, or auth debugging.
 
-Prefer official SDKs for Go, Rust, and TypeScript. The SDKs handle REST and WebSocket authentication automatically, so generated code usually should not hand-roll HMAC signing.
-
-Use manual auth only when:
-
-1. the user explicitly asks for raw REST or WebSocket calls without an SDK
-2. the target language has no official SDK path for the requested operation
-3. the user is debugging an authentication failure
-
-## Manual REST/WebSocket Auth
-
-Current official auth docs require these headers for REST and WebSocket API requests:
+Manual REST and WebSocket requests use:
 
 - `Authorization`: API key
 - `X-Authorization-Timestamp`: Unix timestamp in milliseconds
 - `X-Authorization-Signature-SHA256`: HMAC-SHA256 signature
 
-The string-to-sign format is:
+Exact string to sign:
 
 ```text
 METHOD FULL_PATH BODY_HASH API_KEY TIMESTAMP
 ```
 
-For GET requests and WebSocket connections, use the empty body hash. The timestamp must be close to server time, so tell users to verify system clock synchronization when debugging auth errors.
+GET and WebSocket use the empty body hash. The timestamp must be close to server time; check clock synchronization on auth errors.
 
-## Secret Handling
-
-1. Never read, open, print, copy, summarize, or infer contents from API secrets, API keys, private keys, mnemonics, wallet material, keystores, signing-material files, or secret environment files.
-2. Never ask the user to paste API secrets, API keys, private keys, wallet material, or keystore contents into chat or into files the agent can read. Keep credentials in environment variables or a backend process only.
-3. Never print API secrets in logs.
-4. Never store real credentials in generated source files.
-5. Use `.env.example` placeholders, not `.env` with real values.
-6. For browser apps, keep Data Streams credentials in a backend process and stream sanitized data to the frontend.
-7. If the user pastes real credentials, avoid repeating them and recommend rotating them if they may have been exposed.
+Never log or store real credentials in source. Use `.env.example` placeholders rather than readable `.env` secrets, and follow the non-access/non-solicitation/rotation rules in [SKILL.md](../SKILL.md).
