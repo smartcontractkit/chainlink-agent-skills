@@ -135,6 +135,10 @@ function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords)
 
 The user owns the token before the words arrive. Fulfillment only records the deterministic trait and cannot offer a mint, cancel, retry, or rejection path after inspection.
 
+## Paid Raffle Requirements
+
+For any raffle, lottery, paid draw, or bounded winner selection, load and follow the complete [Paid Raffle Safety Contract](security-and-best-practices.md#paid-raffle-safety-contract), [Unbiased Winner Indices](security-and-best-practices.md#unbiased-winner-indices), and [Focused Raffle Tests](security-and-best-practices.md#focused-raffle-tests). These requirements are mandatory and replace the generic request/callback excerpt when its bookkeeping does not satisfy the application.
+
 ## Required Imports and Constructor Shape
 
 ```solidity
@@ -164,6 +168,7 @@ remappings = ['@chainlink/contracts/=lib/chainlink-evm/contracts/']
 ```
 
 Available tags: https://github.com/smartcontractkit/chainlink-evm/releases
+Follow the [official-dependency rule](security-and-best-practices.md#official-dependency-and-mock-coordinator-api); do not replace the installed package with copied source.
 
 ## Request Parameters
 
@@ -196,4 +201,4 @@ Native funding uses `coordinator.fundSubscriptionWithNative{value: amount}(subId
 3. The coordinator verifies the proof and invokes `fulfillRandomWords` after the requested confirmations.
 4. The consumer matches by `requestId`, stores the result, and emits any application event.
 
-Fulfillment latency depends on confirmations and network conditions. Never assume FIFO order, allow request-specific re-request/cancellation, accept outcome-changing inputs after requesting, put revert-prone application logic in the callback, or expose request IDs in a way that lets callers predict which request maps to their action. See [`security-and-best-practices.md`](security-and-best-practices.md).
+Fulfillment latency depends on confirmations and network conditions. Never assume FIFO order, accept outcome-changing inputs after requesting, or put revert-prone application logic in the callback. Load and follow [`security-and-best-practices.md`](security-and-best-practices.md) for the complete security requirements, including any raffle or bounded winner selection.

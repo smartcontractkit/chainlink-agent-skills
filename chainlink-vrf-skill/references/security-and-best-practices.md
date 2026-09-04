@@ -10,9 +10,9 @@ Always bind each fulfillment to its originating commitment with `requestId`; nev
 
 Set `requestConfirmations` high enough that a chain rewrite costs more than the application outcome. A validator cannot predict a VRF value but can attempt a reorg to obtain a fresh one. Higher confirmation counts improve reorg resistance at the cost of latency; there is no chain-independent universal value.
 
-## 3. Forbid Request-Specific Re-request and Cancellation
+## 3. Forbid Rerolls
 
-Never let any party cancel or repeat a randomness request for the same commitment. Discarding an unfavorable result and trying again creates selection bias.
+Never let any party repeat a randomness request for the same commitment or choose between results. Discarding an unfavorable result and trying again creates selection bias. Paid raffles must follow the complete [Paid Raffle Safety Contract](#paid-raffle-safety-contract).
 
 ## 4. Freeze Outcome-Changing Inputs Before Requesting
 
@@ -55,9 +55,45 @@ RANDAO (`block.prevrandao`) is biasable because a proposer can skip a slot: http
 
 Measure the real callback on a testnet, add a 20–30% buffer, and keep the callback small. Too little gas makes it revert permanently; larger limits increase cost exposure. The maximum is 2,500,000, subject to the target network's live configuration at https://docs.chain.link/vrf/v2-5/supported-networks.md.
 
-## Mock Coordinator API
+## Paid Raffle Safety Contract
 
-The `@chainlink/contracts` package includes a subscription-consumer mock:
+A paid raffle must satisfy this entire contract:
+
+1. Lock a nonempty, duplicate-free entrant set and every paid commitment before making exactly one randomness request for the round.
+2. Bind the request ID to that locked round. Fulfillment ignores unknown, empty, repeated, or terminal-round callbacks and otherwise records the committed word with bounded, non-reverting state updates; winner selection and payouts happen later.
+3. Select the winner with [`uniformIndex`](#unbiased-winner-indices) outside the callback, using the committed word and its deterministic expansion only. Never use raw modulo reduction, request replacement randomness, or let any party choose between outcomes.
+4. Set a fixed timeout before requesting. After it expires, provide one terminal recovery path only while no random word is recorded or otherwise usable: cancel the whole round, or enter a state in which each player pulls their own refund. Record the terminal state before external transfers, ensure all paid participants can recover their funds, and ignore late fulfillment.
+5. Once randomness is recorded or otherwise usable, disable cancellation and refunds and finalize only the committed outcome. The operator must never re-request, reroll, or cancel after learning an outcome.
+
+## Unbiased Winner Indices
+
+Every winner-selection example must reduce a VRF word with rejection sampling outside the callback; a raw `word % entrantCount` is biased unless the entrant count divides $2^{256}$. Validate a nonzero bound first, lock a duplicate-free entrant set before requesting, and use the same committed word even when rejection requires deterministic expansion:
+
+```solidity
+error InvalidWinnerRange();
+
+function uniformIndex(uint256 word, uint256 upperBound) internal pure returns (uint256) {
+    if (upperBound == 0) revert InvalidWinnerRange();
+    uint256 threshold = (type(uint256).max - upperBound + 1) % upperBound;
+    uint256 nonce;
+    while (word < threshold) {
+        word = uint256(keccak256(abi.encode(word, nonce++)));
+    }
+    return word % upperBound;
+}
+
+uint256 winnerIndex = uniformIndex(storedRandomWord, entrants.length);
+```
+
+This derives one deterministic outcome from the original fulfillment; it is not a new VRF request or an operator-selectable reroll.
+
+## Focused Raffle Tests
+
+Generated raffle tests must separately cover empty `randomWords` without settlement or state corruption, invalid configuration, duplicate entries, a winner index outside the entrant range, repeated fulfillment, every reroll or replacement-request attempt, and the selected timeout cancellation or per-player pull-refund path. Prove paid participants cannot remain locked after the timeout, late fulfillment cannot revive a terminal round, and recovery cannot activate after randomness is recorded or otherwise usable.
+
+## Official Dependency and Mock Coordinator API
+
+Use the normal official `@chainlink/contracts` dependency or a tagged `smartcontractkit/chainlink-evm` contracts release for consumer bases, client libraries, interfaces, and mocks. Never vendor selected Chainlink source files. The subscription-consumer mock is:
 
 ```solidity
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";

@@ -10,7 +10,7 @@ script/VRFConsumerV2Plus.s.sol
 test/VRFConsumerV2Plus.t.sol
 ```
 
-The test and script use the `VRFCoordinatorV2_5Mock` included in `@chainlink/contracts`; no custom mock is vendored.
+The test and script use `VRFCoordinatorV2_5Mock` from the dependency required by the [official-dependency rule](../../references/security-and-best-practices.md#official-dependency-and-mock-coordinator-api). Install the tagged release below; never vendor selected Chainlink consumer bases, interfaces, libraries, or mock source files.
 
 ## Install
 
@@ -62,6 +62,7 @@ Preserve these protocol requirements:
 - `uint256` subscription IDs and the `fulfillRandomWords(uint256, uint256[] calldata)` override.
 - Coordinator addresses, key hashes, and dependency pins in `remappings.txt`; copy rather than retype them because a bad EIP-55 checksum does not compile.
 - Untrusted fulfillment timing: randomness does not arrive in the request transaction and fulfillment order is not guaranteed.
+- For any raffle, lottery, paid draw, or bounded winner selection, load and follow the complete [Paid Raffle Safety Contract](../../references/security-and-best-practices.md#paid-raffle-safety-contract), including its mandatory rejection-sampling algorithm and focused tests.
 
 Replace these illustrative choices when the application differs:
 
