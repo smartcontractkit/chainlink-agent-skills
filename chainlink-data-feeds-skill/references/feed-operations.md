@@ -19,50 +19,9 @@ Do not use this workflow for basic price feed reading, feed address lookup, or D
 
 On L2 rollups, sequencer downtime breaks normal read/write access and can leave stale data in the pipeline. Any contract that reads a price feed on a supported L2 must check the sequencer uptime feed before trusting the price.
 
-### Full consumer contract
+### Canonical consumer
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
-
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {AggregatorV2V3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV2V3Interface.sol";
-
-contract PriceConsumerWithSequencerCheck {
-    AggregatorV3Interface internal priceFeed;
-    AggregatorV2V3Interface internal sequencerUptimeFeed;
-
-    uint256 private constant GRACE_PERIOD_TIME = 3600; // 1 hour
-
-    error SequencerDown();
-    error GracePeriodNotOver();
-
-    constructor(address _priceFeed, address _sequencerUptimeFeed) {
-        priceFeed = AggregatorV3Interface(_priceFeed);
-        sequencerUptimeFeed = AggregatorV2V3Interface(_sequencerUptimeFeed);
-    }
-
-    function getLatestPrice() public view returns (int256) {
-        // Check sequencer status
-        (, int256 answer, uint256 startedAt, ,) = sequencerUptimeFeed.latestRoundData();
-
-        // answer == 0: Sequencer is up
-        // answer == 1: Sequencer is down
-        if (answer != 0) revert SequencerDown();
-
-        // Enforce grace period after recovery
-        uint256 timeSinceUp = block.timestamp - startedAt;
-        if (timeSinceUp < GRACE_PERIOD_TIME) revert GracePeriodNotOver();
-
-        // Now safe to read price feed
-        (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
-        require(block.timestamp - updatedAt <= 3600, "Stale price");
-        require(price > 0, "Invalid price");
-
-        return price;
-    }
-}
-```
+Use [`DataConsumerWithSequencerCheck`](reading-price-feeds.md#l2-sequencer-uptime-check), which checks `answer != 0`, enforces the 3600-second recovery grace period, then validates price freshness and bounds.
 
 ### Critical implementation details
 
@@ -170,52 +129,3 @@ Treat self-managed feeds as untrusted until independently verified. Apply the sa
 3. Do not hardcode proxy addresses, Flags contract addresses, or feed parameters. Always point the user to the official source for current values.
 4. Verify network support before recommending L2 sequencer checks.
 
-## Triggering Tests
-
-These prompts should trigger this reference:
-
-- "My consumer is on Arbitrum, do I need to add anything for L2?"
-- "How do I check sequencer status before reading a price feed?"
-- "Is this data feed being deprecated?"
-- "How do I verify a feed is officially managed by Chainlink?"
-- "What are my responsibilities when using Chainlink price feeds?"
-- "Where does the price data come from for crypto feeds?"
-- "What is a self-managed Chainlink feed?"
-
-These prompts should NOT trigger this reference:
-
-- "How do I read a price feed in Solidity?" (use basic price feed reference)
-- "What is the ETH/USD feed address on Ethereum?" (use feed address lookup)
-- "How do I use Chainlink VRF?" (different product)
-
-## Functional Tests
-
-1. If the user has a consumer on a supported L2, include the full sequencer uptime check with grace period. Do not omit the grace period.
-2. If the user asks about sequencer checks, use `AggregatorV2V3Interface` for the sequencer feed. Never use `AggregatorV3Interface` for the sequencer uptime feed.
-3. If the user asks about feed authenticity, provide the IFlags registry pattern with the correct network Flags address.
-4. If the user asks about deprecation, direct them to the deprecation schedule and Discord channel.
-5. If the user integrates a self-managed feed, warn about the lack of Chainlink-managed SLAs and monitoring.
-6. Sequencer check included in all L2 consumer code.
-7. Grace period enforced in all sequencer check implementations.
-8. Staleness check (`updatedAt`) included alongside every `latestRoundData` price read.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. includes sequencer uptime check for any L2 consumer contract on a supported network
-2. uses `AggregatorV2V3Interface` (not `AggregatorV3Interface`) for the sequencer feed
-3. enforces the grace period after sequencer recovery
-4. includes staleness and sanity checks on price data
-5. directs users to official docs for current proxy addresses and Flags contract addresses
-6. warns about self-managed feed limitations
-7. surfaces deprecation risks before recommending a feed
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "My consumer is on Arbitrum, do I need to add anything for L2?" -- Expected: full sequencer uptime check with grace period, AggregatorV2V3Interface, staleness validation.
-2. "I want to verify onchain that a price feed proxy is an official Chainlink feed." -- Expected: IFlags registry pattern with network-specific Flags address.
-3. "I am integrating a long-tail crypto feed on Base. What should I watch out for?" -- Expected: sequencer check, single-source risk warning, staleness checks, circuit breaker recommendation.
-4. "Is there a way to know if a feed is going to be shut down?" -- Expected: deprecation schedule link, Discord notification channel, 2-week monitoring cutoff warning.

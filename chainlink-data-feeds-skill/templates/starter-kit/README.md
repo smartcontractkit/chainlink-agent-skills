@@ -82,8 +82,15 @@ The template is a complete, compiling reference. Two layers behave differently w
   window.
 - The mock's `DECIMALS` (`8`) and `INITIAL_ANSWER`. These match ETH/USD; other feeds differ.
 
-When the derived value does arithmetic on the price, scale by the feed's runtime `decimals()` rather
-than assuming 8, and order the operations so multiplication precedes division.
+When the derived value does arithmetic on the price, scale by the feed's runtime `decimals()`
+instead of assuming 8. Widen runtime decimals before exponentiation—for example,
+`10 ** uint256(feed.decimals())`; never exponentiate the `uint8` result directly or hardcode
+the decimal count. Order operations so multiplication precedes division.
+
+Derived-value tests must use exact integer fixtures instead of hand-encoding fractional 18-decimal
+amounts. For example, with ETH at `2_000e8`, test a 150% collateral ratio using `3 ether` of
+collateral and `4_000e18` of debt. Never append `e18` to digits that already encode 18 fractional
+places; that scales the amount twice.
 
 Errors carrying parameters (`StalePrice(uint256)`, `InvalidPrice(int256)`) must be asserted in tests
 with `abi.encodeWithSelector(...)`. A bare `vm.expectRevert(Err.selector)` does not match a revert
