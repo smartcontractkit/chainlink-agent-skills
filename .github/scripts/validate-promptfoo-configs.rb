@@ -8,6 +8,7 @@ ROOT = Pathname.new(__dir__).join("..", "..").realpath.freeze
 SKILL_IDS = %w[
   chainlink-ccip-skill
   chainlink-cre-skill
+  chainlink-cre-connect-skill
   chainlink-data-feeds-skill
   chainlink-data-streams-skill
   chainlink-vrf-skill

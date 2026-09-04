@@ -1,0 +1,1 @@
+Give me a one-page, read-only architecture decision note comparing CRE Connect with writing and deploying an ordinary CRE workflow. We need to consume signed events and request gas-less transactions from an application, but do not need code yet. State what is known about access and network support without guessing current private-beta availability.

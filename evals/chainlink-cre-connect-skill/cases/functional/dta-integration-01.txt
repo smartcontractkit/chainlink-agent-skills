@@ -1,0 +1,1 @@
+Draft a concise integration plan for a digital transfer agent using CRE Connect. Show where inbound signed events, policy checks, EIP-712 authorization, and outbound operations belong, and distinguish what our application owns from what CRE Connect provides. Keep it conceptual and call out any provisioned details needed before implementation.

@@ -86,3 +86,12 @@ skills:
       - prompt: "How do I set up KYC/AML credentials with ACE for regulated token transfers?"
       - prompt: "What is a policy chain in ACE and how do I order multiple policies?"
       - prompt: "How do I create an ERC-3643 compliant token with ACE enforcement?"
+
+  - id: chainlink-cre-connect-skill
+    path: chainlink-cre-connect-skill
+    test_cases:
+      - prompt: "Should I use CRE Connect or write and deploy a normal CRE workflow to watch a contract event and react to it?"
+      - prompt: "Design a CRE Connect watcher consumer that verifies DON-signed events locally and triggers an irreversible fund action only at suitable finality."
+      - prompt: "Show me how to submit a gas-less atomic batch through a CRE Connect Smart Account, including EIP-712 signing and failure handling."
+      - prompt: "Is a CRE Connect Smart Account an ERC-4337 account, and should I use UserOperation, EntryPoint, or a paymaster with it?"
+      - prompt: "Use the CRE Connect DTA v2 extension to watch subscription and redemption requests and explain what provisioned API details you still need."
