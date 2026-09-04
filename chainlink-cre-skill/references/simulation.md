@@ -1,298 +1,116 @@
 # Simulation
 
-Use this file when the user wants to simulate a CRE workflow, debug simulation failures, or understand simulation behavior.
+Always read this file before any `cre workflow simulate`. Run from the project root containing `project.yaml`.
 
-## Trigger Conditions
+## Canonical command and flags
 
-- "How do I simulate my CRE workflow?"
-- "My simulation is failing"
-- "How do I test my workflow locally?"
-- "How does simulation differ from deployment?"
-
-Do not use for project creation (see project-scaffolding.md), deployment operations (see operations.md), or workflow code patterns (see workflow-patterns.md).
-
-## Non-Interactive Rule
-
-Pass every value the CLI would otherwise ask for. Missing flags cause interactive prompts or a blocked terminal, which stops agents that cannot type into the prompt.
-
-### Target selection
-
-ALWAYS pass `--target <target-name>` on `cre workflow simulate`. Omitting it makes the CLI ask you to pick a target (for example `staging-settings` vs `production-settings`).
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-NEVER run without `--target`:
-
-```bash
-cre workflow simulate my-workflow
-```
-
-### HTTP trigger: request body
-
-If the workflow has an **HTTP trigger** and the CLI needs a body (or you use `--non-interactive`), pass **`--http-payload`**: a JSON string, or a path to a JSON file. Paths are resolved relative to the directory from which you run the command.
-
-### EVM log trigger: onchain event
-
-If the workflow has an **EVM log trigger** and the CLI needs a concrete event (or you use `--non-interactive`), pass **`--evm-tx-hash`** with the transaction hash (`0x...`) that contains the log. Use **`--evm-event-index`** (0-based) when that transaction emitted more than one relevant log and you need a specific index.
-
-### Multi-handler workflows and `--non-interactive`
-
-Use **`--non-interactive`** when the process must not answer any follow-up questions. With `--non-interactive`, the CLI requires **`--trigger-index`**: the 0-based index of the handler to run (first handler is `0`, second is `1`, and so on). Combine **`--target`**, **`--non-interactive`**, **`--trigger-index`**, and the HTTP or EVM flags that match the selected handler.
-
-Examples (see also `https://docs.chain.link/cre/reference/cli/workflow.md`):
-
-```bash
-cre workflow simulate my-workflow \
-  --non-interactive \
-  --trigger-index 0 \
-  --http-payload '{"key":"value"}' \
-  --target staging-settings
-```
-
-```bash
-cre workflow simulate my-workflow \
-  --non-interactive \
-  --trigger-index 1 \
-  --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e \
-  --evm-event-index 0 \
-  --target staging-settings
-```
-
-A **cron-only** workflow with a single handler often needs only `--target`. If the CLI still asks which handler to run, add `--non-interactive --trigger-index 0`. Run `cre workflow simulate --help` on the installed CLI to confirm flag names for that version.
-
-## Running a Simulation
-
-### Basic Command
+This file owns the command shape:
 
 ```bash
 cre workflow simulate <workflow-dir> --target <target-name>
 ```
 
-| Flag | Description | When required |
-|------|-------------|---------------|
-| `--target` | Target configuration from `workflow.yaml` | Always (omitting prompts for target) |
-| `--non-interactive` | No prompts; you must supply handler index and trigger inputs | Automation and CI |
-| `--trigger-index` | 0-based handler index | With `--non-interactive` |
-| `--http-payload` | JSON string or path to JSON file for HTTP trigger body | HTTP trigger when a body is required or with `--non-interactive` |
-| `--evm-tx-hash` | Transaction hash `0x...` containing the log | EVM log trigger when a tx is required or with `--non-interactive` |
-| `--evm-event-index` | 0-based log index inside the transaction | When the tx has multiple events and you must pick one |
-| `--evm-receipt-timeout` | Max wait for an EVM transaction receipt (not an overall simulation timeout); only on CLI versions that expose it | No |
-| `--broadcast` | Real onchain writes (MockKeystoneForwarder) | No |
-| `--limits` | Production limits profile or file | No |
-| `--skip-type-checks` | Skip TypeScript typecheck | No |
+`--target` is mandatory; omission prompts for a target. Supply every value the CLI would otherwise request:
 
-### What Simulation Does
+| Flag | Use |
+|---|---|
+| `--target` | target from `workflow.yaml`; always |
+| `--non-interactive` | forbid prompts |
+| `--trigger-index` | 0-based handler; required with non-interactive mode |
+| `--http-payload` | HTTP JSON string or JSON-file path (relative to the run directory) |
+| `--evm-tx-hash` | transaction containing the selected log |
+| `--evm-event-index` | 0-based log index when needed |
+| `--evm-receipt-timeout` | receipt wait only, not overall timeout; CLI-version dependent |
+| `--broadcast` | real testnet transaction via `MockKeystoneForwarder` |
+| `--limits` | `default`, limits-file path, or `none` |
+| `--skip-type-checks` | skip TypeScript checking |
 
-1. Compiles workflow code to WebAssembly
-2. Runs the workflow locally using the specified target configuration
-3. Simulates trigger events (fires each trigger once)
-4. Executes capability calls against real endpoints (RPC, HTTP APIs)
-5. Displays output including user logs and the workflow result
+There is no generic overall `--timeout`; confirm version-specific flags with `cre workflow simulate --help`.
 
-### Run Directory
-
-Always run simulation from the **project root directory** (the directory containing `project.yaml`), not from within the workflow subdirectory.
+Fully non-interactive examples:
 
 ```bash
-cd my-project
-cre workflow simulate my-workflow --target staging-settings
+cre workflow simulate my-workflow --target staging-settings \
+  --non-interactive --trigger-index 0 \
+  --http-payload '{"key":"value"}'
 ```
-
-## Simulation by Trigger Type
-
-### Cron Trigger
-
-The simulator fires the cron trigger once immediately without waiting for the schedule.
 
 ```bash
-cre workflow simulate my-workflow --target staging-settings
+cre workflow simulate my-workflow --target staging-settings \
+  --non-interactive --trigger-index 1 \
+  --evm-tx-hash 0x... --evm-event-index 0
 ```
 
-Expected output:
+A single cron handler often needs only `--target`; add `--non-interactive --trigger-index 0` if selection still prompts. Exercise each handler in a separate non-interactive run.
 
-```
-Workflow compiled
-[SIMULATION] Simulator Initialized
-[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-[USER LOG] Hello world! Workflow triggered.
-Workflow Simulation Result:
- "Hello world!"
-[SIMULATION] Execution finished signal received
-```
+## Receiver-free handler-0 simulation
 
-### HTTP Trigger
+Use the CRE CLI—not a source-level harness—when handler 0 must run before a receiver contract exists. Define [project-scaffolding.md](project-scaffolding.md)'s matching `local-simulation` targets in `project.yaml` and `workflow.yaml`; the workflow target uses the supported literal `deployment-registry: "private"`, never a guessed account-scoped registry ID, `local-simulation-only`, or a fake receiver.
 
-**Interactive (human can use two terminals):** the simulator starts a local HTTP server on port 8080. Send a request from a separate terminal to trigger the workflow.
-
-Terminal 1 (start simulation):
+Run this exact command from the project root:
 
 ```bash
-cre workflow simulate my-workflow --target staging-settings
+cre workflow simulate <workflow> --target local-simulation --non-interactive --trigger-index 0
 ```
 
-Output:
+Keep `--broadcast` absent. This path still requires CRE CLI login, but it does not require an account-scoped registry ID or deployed receiver.
 
-```
-Workflow compiled
-[SIMULATION] Simulator Initialized
-[SIMULATION] HTTP trigger server started on :8080
-[SIMULATION] Waiting for HTTP request...
-```
+The selected config must set `mode: "local-simulation"` and a decimal-string `samplePreviousPrice`. Handler 0 must:
 
-Terminal 2 (send trigger request):
+1. perform the same real configured HTTP capability fetches as production;
+2. apply the same response/status checks, strict decimal validation and scaling, `bigint` bounds, and consensus aggregation;
+3. validate and scale `samplePreviousPrice` by the same rules and run the normal changed-price/threshold decision; and
+4. log and return a clearly labeled local result such as `{ mode: "local-simulation", currentPrice, previousPrice, changed, wouldWrite }`, with integer values stringified.
 
-```bash
-curl -X POST http://localhost:8080/trigger \
-  -H "Content-Type: application/json" \
-  -d '{"key": "value"}'
-```
+After step 4 the local branch returns. It must not validate or invent a receiver, construct a CRE report or `EVMClient`, call a Forwarder, accept a signer, or expose another write path. Do not replace real HTTP observations with injected fixtures or duplicate the handler in a local script.
 
-After the curl request, Terminal 1 shows the workflow execution result.
+Every non-local branch is production: reject unknown modes; require a configured, well-formed, nonzero receiver; retain CRE report creation and Forwarder delivery for each changed-price write; resolve every capability with `.result()`; and fail closed on validation, report, delivery, or missing-transaction-hash errors.
 
-**Non-interactive (agents, CI):** pass the same JSON with **`--http-payload`**, and use **`--non-interactive`** with **`--trigger-index`** when the CLI would otherwise prompt for a body or for which handler to run. See the [Non-Interactive Rule](#non-interactive-rule) section.
+The local target is simulation-only. Never select it for `--broadcast`, deploy, update, activate, or another lifecycle command, and never allow a production target/config to set `mode: "local-simulation"`. Even if a user mistakenly appends `--broadcast`, the handler's early return must leave no report, EVM client, or transaction to send.
 
-### EVM Log Trigger
+## Behavior by trigger
 
-**Default:** the simulator can monitor the chain for matching log events using the RPC endpoint from `project.yaml`. There is no generic simulation **`--timeout`** to extend that wait; for a deterministic run, pass **`--evm-tx-hash`** (and **`--evm-event-index`** when needed).
+Simulation compiles to WASM, loads the selected target, fires/accepts a local trigger, calls real configured HTTP/RPC endpoints, and prints user logs/result. It is a local dry run by default and does not reproduce every deployed DON behavior.
 
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
+- **Cron:** fires once immediately; it does not wait for the schedule.
+- **HTTP:** interactive mode starts a local server on port 8080 and waits for a request; agents/CI should use `--http-payload`.
+- **EVM log:** may monitor configured RPC for a match; deterministic runs provide `--evm-tx-hash`, optional `--evm-event-index`, and a handler index.
+- **Multiple handlers:** interactive behavior varies by CLI; automation always selects one handler per run.
 
-**Non-interactive (agents, CI):** pass **`--evm-tx-hash`** (and **`--evm-event-index`** if needed) so the CLI does not ask for a transaction. Use **`--non-interactive`** and **`--trigger-index`** as in the [Non-Interactive Rule](#non-interactive-rule) section.
+| | Simulation | Deployment |
+|---|---|---|
+| Execution/consensus | local simulator | DON, multi-node consensus |
+| Gas | none unless broadcast | real |
+| Secrets | environment/`.env` consumed by CLI | Vault DON |
+| RPC | configured endpoint | DON EVM capability |
+| Writes | `MockKeystoneForwarder` with `--broadcast` | `KeystoneForwarder` |
 
-### Multi-Trigger Workflows
+Without `--broadcast`, simulation does not send a transaction and must remain the default first check. Never fabricate a zero transaction hash for this dry-run path or for a successful write whose response omitted `txHash`.
 
-In typical interactive use, the simulator can step through multiple handlers: cron may fire first, HTTP may start a local server, EVM log may monitor the chain, depending on CLI version and prompts.
-
-For **automation**, select one handler per run with **`--non-interactive`**, **`--target`**, **`--trigger-index`**, and the HTTP or EVM flags for that handler. To exercise another handler, run simulate again with a different **`--trigger-index`** and the right **`--http-payload`** or **`--evm-tx-hash`**.
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-See [Non-Interactive Rule](#non-interactive-rule) for the full flag set.
-
-## Simulation vs Deployment
-
-| Aspect | Simulation | Deployment |
-|--------|-----------|------------|
-| Execution | Local machine | DON nodes |
-| Consensus | Single node (no aggregation) | Multi-node with consensus |
-| Gas costs | None | Real gas costs |
-| Secrets | From `.env` / environment | From Vault DON |
-| RPC calls | Direct to RPC endpoint | Via DON EVM client |
-| Onchain writes | Via MockKeystoneForwarder (with `--broadcast`) | Via KeystoneForwarder |
-
-## Onchain Write Simulation (--broadcast)
-
-To test onchain writes during simulation, use the `--broadcast` flag. This deploys a MockKeystoneForwarder and executes the write transaction on a real testnet.
+## Broadcast writes
 
 ```bash
 cre workflow simulate my-workflow --target staging-settings --broadcast
 ```
 
-This requires:
-- A funded wallet (private key in `.env`)
-- The consumer contract's forwarder address set to the MockKeystoneForwarder for the target chain (see chain-selectors.md for addresses)
+This sends a real testnet transaction and requires a funded wallet available opaquely to the CLI; repeated writes on Base Sepolia require Base Sepolia test ETH. The consumer must trust the target chain's `MockKeystoneForwarder`, not its production forwarder; selector/forwarder values are canonical in [chain-selectors.md](chain-selectors.md) and must be refreshed from its official source before live use. Apply the user's authorization and never inspect key files.
 
-## Common Errors and Fixes
+## Focused failures
 
-### "Select a target" interactive prompt
+| Symptom | Cause / fix |
+|---|---|
+| `Select a target` | add `--target` |
+| prompts for body/tx/handler | add matching payload flags plus `--non-interactive --trigger-index` |
+| module not found (TS) | in generated workflow: `bun install`, then `bunx cre-setup`; see scaffolding |
+| Go dependency stall | from project root try `GOPROXY=direct go mod tidy -v`; private-module environment may need `GONOSUMCHECK`/`GONOSUMDB` |
+| `secret not found` | referenced environment variable is unavailable, or the CRE CLI v1.1.0 secret-name substring bug applies; see workflow patterns |
+| `workflow-path not found` | run from project root and check the generated `workflow.yaml` relative path |
+| `process`/`Buffer`/`crypto` undefined | Node API reached QuickJS; replace with CRE/typed-array/deterministic equivalents |
+| apparent hang | EVM log wait or slow RPC; provide tx hash, event index, handler index, and target |
 
-**Cause**: `--target` flag was omitted.
+For HTTP interactive testing, a present human may run the simulator and send a JSON POST to `http://localhost:8080/trigger` from another terminal. Agents should prefer `--http-payload`.
 
-**Fix**: Always include `--target`:
+## Sources
 
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-### Prompts for HTTP body, EVM transaction hash, or trigger index
-
-**Cause**: The CLI needs input for an HTTP payload, an EVM log (tx hash and optional log index), or which handler to run in a multi-handler workflow, and no flag was passed.
-
-**Fix**: Add **`--http-payload`**, **`--evm-tx-hash`** / **`--evm-event-index`**, and for fully non-interactive runs **`--non-interactive`** with **`--trigger-index`**, as in the [Non-Interactive Rule](#non-interactive-rule) section.
-
-### Compilation error: "cannot find module"
-
-**Cause**: Dependencies not installed.
-
-**Fix (TypeScript)**:
-
-```bash
-cd my-workflow
-bun install
-bunx cre-setup
-cd ..
-```
-
-If `postinstall` already ran `cre-setup`, `bunx cre-setup` is redundant but safe. See project-scaffolding.md for why `cre-setup` must complete before leaving the workflow directory.
-
-**Fix (Go)**:
-
-```bash
-GOFLAGS=-mod=mod go mod tidy
-```
-
-### "secret not found" error
-
-**Cause**: Secret declared in `secrets.yaml` but not present in `.env` or environment, OR the env var name is a substring of the secret name (known bug in CRE CLI v1.1.0).
-
-**Fix**: Ensure the `.env` file contains the environment variable referenced in `secrets.yaml`. If the env var name is a prefix of the secret name, rename the env var to avoid the substring conflict (e.g., add a `_VAR` suffix).
-
-### "workflow-path not found" error
-
-**Cause**: Running simulation from the wrong directory, or `workflow.yaml` has an incorrect `workflow-path`.
-
-**Fix**: Run from the project root (where `project.yaml` is). Verify `workflow-path` in `workflow.yaml` points to the correct entry file relative to the workflow directory.
-
-### TypeScript: "X is not defined" (process, Buffer, crypto)
-
-**Cause**: Code or a dependency uses Node.js APIs that are not available in the QuickJS WASM runtime.
-
-**Fix**: Replace Node.js APIs with CRE equivalents:
-- `process.env.X` -> `runtime.getSecret({ id: "X" }).result().value`
-- `Buffer.from(...)` -> `new Uint8Array(...)`
-- `crypto.randomBytes(...)` -> not available; use deterministic logic or Go workflows for randomness
-- See project-scaffolding.md for the full list of unsupported APIs
-
-### Go: "go mod tidy" hangs
-
-**Cause**: Module proxy is slow or the CRE SDK module requires special access.
-
-**Fix**: Try direct mode with a timeout:
-
-```bash
-GOPROXY=direct go mod tidy -v
-```
-
-If the module is in a private repository:
-
-```bash
-GONOSUMCHECK=github.com/smartcontractkit/* GONOSUMDB=github.com/smartcontractkit/* GOPROXY=direct go mod tidy
-```
-
-### Simulation appears to hang
-
-**Cause**: An EVM log trigger may be waiting for a matching event, or the RPC endpoint may be slow.
-
-**Fix**: Run deterministically with the transaction and handler inputs:
-
-```bash
-cre workflow simulate my-workflow \
-  --evm-tx-hash 0x... \
-  --evm-event-index 0 \
-  --non-interactive \
-  --trigger-index <n> \
-  --target staging-settings
-```
-
-Run `cre workflow simulate --help` on the installed CLI to confirm the flags available for that version.
-
-## Official Documentation
-
-- Simulation guide: `https://docs.chain.link/cre/getting-started/overview.md`
-- Deploying workflows: `https://docs.chain.link/cre/guides/operations/deploying-workflows.md`
+- https://docs.chain.link/cre/guides/operations/simulating-workflows.md
+- https://docs.chain.link/cre/reference/cli/workflow.md

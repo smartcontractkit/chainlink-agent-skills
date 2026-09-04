@@ -1,469 +1,175 @@
 # Project Scaffolding
 
-Use this file when the user wants to create a new CRE project, scaffold workflow files, or set up dependencies for Go or TypeScript.
+Read this file before creating any CRE project. Use `cre init`; never hand-write a project tree, config, or starter files unless the command is unavailable or fails. For generated file meanings and SDK patterns, see [workflow-patterns.md](workflow-patterns.md).
 
-## Trigger Conditions
+## Execution vs. answer artifacts
 
-- "Create a new CRE project"
-- "Scaffold a CRE workflow"
-- "Set up a CRE TypeScript/Go project"
-- "Initialize a CRE project"
-- "Start a new CRE workflow from scratch"
+When the environment provides filesystem/shell tools and the user asks to build, create, or set up a project, write the complete runnable project into the current run directory: run `cre init`, install dependencies, replace the template with every requested source/config/contract artifact, and execute the native receiver-free `local-simulation` target before reporting. Report the real command output, generated paths, and simulation result. Do not answer only in prose, write files outside the run directory, substitute a source-level harness, or hand off an unattended script/checklist while claiming the setup is done.
 
-Do not use for CLI installation or account setup (see getting-started.md), simulation (see simulation.md), or workflow code patterns (see workflow-patterns.md).
+When no execution tool is available, give the exact `cre init`/install/simulate commands and the file contents they will produce, but label the response as unverified: state plainly that nothing was run in this turn and that the user must run the listed commands themselves. Either way, never answer a "did it work" question with an unearned "yes," and never close with a vague "you run this" hand-off after implying the work is finished. If a runnable example is missing non-sensitive values that do not create a security or deployment decision, use clearly labeled safe sample values instead of returning only an outline or questions. Keep sensitive, account-scoped, deployment, and irreversible values as real prerequisites; never invent them.
 
-## Project Creation
+**No-tools, from-scratch TypeScript contract:** When execution tools are unavailable and the user requests a new TypeScript starter, prominently state “Nothing was run in this turn,” then show this sequence in order: (1) `cre init --non-interactive --project-name my-project --deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID" --workflow-name my-workflow --template hello-world-ts`, with `CRE_DEPLOYMENT_REGISTRY_ID` supplied from the user's authenticated `cre registry list`; (2) from the newly generated `my-project/my-workflow`, `bun install`; (3) `bunx cre-setup`; (4) back at the generated project root, `workflow_name=my-workflow; workflow_dir="$PWD/$workflow_name"; target_name="$(grep -m1 -E '^[A-Za-z0-9_.-]+:[[:space:]]*$' "$workflow_dir/workflow.yaml" | sed 's/:.*//')"; : "${target_name:?No target key found in generated workflow.yaml}"`; and (5) `cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive --trigger-index 0`. For receiver-free handler-0 simulation, use the literal `private` in step 1, add the dedicated target/config below after setup, and run its exact command instead of deriving a generated default target. This is creation-only: never inspect, reference, or reuse an existing directory, and never claim that initialization, installation, setup, or simulation succeeded. Keep account IDs, credentials, and addresses as prerequisites, never samples.
 
-Always use `cre init` with `--non-interactive` and explicit flags to create new projects. This generates the correct project structure without requiring human input. Never hand-write the project structure, config, or boilerplate yourself; the manual templates below are a last-resort fallback only if `cre init` is unavailable or fails.
+## Prerequisites
 
-### Using `cre init`
+- Authenticated CRE CLI (`cre login`; the user completes browser authentication)
+- Go 1.25.3+ for Go workflows
+- Bun 1.2.21+ for TypeScript workflows
+- A funded Sepolia account only when simulation broadcasts or deployment needs gas
+- An authenticated CRE CLI session for local simulation; an account/organization-scoped registry ID from `cre registry list` is required for registry-bound initialization, deployment, broadcast, and lifecycle operations, but the receiver-free local target below uses the supported literal `private` selector
 
-`cre init` supports non-interactive mode via the `--non-interactive` flag. Always use this mode when running as an agent.
+## Non-interactive initialization
 
-| Flag | Description | Required with `--non-interactive` |
-|------|-------------|-----------------------------------|
-| `--non-interactive` | Fail instead of prompting | Yes (prevents interactive prompts) |
-| `-p, --project-name` | Name for the new project | Yes (when creating a new project) |
-| `--deployment-registry` | Deployment registry the new project targets | Yes (required to guarantee non-interactive behavior; omitting it can still prompt for registry selection) |
-| `-w, --workflow-name` | Name for the new workflow | No (defaults to template name) |
-| `-t, --template` | Template name (e.g., `hello-world-ts`, `hello-world-go`) | No (but recommended) |
-| `--rpc-url` | RPC endpoint, format: `chain-name=url` (repeatable) | Depends on template |
-| `--refresh` | Bypass template cache and fetch from GitHub | No |
+Agents always supply `--non-interactive`, `--project-name`, `--deployment-registry`, and a template. Omitting the registry can still prompt. Use the CLI-supported literal `private` for the receiver-free local scaffold below or an authenticated registry returned by `cre registry list` for a registry-bound path; never invent an ID.
 
-Always pass `--deployment-registry <ID>` so the run is genuinely non-interactive; omitting it can still prompt for registry selection. Valid registry IDs are scoped to the logged-in user's account and organization rather than a fixed global list, so use authenticated `cre registry list` to obtain or confirm an available ID instead of hardcoding or guessing.
+For registry-bound initialization, an unattended wrapper must fail fast and validate every externally supplied value that `cre init` consumes:
 
-Built-in templates (available offline, no GitHub fetch needed):
-- `hello-world-go` - Go hello world with cron trigger
-- `hello-world-ts` - TypeScript hello world with cron trigger
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+: "${CRE_DEPLOYMENT_REGISTRY_ID:?Set an ID from cre registry list}"
+```
 
-Run `cre templates list` to see all available templates including those from GitHub. When running as an agent, add the `--json` flag (`cre templates list --json`) to receive machine-readable output for reliable parsing.
-
-For a Confidential Workflow, scaffold from `hello-confidential-workflows-ts` or `hello-confidential-workflows-go` — both are registered starter templates, so `cre init -t hello-confidential-workflows-ts` works. The three advanced confidential examples (`ai-audit-firewall`, `automated-liquidation-protection`, `automated-portfolio-rebalancing`) are not registered and cannot be used with `-t`; they must be cloned from the `cre-templates` repository. See `confidential-workflows.md`.
-
-#### TypeScript project:
+Use the validated registry ID in `--deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID"` for that registry-bound path.
 
 ```bash
 cre init \
   --non-interactive \
   --project-name my-project \
-  --deployment-registry <your-deployment-registry> \
+  --deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID" \
   --workflow-name my-workflow \
   --template hello-world-ts
 ```
 
-#### Go project:
+`cre init` does not accept `--target`; it generates `workflow.yaml` with more than one target block by default — the built-in templates ship a `staging-settings` target (used throughout this skill's own examples) plus at least one more, such as `production`, each with its own target config JSON (for example `config.staging.json` and `config.production.json`). Never hand-pick or guess one of these names and never leave a `<placeholder>` in a command; derive the target programmatically from the generated file in the same run, immediately after `cre init`:
 
 ```bash
-cre init \
-  --non-interactive \
-  --project-name my-project \
-  --deployment-registry <your-deployment-registry> \
-  --workflow-name my-workflow \
-  --template hello-world-go
+workflow_dir="$project_root/$workflow_name"
+target_name="$(grep -m1 -E '^[A-Za-z0-9_.-]+:[[:space:]]*$' "$workflow_dir/workflow.yaml" | sed 's/:.*//')"
+: "${target_name:?No target key found in generated workflow.yaml}"
 ```
 
-#### With RPC URLs (required by some templates):
+This reads the file's first top-level key — the target name itself, not a field literally called `target:` — because `workflow.yaml` has no such field. Use `$target_name` directly in the following simulate command; never stop the script to ask the user to copy it in by hand:
 
 ```bash
-cre init \
-  --non-interactive \
-  --project-name my-project \
-  --deployment-registry <your-deployment-registry> \
-  --workflow-name my-workflow \
-  --template hello-world-ts \
-  --rpc-url sepolia=https://ethereum-sepolia-rpc.publicnode.com
+cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive --trigger-index 0
 ```
 
-After `cre init` completes, install TypeScript dependencies from inside the workflow directory. Do not leave that directory until WASM tooling is set up.
+An unattended wrapper must not require or default `CRE_TARGET` before `cre init`; the authoritative `workflow.yaml` does not exist yet, so that is a circular prerequisite. Initialize first, then read and assign the generated target before simulation in the same run.
+
+### Receiver-free local simulation target
+
+When handler 0 must run before a receiver is deployed, do not invent an account-scoped registry ID, receiver, or source-level harness. Initialize with the CLI-supported literal `--deployment-registry private`, then add one conspicuously local target with the same name in both generated YAML files:
+
+```yaml
+# project.yaml
+local-simulation: {}
+```
+
+```yaml
+# <workflow>/workflow.yaml
+local-simulation:
+  user-workflow:
+    workflow-name: my-workflow-local-simulation
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.local-simulation.json"
+    secrets-path: ""
+```
+
+`private` is a supported registry selector, not a placeholder ID. Never use `local-simulation`, `local-simulation-only`, a zero value, or another made-up value as `deployment-registry`. CLI login is still required, but a registry lookup and deployed receiver are not prerequisites for this non-broadcast run.
+
+The local config must be visibly non-production and contain the prompt-supplied previous price as a decimal string:
+
+```json
+{
+  "mode": "local-simulation",
+  "samplePreviousPrice": "1234.56000000"
+}
+```
+
+The handler's local branch must first perform the same real configured HTTP fetches, response checks, strict decimal validation and scaling, `bigint` bounds, consensus aggregation, and changed-price decision as production, using `samplePreviousPrice` as the previous value. It then logs and returns a result labeled `local-simulation` before receiver validation, CRE report creation, `EVMClient` construction, Forwarder delivery, or any other write-capable operation. The production branch must reject unknown modes, reject a missing, malformed, or zero receiver, construct the CRE report, deliver it through the Forwarder when a write is due, and fail closed on every validation or capability error.
+
+Use [simulation.md](simulation.md)'s exact handler-0 command. Never select this target/config for `--broadcast`, deploy, update, activate, or another lifecycle command; every such path must select a production target whose config cannot set `mode: "local-simulation"`.
+
+When a shared value (schedule, RPC, or other invariant) must stay identical across environments, enumerate every top-level target the same way and write the value into each one's referenced config file — never only the first:
 
 ```bash
-cd my-project/my-workflow
+mapfile -t all_targets < <(grep -E '^[A-Za-z0-9_.-]+:[[:space:]]*$' "$workflow_dir/workflow.yaml" | sed 's/:.*//')
+```
+
+Repeat `--rpc-url chain-name=url` when a template requires RPC configuration. The `cre init` flag table is canonical here:
+
+| Flag | Meaning | Non-interactive use |
+|---|---|---|
+| `--non-interactive` | Fail rather than prompt | Always |
+| `-p, --project-name` | New project name | Required for a new project |
+| `--deployment-registry` | Registry selector | Supply `private` for a receiver-free local scaffold or a verified registry ID for a registry-bound path; never fabricate an ID |
+| `-w, --workflow-name` | Workflow name | Optional; template default otherwise |
+| `-t, --template` | Template name | Supply explicitly |
+| `--rpc-url` | Repeatable `chain-name=url` RPC | Template-dependent |
+| `--refresh` | Bypass template cache and fetch GitHub | Only when fresh templates are needed |
+
+Interactive `cre init` is for a present human only.
+
+## Templates
+
+Built in and available offline:
+
+- `hello-world-ts`
+- `hello-world-go`
+
+Registered Confidential Workflow templates:
+
+- `hello-confidential-workflows-ts`
+- `hello-confidential-workflows-go`
+
+Discover current registered templates with `cre templates list --json`; `--refresh` bypasses the cache. The advanced confidential examples `ai-audit-firewall`, `automated-liquidation-protection`, and `automated-portfolio-rebalancing` are clone-only, not valid `-t` values; see [confidential-workflows.md](confidential-workflows.md).
+
+For every non-hello-world workflow, replace or remove the generic template's default README, tutorial comments, sample handler/config/secrets, and unused dependencies before the first simulation. Never simulate the untouched template or present that run as validation of the requested workflow, and do not leave hello-world material beside the custom workflow.
+
+If an answer mentions `--broadcast`, deployment, update, or activation, it must explicitly state the prerequisites: CRE Early Access, browser-completed login, a linked funded wallet for the target, uploaded Vault DON secrets when used, and a successful non-broadcast simulation.
+
+## After initialization
+
+TypeScript dependencies and WASM tooling must be installed from the generated workflow directory:
+
+```bash
+project_root="$(cd my-project && pwd)"
+cd "$project_root/my-workflow"
 bun install
-# postinstall may not always run `bunx cre-setup`; if install output does not show cre-setup, or you are unsure, run it explicitly:
 bunx cre-setup
-cd ../..
+cd "$project_root"
 ```
 
-For Go projects, `cre init` handles `go.mod` creation. Run `go mod tidy` from the project root if needed.
+`postinstall` may already run `cre-setup`; run it explicitly when install output does not confirm that. For Go, `cre init` creates `go.mod`; from the project root run `GOFLAGS=-mod=mod go mod tidy` if needed. If the module proxy stalls, retry with `GOPROXY=direct go mod tidy -v`; private-module environments may additionally need `GONOSUMCHECK=github.com/smartcontractkit/* GONOSUMDB=github.com/smartcontractkit/*`.
 
-### Manual Scaffolding (Fallback)
+For Go, preserve the import paths and WASM runner emitted by the installed `hello-world-go` template; do not replace them from memory. When a complete `main.go` replacement is required, copy those exact version-matched imports and runner from the generated file, then change only the workflow-specific handler and configuration.
 
-If `cre init` is unavailable or fails, create the project files directly from the templates below.
+The block above is one automated shell sequence: capture `project_root` immediately after `cre init`, before entering any workflow or dependency subdirectory, and return to it before simulation. Never run `cd my-project` from inside `my-project/my-workflow`; that looks for a nonexistent nested project. Read [simulation.md](simulation.md) before using its canonical command.
 
-## Prerequisites
+## Generated configuration
 
-- **Go**: version 1.25.3 or higher
-- **TypeScript**: Bun version 1.2.21 or higher
-- **Funded Sepolia account**: for deployment gas fees (get testnet ETH at `faucets.chain.link`)
+Do not replace generated files with guessed examples or vague “generated files” placeholders; when the user asks for the full structure, show the concrete tree produced by `cre init`. Preserve the selected target across:
 
-## TypeScript Project Template
+- root `project.yaml`: shared target/RPC configuration
+- workflow `workflow.yaml`: workflow name, entry/config/secrets paths per target
+- target config JSON: runtime values (`runtime.config` in TypeScript; handler config parameter in Go)
+- root `secrets.yaml`: secret IDs mapped to environment-variable names, never secret values
 
-Create the following directory structure. Replace `my-project` and `my-workflow` with the desired names.
+The default templates generate at least two targets (`staging-settings` and `production`); a requested schedule or other invariant must be written into every target's referenced config file, not only the one used for simulation — enumerate all targets as shown above rather than updating just the first match. Go's `go.mod` remains at the project root, never inside the workflow directory.
 
-```
-my-project/
-├── my-workflow/
-│   ├── config.production.json
-│   ├── config.staging.json
-│   ├── main.ts
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── workflow.yaml
-├── .env
-├── .gitignore
-├── project.yaml
-└── secrets.yaml
-```
+Keep `.env`, WASM output, and dependency/build directories out of version control. Never read secret-bearing `.env` or wallet files; authorized tools may consume them opaquely as described in [operations.md](operations.md).
 
-### my-workflow/main.ts
+## QuickJS/WASM fit
 
-```typescript
-import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+TypeScript compiles through Javy/QuickJS rather than Node.js. Use pure-JS packages only; `@chainlink/cre-sdk`, `zod`, and `viem` are compatible. `ethers`, `axios`, `node-fetch`, `ws`, `dotenv`, native/N-API modules, and packages importing Node built-ins are incompatible. No `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, Node `events`/`util`/`buffer`, timers, or Node `fetch`.
 
-type Config = {
-  schedule: string
-}
+Use `Uint8Array`/`ArrayBuffer` rather than `Buffer`, CRE HTTP capability APIs rather than Node networking, `runtime.getSecret({ id }).result().value` rather than `process.env`, and deterministic logic (or Go `runtime.Rand()`) rather than Node crypto randomness. [concepts.md](concepts.md) owns the runtime model and compatibility details.
 
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  runtime.log("Hello world! Workflow triggered.")
-  return "Hello world!"
-}
+## Sources
 
-const initWorkflow = (config: Config) => {
-  const cron = new CronCapability()
-  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
-}
-
-export async function main() {
-  const runner = await Runner.newRunner<Config>()
-  await runner.run(initWorkflow)
-}
-```
-
-### my-workflow/package.json
-
-```json
-{
-  "name": "my-workflow",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "postinstall": "bunx cre-setup"
-  },
-  "dependencies": {
-    "@chainlink/cre-sdk": "latest"
-  }
-}
-```
-
-### my-workflow/tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": ".",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
-  },
-  "include": ["./**/*.ts"],
-  "exclude": ["node_modules", "dist"]
-}
-```
-
-### my-workflow/workflow.yaml
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.json"
-    secrets-path: ""
-production-settings:
-  user-workflow:
-    workflow-name: "my-workflow-production"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.production.json"
-    secrets-path: ""
-```
-
-### my-workflow/config.staging.json
-
-```json
-{
-  "schedule": "*/30 * * * * *"
-}
-```
-
-### my-workflow/config.production.json
-
-```json
-{
-  "schedule": "0 */5 * * * *"
-}
-```
-
-### project.yaml (project root)
-
-```yaml
-staging-settings:
-  evms:
-    - chain-selector: "16015286601757825753"
-      rpc-url: "https://ethereum-sepolia-rpc.publicnode.com"
-production-settings:
-  evms:
-    - chain-selector: "5009297550715157269"
-      rpc-url: "https://ethereum-mainnet-rpc.example.com"
-```
-
-### secrets.yaml (project root)
-
-```yaml
-secretsNames: {}
-```
-
-### .env (project root)
-
-```bash
-CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
-```
-
-### .gitignore (project root)
-
-```
-.env
-node_modules/
-dist/
-*.wasm
-```
-
-### Install TypeScript Dependencies
-
-Run from the project root:
-
-```bash
-cd my-workflow && bun install && cd ..
-```
-
-The `postinstall` script automatically runs `bunx cre-setup` to configure WASM compilation tools. If `bun install` fails, verify Bun is version 1.2.21 or higher with `bun --version`.
-
-### Verify TypeScript Setup
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-Expected output:
-
-```
-Workflow compiled
-[SIMULATION] Simulator Initialized
-[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-[USER LOG] Hello world! Workflow triggered.
-Workflow Simulation Result:
- "Hello world!"
-[SIMULATION] Execution finished signal received
-```
-
-## Go Project Template
-
-Create the following directory structure:
-
-```
-my-project/
-├── my-workflow/
-│   ├── config.production.json
-│   ├── config.staging.json
-│   ├── main.go
-│   └── workflow.yaml
-├── contracts/
-│   └── evm/
-│       └── src/
-│           └── abi/
-├── .env
-├── .gitignore
-├── go.mod
-├── project.yaml
-└── secrets.yaml
-```
-
-### my-workflow/main.go
-
-```go
-package main
-
-import (
-	"github.com/smartcontractkit/cre-sdk-go/cre"
-	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-)
-
-type Config struct {
-	Schedule string `json:"schedule"`
-}
-
-func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*string, error) {
-	runtime.Logger().Info("Hello world! Workflow triggered.")
-	result := "Hello world!"
-	return &result, nil
-}
-
-func InitWorkflow(config *Config) []cre.HandlerDefinition {
-	return []cre.HandlerDefinition{
-		cre.Handler(cron.Trigger(cron.Config{Schedule: config.Schedule}), onCronTrigger),
-	}
-}
-```
-
-### go.mod (project root)
-
-```
-module my-project
-
-go 1.25.3
-
-require github.com/smartcontractkit/cre-sdk-go v0.0.0
-```
-
-The `v0.0.0` placeholder is resolved by `go mod tidy`. See dependency installation below.
-
-### my-workflow/workflow.yaml
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-  workflow-artifacts:
-    workflow-path: "./main.go"
-    config-path: "./config.staging.json"
-    secrets-path: ""
-production-settings:
-  user-workflow:
-    workflow-name: "my-workflow-production"
-  workflow-artifacts:
-    workflow-path: "./main.go"
-    config-path: "./config.production.json"
-    secrets-path: ""
-```
-
-### my-workflow/config.staging.json
-
-```json
-{
-  "schedule": "*/30 * * * * *"
-}
-```
-
-### my-workflow/config.production.json
-
-```json
-{
-  "schedule": "0 */5 * * * *"
-}
-```
-
-### project.yaml (project root)
-
-Same as the TypeScript version:
-
-```yaml
-staging-settings:
-  evms:
-    - chain-selector: "16015286601757825753"
-      rpc-url: "https://ethereum-sepolia-rpc.publicnode.com"
-production-settings:
-  evms:
-    - chain-selector: "5009297550715157269"
-      rpc-url: "https://ethereum-mainnet-rpc.example.com"
-```
-
-### secrets.yaml (project root)
-
-```yaml
-secretsNames: {}
-```
-
-### .env (project root)
-
-```bash
-CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
-```
-
-### .gitignore (project root)
-
-```
-.env
-*.wasm
-```
-
-### Install Go Dependencies
-
-Run from the project root:
-
-```bash
-GOFLAGS=-mod=mod go mod tidy
-```
-
-If `go mod tidy` hangs or fails to resolve the CRE SDK, try:
-
-1. Verify Go version: `go version` (must be 1.25.3+)
-2. Ensure `GONOSUMCHECK` and `GONOSUMDB` are not blocking the module: `GONOSUMCHECK=github.com/smartcontractkit/* GONOSUMDB=github.com/smartcontractkit/* go mod tidy`
-3. If the module proxy is slow, try direct mode: `GOPROXY=direct go mod tidy`
-4. If it still hangs after 60 seconds, cancel and retry with verbose output: `go mod tidy -v`
-
-### Verify Go Setup
-
-```bash
-cre workflow simulate my-workflow --target staging-settings
-```
-
-## WASM Runtime Restrictions (TypeScript)
-
-CRE TypeScript workflows compile to WebAssembly via QuickJS. The following Node.js APIs are NOT available in the WASM runtime:
-
-`fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, `events` (Node.js EventEmitter), `util` (Node.js `promisify`), `buffer` (Node.js Buffer)
-
-### What This Means for Code Generation
-
-- Never use `process.env` to read environment variables. Use `runtime.getSecret({ id: "NAME" }).result().value` instead — it takes an object argument and is synchronous, never awaited.
-- Never use `Buffer`. Use `Uint8Array` or `ArrayBuffer` instead.
-- Never use `crypto` from Node.js. Use `viem` utilities for hashing and encoding.
-- Never use `setTimeout`, `setInterval`, or `setImmediate`. The WASM environment is synchronous.
-- Never use `fetch` from `node-fetch`. The CRE runtime provides its own `fetch`.
-
-### Safe npm Packages
-
-| Package | Status | Notes |
-|---------|--------|-------|
-| `@chainlink/cre-sdk` | Required | Core SDK |
-| `zod` | Safe | Schema validation |
-| `viem` | Safe | ABI encoding, type utilities |
-
-### Unsafe npm Packages
-
-| Package | Status | Reason |
-|---------|--------|--------|
-| `ethers` | Incompatible | Depends on Node.js `crypto` |
-| `axios` | Incompatible | Depends on Node.js `http`/`https` |
-| `node-fetch` | Incompatible | Depends on Node.js `http`/`stream` |
-| `ws` | Incompatible | Depends on Node.js `net`/`http` |
-| `dotenv` | Incompatible | Depends on Node.js `fs`/`path` |
-
-Any package requiring native/N-API modules is incompatible. When uncertain about a package, check its dependency tree for Node.js built-in imports or consult `https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html`.
-
-## Official Documentation
-
-- Getting started tutorial: `https://docs.chain.link/cre/getting-started/overview.md`
-- Project configuration (TS): `https://docs.chain.link/cre/reference/project-configuration-ts.md`
-- Project configuration (Go): `https://docs.chain.link/cre/reference/project-configuration-go.md`
-- CRE Templates repo: `https://github.com/smartcontractkit/cre-templates`
+- https://docs.chain.link/cre/reference/cli/project-setup-ts.md
+- https://docs.chain.link/cre/reference/cli/project-setup-go.md
+- https://github.com/smartcontractkit/cre-templates

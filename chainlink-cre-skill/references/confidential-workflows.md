@@ -1,381 +1,213 @@
 # Confidential Workflows
 
-Use this file when the user wants a workflow handler to execute inside a Trusted Execution Environment (TEE / enclave) so that node operators cannot see the data it computes over.
+Use when the user wants a workflow handler to execute inside a TEE/enclave, mentions `handlerInTee`/`cre.HandlerInTee`, `TeeRuntime`, enclave attestation or access, or asks to hide workflow data from node operators. This is not Confidential HTTP; their APIs do not mix.
 
-## Trigger Conditions
+## Choose the boundary
 
-- "Make my CRE workflow confidential"
-- "Run this handler inside an enclave / TEE"
-- "How do I use `handlerInTee` / `cre.HandlerInTee`?"
-- "Keep my API keys and risk thresholds hidden from node operators"
-- "How do I get access to Confidential Workflows?"
-
-Do not use for the Confidential HTTP client (see `http-client.md`) — that is a different capability. The table below decides between them.
-
-## Confidential HTTP vs Confidential Workflows
-
-Both hide data from node operators, but they protect different scopes, and their APIs do not mix. Choosing wrong produces code that does not compile.
-
-| | Confidential HTTP | Confidential Workflows |
+| | Confidential HTTP | Confidential Workflow |
 |---|---|---|
-| Protects | The credentials and payload of one HTTP request | The whole handler: secrets, HTTP payloads, and the decision logic's intermediate values |
-| Handler registration | Normal `handler` / `cre.Handler` | `handlerInTee` / `cre.HandlerInTee` |
-| Runtime type | `Runtime` | `TeeRuntime` |
-| Secrets | `{{.SECRET_NAME}}` template placeholders, declared upfront via `vaultDonSecrets` | `runtime.getSecret()` / `runtime.GetSecret()` at the point of use, nothing declared upfront |
-| Where decision logic runs | On Workflow DON nodes (visible to operators) | Inside the enclave |
-| Availability | Generally available | Private beta (see below) |
+| Protects | One request's credentials/payload | Handler secrets, requests, and intermediate values |
+| Registration/runtime | normal `handler`, `Runtime` | `handlerInTee`, `TeeRuntime` |
+| Secrets | `{{.SECRET_NAME}}` plus `vaultDonSecrets` | `runtime.getSecret()`/`GetSecret()` at use time |
+| Decision logic | DON-visible | enclave |
+| Availability | capability-specific | private-beta deployment |
 
-The two clients are not interchangeable inside a TEE handler:
+`ConfidentialHTTPClient` has no TypeScript `TeeRuntime` overload; Go `confidentialhttp.Client.SendRequest` accepts only `cre.Runtime`. Inside a TEE use the regular `HTTPClient` with `TeeRuntime`, or Go `http.Client.SendRequestInTee`.
 
-- TypeScript: `ConfidentialHTTPClient` has no `TeeRuntime` overload. Use the regular `HTTPClient`, passing the `TeeRuntime`.
-- Go: `confidentialhttp.Client.SendRequest` only accepts `cre.Runtime`. Use `http.Client.SendRequestInTee(runtime, req)`.
+## Availability and boundary
 
-## Access and Availability
+Every Confidential Workflows answer must state both availability facts explicitly: live deployment requires separate private-beta enrollment through `https://docs.chain.link/cre/account/confidential-workflows-access`; local development and simulation do not. Only AWS Nitro in `us-west-2` is registered—do not invent TEE names/regions.
 
-Confidential Workflows is in **private beta**. Deployment requires enrollment through the Chainlink account team via the [access request form](https://docs.chain.link/cre/account/confidential-workflows-access); enrollment is separate from standard CRE deploy access.
+Confidential: Vault DON secrets released into the attested enclave, capability request/response payloads issued inside it, and intermediate enclave memory. Not confidential: the workflow binary/logic (revealed to the DON), triggers, chain reads/writes, logs, or anything passed through `usingTheDons()`/`UsingTheDons()`. DON consensus verifies enclave attestations; it does not make exported data private. Multiple confidential workflows may currently share an enclave; dedicated per-workflow isolation is planned, not available.
 
-Enrollment gates *deployment only*. Local development and `cre workflow simulate` work today without approval, so the right advice to a user who is not yet enrolled is: build and simulate now, request access in parallel.
+Keep TEE logging for simulation only and remove it before production. Every shown TEE handler crosses back with `usingTheDons()`/`UsingTheDons()` and carries only derived non-sensitive conclusions—never secrets or raw confidential payloads; show both TypeScript and Go equivalents when explaining this boundary. Preserve per-item or per-position threshold cardinality inside the enclave and fail closed if any required threshold is missing. Chain writes happen after crossing back.
 
-AWS Nitro in `us-west-2` is currently the only registered TEE type and region. Do not invent other TEE names or regions.
+## Canonical TypeScript workflow
 
-## What Is and Is Not Confidential
-
-Understanding this boundary is the whole job — most mistakes are leaks, not compile errors.
-
-Confidential:
-
-- Secrets the Vault DON releases into the enclave, decrypted only at the moment the code requests them
-- Request and response payloads of capability calls made from inside the enclave
-- Intermediate values and enclave memory, for as long as the computation runs inside it
-
-Not confidential:
-
-- **The workflow logic itself.** The handler is part of the binary the Workflow DON hands to the enclave, so the code is revealed. What the enclave protects is the *data* that code computes over. Tell users this plainly — it is the most common misconception.
-- **Triggers, chain reads, and chain writes.** These always execute on Workflow DON nodes, never inside the enclave.
-- Anything crossed back out through `usingTheDons()` / `UsingTheDons()`.
-- Anything logged.
-
-Execution completes only after DON consensus verifies the enclave's attestations, which is what proves the executed logic's integrity. Trust for the in-enclave leg comes from attestation rather than DON consensus over the data.
-
-Multiple confidential workflows may currently execute within the same enclave; dedicated per-workflow enclave isolation is planned but not available. If a user asks about tenant isolation, say so rather than implying stronger guarantees.
-
-## TypeScript Pattern
+The workflow below is a structural scaffold for the TEE handler/secret/HTTP/crossover mechanics, using a generic score-and-threshold check as its running example — it is not a literal deliverable. Always rebuild the handler body, `Config` fields, and business logic around the user's own named resource and action (an LLM prompt/response call, a different API, etc.); never hand back this score/threshold example, or any other reference's worked example, in place of what the user asked for.
 
 ```typescript
 import {
-  CronCapability,
-  handlerInTee,
-  HTTPClient,
-  hexToBase64,
-  ok,
-  Runner,
-  text,
+  CronCapability, HTTPClient, Runner, handlerInTee, hexToBase64, ok, text,
   type TeeRuntime,
 } from '@chainlink/cre-sdk'
 import { encodeAbiParameters, parseAbiParameters } from 'viem'
 import { z } from 'zod'
 
 export const configSchema = z.object({
-  schedule: z.string(),
-  url: z.string(),
-  secretId: z.string(),
-  scoreThreshold: z.number(),
+  schedule: z.string(), url: z.string(), secretId: z.string(), threshold: z.number(),
 })
 type Config = z.infer<typeof configSchema>
 
-// Deterministic logic over confidential data. The enclave result is attested and
-// verified by DON consensus, so the same input must always produce the same output.
-const scoreResponse = (body: string): number => {
-  let score = 0
-  for (let i = 0; i < body.length; i++) {
-    score = (score + body.charCodeAt(i)) % 1000
-  }
-  return score
-}
+const score = (s: string) => [...s].reduce((n, c) => (n + c.charCodeAt(0)) % 1000, 0)
 
-// Receives a TeeRuntime, not a Runtime. Everything here runs inside the enclave
-// until we explicitly cross back.
-export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
-  const config = runtime.config
+const onCron = (runtime: TeeRuntime<Config>): string => {
+  const token = runtime.getSecret({ id: runtime.config.secretId }).result().value
+  const response = new HTTPClient().sendRequest(runtime, {
+    url: runtime.config.url,
+    method: 'GET',
+    multiHeaders: { Authorization: { values: [`Bearer ${token}`] } },
+  }).result()
+  if (!ok(response)) throw new Error(`HTTP ${response.statusCode}`)
 
-  // Released by the Vault DON into the attested enclave, decrypted here.
-  const apiToken = runtime.getSecret({ id: config.secretId }).result().value
-
-  // Passing the TeeRuntime to the regular HTTPClient executes the request from
-  // inside the enclave, so request and response payloads stay confidential.
-  const response = new HTTPClient()
-    .sendRequest(runtime, {
-      url: config.url,
-      method: 'GET',
-      multiHeaders: {
-        Authorization: { values: [`Bearer ${apiToken}`] },
-      },
-    })
-    .result()
-
-  if (!ok(response)) {
-    throw new Error(`Confidential request failed with status: ${response.statusCode}`)
-  }
-
-  const score = scoreResponse(text(response))
-  const verdict = score >= config.scoreThreshold ? 'APPROVE' : 'REJECT'
-
-  // Cross back for anything needing consensus. Only the verdict and score cross
-  // out — never the secret or the raw response body.
-  const donRuntime = runtime.usingTheDons()
-
+  const value = score(text(response))
+  const verdict = value >= runtime.config.threshold ? 'APPROVE' : 'REJECT'
+  const don = runtime.usingTheDons() // only derived values cross
   const encodedPayload = encodeAbiParameters(
-    parseAbiParameters('string verdict, uint256 score'),
-    [verdict, BigInt(score)],
+    parseAbiParameters('string verdict, uint256 score'), [verdict, BigInt(value)],
   )
-
-  donRuntime
-    .report({
-      encodedPayload: hexToBase64(encodedPayload),
-      encoderName: 'evm',
-      signingAlgo: 'ecdsa',
-      hashingAlgo: 'keccak256',
-    })
-    .result()
-
-  return `${verdict} (score: ${score})`
+  don.report({
+    encodedPayload: hexToBase64(encodedPayload), encoderName: 'evm',
+    signingAlgo: 'ecdsa', hashingAlgo: 'keccak256',
+  }).result()
+  return verdict
 }
 
-export function initWorkflow(config: Config) {
-  const cron = new CronCapability()
-
-  return [
-    handlerInTee(cron.trigger({ schedule: config.schedule }), onCronTrigger, [
-      { tee: 'nitro', regions: ['us-west-2'] },
-    ]),
-  ]
-}
-```
-
-`main.ts` is unchanged from a normal workflow:
-
-```typescript
-import { Runner } from '@chainlink/cre-sdk'
-import { configSchema, initWorkflow } from './workflow'
+export const initWorkflow = (config: Config) => [
+  handlerInTee(new CronCapability().trigger({ schedule: config.schedule }), onCron, [
+    { tee: 'nitro', regions: ['us-west-2'] },
+  ]),
+]
 
 export async function main() {
   const runner = await Runner.newRunner({ configSchema })
   await runner.run(initWorkflow)
 }
-
 main()
 ```
 
-Some templates write these symbols through the `cre` namespace instead — `cre.handlerInTee(...)`, `new cre.capabilities.HTTPClient()`, `new cre.capabilities.CronCapability()`. Both forms are exported by the SDK and behave identically; match whichever style the user's existing project already uses.
+The SDK also exports equivalent `cre.handlerInTee` and `cre.capabilities.*` names; match the repository style.
 
-## Go Pattern
+## Canonical Go workflow
 
 ```go
+//go:build wasip1
+
 package main
 
 import (
-	"fmt"
-	"log/slog"
-	"math/big"
+    "fmt"
+    "log/slog"
+    "math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-
-	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
-	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-	"github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/ethereum/go-ethereum/accounts/abi"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/smartcontractkit/cre-sdk-go/cre/wasm"
 )
 
 type Config struct {
-	Schedule       string `json:"schedule"`
-	URL            string `json:"url"`
-	SecretID       string `json:"secretId"`
-	ScoreThreshold uint64 `json:"scoreThreshold"`
+    Schedule string `json:"schedule"`
+    URL string `json:"url"`
+    SecretID string `json:"secretId"`
+    Threshold uint64 `json:"threshold"`
 }
 
-func scoreResponse(body string) uint64 {
-	var score uint64
-	for _, b := range []byte(body) {
-		score = (score + uint64(b)) % 1000
-	}
-	return score
+func score(body []byte) uint64 {
+    var result uint64
+    for _, b := range body { result = (result + uint64(b)) % 1000 }
+    return result
 }
 
-// Receives cre.TeeRuntime, not cre.Runtime. Config arrives as a parameter, as in
-// any Go handler.
-func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
-	secret, err := runtime.GetSecret(&cre.SecretRequest{Id: config.SecretID}).Await()
-	if err != nil {
-		return "", fmt.Errorf("failed to fetch secret %q inside the enclave: %w", config.SecretID, err)
-	}
-
-	// SendRequestInTee takes the TeeRuntime, so the request executes from inside
-	// the enclave. The confidentialhttp client cannot be used here.
-	client := &http.Client{}
-	response, err := client.SendRequestInTee(runtime, &http.Request{
-		Url:    config.URL,
-		Method: "GET",
-		MultiHeaders: map[string]*http.HeaderValues{
-			"Authorization": {Values: []string{"Bearer " + secret.Value}},
-		},
-	}).Await()
-	if err != nil {
-		return "", fmt.Errorf("confidential request failed: %w", err)
-	}
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return "", fmt.Errorf("confidential request failed with status: %d", response.StatusCode)
-	}
-
-	score := scoreResponse(string(response.Body))
-	verdict := "REJECT"
-	if score >= config.ScoreThreshold {
-		verdict = "APPROVE"
-	}
-
-	// Only the verdict and score cross out.
-	donRuntime := runtime.UsingTheDons()
-
-	encodedPayload, err := encodeVerdict(verdict, score)
-	if err != nil {
-		return "", fmt.Errorf("failed to encode report payload: %w", err)
-	}
-
-	if _, err := donRuntime.GenerateReport(&cre.ReportRequest{
-		EncodedPayload: encodedPayload,
-		EncoderName:    "evm",
-		SigningAlgo:    "ecdsa",
-		HashingAlgo:    "keccak256",
-	}).Await(); err != nil {
-		return "", fmt.Errorf("failed to generate report on the DON: %w", err)
-	}
-
-	return fmt.Sprintf("%s (score: %d)", verdict, score), nil
+func encodeVerdict(verdict string, value uint64) ([]byte, error) {
+    stringType, err := abi.NewType("string", "", nil)
+    if err != nil { return nil, err }
+    uintType, err := abi.NewType("uint256", "", nil)
+    if err != nil { return nil, err }
+    return (abi.Arguments{{Type: stringType}, {Type: uintType}}).
+        Pack(verdict, new(big.Int).SetUint64(value))
 }
 
-func encodeVerdict(verdict string, score uint64) ([]byte, error) {
-	stringType, err := abi.NewType("string", "", nil)
-	if err != nil {
-		return nil, err
-	}
-	uint256Type, err := abi.NewType("uint256", "", nil)
-	if err != nil {
-		return nil, err
-	}
-	args := abi.Arguments{{Type: stringType}, {Type: uint256Type}}
-	return args.Pack(verdict, new(big.Int).SetUint64(score))
+func onCron(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (string, error) {
+    secret, err := runtime.GetSecret(&cre.SecretRequest{Id: config.SecretID}).Await()
+    if err != nil { return "", err }
+    response, err := (&http.Client{}).SendRequestInTee(runtime, &http.Request{
+        Url: config.URL, Method: "GET",
+        MultiHeaders: map[string]*http.HeaderValues{
+            "Authorization": {Values: []string{"Bearer " + secret.Value}},
+        },
+    }).Await()
+    if err != nil { return "", err }
+    if response.StatusCode < 200 || response.StatusCode > 299 {
+        return "", fmt.Errorf("HTTP %d", response.StatusCode)
+    }
+
+    value := score(response.Body)
+    verdict := "REJECT"
+    if value >= config.Threshold { verdict = "APPROVE" }
+    encoded, err := encodeVerdict(verdict, value)
+    if err != nil { return "", err }
+    _, err = runtime.UsingTheDons().GenerateReport(&cre.ReportRequest{
+        EncodedPayload: encoded, EncoderName: "evm",
+        SigningAlgo: "ecdsa", HashingAlgo: "keccak256",
+    }).Await()
+    return verdict, err
 }
 
 func InitWorkflow(config *Config, _ *slog.Logger, _ cre.SecretsProvider) (cre.Workflow[*Config], error) {
-	return cre.Workflow[*Config]{
-		cre.HandlerInTee(
-			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
-			onCronTrigger,
-			cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}},
-		),
-	}, nil
+    return cre.Workflow[*Config]{cre.HandlerInTee(
+        cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCron,
+        cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}},
+    )}, nil
+}
+
+func main() {
+    wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
 
-`main.go` is unchanged from a normal Go workflow (`//go:build wasip1`, `wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)`).
-
-## TeeConstraint
-
-The third argument to the TEE handler declares which enclaves the workflow accepts. Narrower constraints are better when the user has a jurisdictional or compliance reason; otherwise the permissive form is fine.
-
-| Intent | TypeScript | Go |
-|---|---|---|
-| Any registered TEE, any region | `{}` | `cre.AnyTee{}` |
-| Any TEE, specific regions | `{ regions: ['us-west-2'] }` | `cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}` |
-| Specific TEE type and regions | `[{ tee: 'nitro', regions: ['us-west-2'] }]` | `cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}` |
-
-In Go each TEE binding owns its own region enum (`cre.Nitro` pairs with `cre.NitroRegion`), so passing a region belonging to another TEE is a compile-time error.
-
-## TeeRuntime API
+## TEE API
 
 | Purpose | TypeScript | Go |
 |---|---|---|
-| Register the handler | `handlerInTee(trigger, fn, tees, hooks?)` | `cre.HandlerInTee(trigger, callback, tees)` |
-| Fetch one secret | `runtime.getSecret({ id }).result().value` | `runtime.GetSecret(&cre.SecretRequest{Id: id}).Await()` |
-| Fetch several secrets | one call per secret | `runtime.GetSecrets([]*cre.SecretRequest{...}).Await()` |
-| HTTP from inside the enclave | `new HTTPClient().sendRequest(runtime, req).result()` | `(&http.Client{}).SendRequestInTee(runtime, req).Await()` |
-| Cross back to the DON | `runtime.usingTheDons()` returns `Runtime<C>` | `runtime.UsingTheDons()` returns `cre.Runtime` |
-| Report without a full crossover | `runtime.reportFromDon({...}).result()` | `runtime.ReportFromDon(&cre.ReportRequest{...}).Await()` |
-| Config, time, logging | `runtime.config`, `runtime.now()`, `runtime.log()` | config is a handler parameter; `runtime.Now()`, `runtime.Logger()` |
+| Register | `handlerInTee(trigger, fn, tees, hooks?)` | `cre.HandlerInTee(trigger, callback, tees)` |
+| One secret | `getSecret({ id }).result().value` | `GetSecret(&cre.SecretRequest{Id: id}).Await()` |
+| Several | one call each / `getSecrets` | `GetSecrets([]*cre.SecretRequest{...}).Await()` |
+| In-enclave HTTP | `new HTTPClient().sendRequest(runtime, req).result()` | `(&http.Client{}).SendRequestInTee(runtime, req).Await()` |
+| Cross back | `usingTheDons(): Runtime<C>` | `UsingTheDons(): cre.Runtime` |
+| Report shortcut | `reportFromDon(req).result()` | `ReportFromDon(req).Await()` |
+| Config/time/log | `config`, `now()`, `log()` | config parameter, `Now()`, `Logger()` |
 
-`TeeRuntime` extends the base runtime and the secrets provider, so triggers, config parsing, and the `Runner` setup are identical to a non-confidential workflow. The handler registration and the runtime type are the only structural differences.
+TEE constraints:
 
-## Crossing Back to the DON
-
-Cross the *conclusion*, not the inputs. A workflow that computes a verdict over a private position and then reports the verdict is confidential; one that reports the position size is not, no matter that it ran in an enclave.
-
-- Anything passed into a capability call on the runtime from `usingTheDons()` executes on Workflow DON nodes and is visible there.
-- Chain writes are never in-enclave. Generate the report after crossing back, then pass it to `evmClient.writeReport(donRuntime, report)`.
-- `reportFromDon()` / `ReportFromDon()` is a shortcut when a report is the only thing needed from the DON, avoiding a full crossover.
-
-## Pitfalls
-
-| Pitfall | Why it matters | Do instead |
+| Intent | TypeScript | Go |
 |---|---|---|
-| Logging inside the enclave | Log output leaves the enclave, so anything logged is no longer confidential | Keep logs for simulation only and remove them before deploying to production. Report booleans or derived verdicts, never raw values |
-| Using `ConfidentialHTTPClient` in a TEE handler | It has no `TeeRuntime` overload (Go: `confidentialhttp` only accepts `cre.Runtime`) | Regular `HTTPClient` with the `TeeRuntime`, or Go's `SendRequestInTee` |
-| Declaring `vaultDonSecrets` for a confidential workflow | That is Confidential HTTP's mechanism; nothing needs declaring upfront here | `runtime.getSecret()` / `GetSecret()` at the point of use |
-| Passing a secret through `usingTheDons()` | Silently ends confidentiality — it compiles and runs | Cross over derived, non-sensitive values only |
-| Expecting chain reads or triggers to be confidential | They always run on Workflow DON nodes | Read on-chain data before or after the enclave leg and treat it as public |
-| Non-deterministic in-enclave logic | The enclave result is attested and consensus-verified | Same determinism rules as any handler; see `concepts.md` |
-| Assuming the code is hidden | The binary, including handler logic, is revealed to the DON | Protect *data*; if the logic itself is the secret, Confidential Workflows is the wrong tool |
+| Any TEE/region | `{}` | `cre.AnyTee{}` |
+| Any TEE, regions | `{ regions: ['us-west-2'] }` | `cre.AnyTeeInRegions{Regions: []cre.Region{cre.AwsUsWest2}}` |
+| Nitro/regions | `[{ tee: 'nitro', regions: ['us-west-2'] }]` | `cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{cre.NitroUsWest2}}}` |
 
-## Secrets
+Go TEE bindings own their region enum; mismatched enums fail compilation.
 
-Secrets work as they do elsewhere in CRE (see `workflow-patterns.md`), with one difference: the Vault DON releases them directly into the attested enclave rather than into node memory. `secrets.yaml` maps the workflow-facing secret ID to an environment variable:
+## Secrets and simulation
+
+`secrets.yaml` maps workflow IDs to environment variables; it never contains values:
 
 ```yaml
 secretsNames:
-    API_TOKEN:
-        - SECRET_API_TOKEN
+  API_TOKEN:
+    - SECRET_API_TOKEN
 ```
 
-The workflow then requests `API_TOKEN` by ID. For deployment, upload to the Vault DON with `cre secrets create` as usual (see `operations.md`).
+The workflow requests `API_TOKEN`. Deployment uses `cre secrets create` under [operations.md](operations.md). For simulation, set the referenced environment through a user-controlled mechanism, then use the canonical command in [simulation.md](simulation.md). Simulation is the only appropriate place for enclave logs.
 
-## Simulation
+A runnable scaffold uses a real cron expression (not a placeholder), a `workflow.yaml` target whose `config-path` points to the shown `config.staging.json`, and a root `secrets.yaml` containing identifiers/environment references only. The user supplies the referenced environment through a user-controlled mechanism; deployed upload is the concrete `cre secrets create <workflow-dir> --target <target>` operation with [operations.md](operations.md)'s approvals. Do not invent secret error classes, expiry rules, or testnet-only limitations.
 
-Simulation needs no beta enrollment, which makes it the fastest way to validate a confidential workflow:
+## Starter templates
 
-```bash
-cre workflow simulate ./my-workflow --target staging-settings
-```
+Verify registered templates with `cre templates list --json`.
 
-Set the environment variables named in `secrets.yaml` first (typically via `.env`). Simulation is also the only place in-enclave logging is appropriate — see `simulation.md` for general behavior and failure modes.
+| Template | Obtain | Purpose | Confidential inputs/config |
+|---|---|---|---|
+| `hello-confidential-workflows` (TS, Go) | `cre init -t hello-confidential-workflows-ts` or `-go` | Four-step TEE handler: secret, in-enclave HTTP, report crossover; defaults to an echo endpoint, so no real key is needed | one API token |
+| `ai-audit-firewall` (TS, Go) | clone only | Fetches contract source/ABI, classifies risk, then allows, blocks, or escalates; ships Solidity consumers | scanner and LLM credentials |
+| `automated-liquidation-protection` (TS, Go) | clone only | Monitors lending health and adds collateral or repays debt under policy | exchange/LLM credentials, health-factor/reserve thresholds, execution preferences |
+| `automated-portfolio-rebalancing` (TS, Go) | clone only | Tracks allocation drift and rebalances toward targets | exchange/LLM credentials, target weights, drift/slippage limits, venue preferences |
 
-## Starter Templates
+Clone-only examples live under `https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows`; each includes project/config/secrets examples, TS and Go workflows, deterministic `mock-server.js`, and tests. Their model stages may be replaced with deterministic rules. The exact hello source path is `/starter-templates/hello-confidential-workflows`; initialize its registered variants with `cre init -t hello-confidential-workflows-ts` or `cre init -t hello-confidential-workflows-go`.
 
-Two of these are registered with the CLI; the other three are project-shaped examples that must be cloned. Verify with `cre templates list --json` before telling a user a template is `cre init`-able.
+## Sources
 
-| Template | How to obtain | Languages | What it does | Confidential inputs |
-|---|---|---|---|---|
-| `hello-confidential-workflows` | `cre init -t hello-confidential-workflows-ts` (or `-go`) | TS, Go | Minimal four-step confidential workflow: TEE handler, in-enclave secret, in-enclave HTTP call, crossover for the report. Defaults to an echo endpoint so no real API key is needed | One API token |
-| `ai-audit-firewall` | Clone only | TS, Go | Pre-execution security firewall: fetches contract source and ABI, runs model-based risk classification, then allows, blocks, or escalates the transaction. Ships Solidity consumers | Scanner and LLM API credentials |
-| `automated-liquidation-protection` | Clone only | TS, Go | Monitors lending-position health and adds collateral or repays debt before liquidation, under policy constraints | Exchange and LLM credentials, health-factor and reserve thresholds, execution preferences |
-| `automated-portfolio-rebalancing` | Clone only | TS, Go | Tracks allocation drift and rebalances toward target weights when thresholds are exceeded | Exchange and LLM credentials, target weights, drift and slippage limits, venue preferences |
-
-The three clone-only templates are absent from `cre templates list` because they carry no `.cre/template.yaml` registration file in `cre-templates`. Obtain them directly:
-
-```bash
-git clone --depth 1 https://github.com/smartcontractkit/cre-templates.git
-cd cre-templates/starter-templates/confidential-workflows/<template-name>
-```
-
-Each is a standalone CRE project with `project.yaml`, `secrets.yaml`, `.env.example`, parallel `-ts` and `-go` workflow directories, a `mock-server.js` giving deterministic local responses, and tests. The usual loop is `bun install`, `cp .env.example .env`, `bun run mock:server`, then `cre workflow simulate ./<workflow-dir> --target=staging-settings`.
-
-Their model-reasoning stages are replaceable with deterministic rule-based logic, which is worth mentioning when a user wants a policy engine rather than an LLM in the loop.
-
-## Official Sources
-
-| Resource | URL |
-|---|---|
-| Concepts: Confidential Workflows | `https://docs.chain.link/cre/concepts/confidential-workflows` |
-| Requesting access | `https://docs.chain.link/cre/account/confidential-workflows-access` |
-| Guide: making a workflow confidential (TS) | `https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-ts` |
-| Guide: making a workflow confidential (Go) | `https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go` |
-| SDK reference: client (TS) | `https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-ts` |
-| SDK reference: client (Go) | `https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-go` |
-| Templates: hello | `https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/hello-confidential-workflows` |
-| Templates: advanced examples | `https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/confidential-workflows` |
+- https://docs.chain.link/cre/concepts/confidential-workflows
+- https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-ts
+- https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-go
