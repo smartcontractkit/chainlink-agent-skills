@@ -1,12 +1,16 @@
 # Chainlink Confidential AI — API Reference
 
-## Base URL
+## Service URL and authentication
 
-```
-https://confidential-ai-dev-preview.cldev.cloud
+Set the service URL in an environment variable before using it in commands or code; never inline the service base:
+
+```bash
+export BASE_URL="https://confidential-ai-dev-preview.cldev.cloud"
 ```
 
-Auth on every request: `Authorization: Bearer $API_KEY`
+Use `${BASE_URL}/v1/...` with `Authorization: Bearer $API_KEY` on every request.
+
+Load `API_KEY` from the environment or an injected secret store. Shell clients must feed the authorization header through standard input, a protected config, or a secret integration so the literal or expanded credential never appears in command-line arguments.
 
 ---
 
@@ -40,7 +44,7 @@ Submit an inference request.
 - `resources` — optional, up to 10 items. Two variants:
   - **Base64 upload**: `filename` + `content_type` + `content_base64`. Use for sensitive documents — never publicly hosted.
   - **URL fetch**: `url` + `method` + optional `headers`. The server fetches it server-side at inference time.
-- `cre_callback` — optional. When the request reaches a terminal state, the server POSTs `{"input": <full status object>}` to the URL once (10 s timeout, no retries, best-effort).
+- `cre_callback` — optional. On terminal state, the server POSTs `{"input": <full status object>}` once (10 s timeout, no retries, best-effort). Its live route must return 2xx within that timeout; keep any tunnel running until terminal status.
 
 **Response: 202 Accepted**
 
@@ -85,6 +89,12 @@ When `status` is `failed`, the `error` field is populated instead of `output`.
 | `failed` | Error — check `error` field |
 
 Poll every 2–5 seconds until `completed` or `failed`.
+
+## Verification Boundary
+
+Completed responses do not include an independently verifiable Chainlink signature or TEE attestation document. A hash computed over `output` or other response fields can support later integrity comparisons, but it is neither an independently verifiable Chainlink signature nor a TEE attestation and does not prove that the response came from an enclave.
+
+To deliver an accepted result to EVM, a CRE workflow validates the terminal response and required output schema, creates a CRE-native report, and sends that report through the Chainlink Forwarder. Failed or non-JSON output must not produce a report. Do not substitute a generic EIP-712 signer; a CRE report supports CRE delivery and does not turn the underlying Attester response into enclave proof.
 
 ---
 
