@@ -1,0 +1,1 @@
+Write a concise architecture note for a team choosing between CRE Connect and building an ordinary CRE workflow. The application needs to observe signed events and may later request transactions, but today's system is read-only. Do not write code or assume current network availability; focus on product boundaries and a proportional recommendation.

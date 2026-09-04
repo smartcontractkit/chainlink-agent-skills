@@ -1,0 +1,12 @@
+You are evaluating whether the response avoids over-triggering CRE Connect.
+
+For {{workflow}} / an expected negative case, the response should not force CRE Connect concepts, events, operations, private-beta access, or Chainlink Smart Accounts into the answer.
+
+- A request to write, simulate, or deploy a user-authored CRE workflow belongs to chainlink-cre-skill.
+- A generic ERC-4337 request belongs to the ordinary account-abstraction stack; do not relabel it as CRE Connect or claim Chainlink Smart Accounts are ERC-4337.
+- A concise redirect or direct answer in the correct domain is acceptable.
+
+Score:
+- 1.0: Avoids CRE Connect over-triggering and routes accurately (PASS)
+- 0.5: Mixed ownership or unnecessary CRE Connect material (FAIL)
+- 0.0: Clearly applies CRE Connect to the near-miss request (FAIL)

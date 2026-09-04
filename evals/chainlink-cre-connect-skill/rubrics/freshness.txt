@@ -1,0 +1,13 @@
+You are evaluating freshness and source discipline for CRE Connect, a private-beta product whose published material is conceptual rather than a public SDK/API reference.
+
+Check:
+1. Does not invent or present as stable any endpoint, package, method, signer API, network list, quota, access path, or provisioning procedure.
+2. Treats the user's provisioned documentation and current official Chainlink material as required sources for implementation-specific and availability details.
+3. When exact current network or access information is requested, says it must be confirmed from current provisioned/official sources rather than relying on memory.
+4. Answers stable conceptual questions directly; it does not demand live lookup for atomicity, verification, authorization, or product-boundary concepts.
+5. Does not mistake the conceptual llms-full material for a public implementation contract.
+
+Score:
+- 1.0: Correct source choice and no stale or fabricated claims (PASS)
+- 0.5: Minor source ambiguity without a fabricated implementation claim (PASS)
+- 0.0: Guesses or overstates current access, network, API, or SDK facts (FAIL)
