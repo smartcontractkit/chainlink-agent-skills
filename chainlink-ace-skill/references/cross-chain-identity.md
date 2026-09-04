@@ -1,135 +1,62 @@
 # Cross-Chain Identity
 
-## Trigger Conditions
+Read for CCIDs; cross-chain identity; KYC/KYB/AML/accreditation; credentials, issuers, registries, sources, data/privacy, expiration/revocation; or `CredentialRegistryIdentityValidatorPolicy`.
 
-Read this file when:
-- The user asks about CCIDs, cross-chain identity, KYC, AML, accreditation, credentials, issuers, or registries
-- The user asks how identities are represented across chains
-- The user asks about credential data, privacy, expiration, or revocation
-- The user asks how `CredentialRegistryIdentityValidatorPolicy` validates accounts
+## Model
 
-## Core Model
-
-Cross-Chain Identity provides a unified identity and credential system for EVM-compatible blockchains. It links one or more addresses to a Cross-Chain Identifier (CCID), then attaches credentials to that CCID.
+Cross-Chain Identity links one or more EVM addresses to a Cross-Chain Identifier (CCID), then credentials to that identifier. Policy Management governs registry administration so issuer authorization can change through policy rather than hardcoded ownership.
 
 | Concept | Meaning |
 | --- | --- |
-| CCID | A `bytes32` identifier for one identity across EVM chains |
-| IdentityRegistry | Maps local wallet addresses to CCIDs |
-| CredentialRegistry | Stores credentials linked to CCIDs |
-| Credential Issuer | Offchain trusted entity that verifies real-world information and writes credentials onchain |
-| Credential Source | Configuration telling validators which identity and credential registries to trust |
-| Identity Validator | Onchain contract that validates whether an account meets credential requirements |
+| CCID | Cross-Chain Identifier: a `bytes32` identity within an application domain, portable across addresses/EVM chains |
+| `IdentityRegistry` | Local mapping; each wallet address maps to exactly one CCID |
+| `CredentialRegistry` | CCID credentials and registration, removal/revocation, renewal, expiration, validation |
+| Credential Issuer | Trusted offchain verifier that writes resulting credentials onchain |
+| Credential Source | Credential type plus trusted IdentityRegistry, CredentialRegistry, and optional Credential Data Validator |
+| Identity Validator | Onchain check that an account meets credential requirements |
 
-Cross-Chain Identity is designed to be governed by Policy Management. Registry administration should be controlled by policies so issuers can be authorized dynamically.
+One CCID may link multiple addresses across chains, avoiding repeated verification. This also creates correlation risk; privacy-sensitive systems can issue multiple CCIDs per actor and keep correlations offchain. A CCID stored in public registries is public, not secret; never treat it as an authentication secret, and it must not contain PII.
 
-## CCIDs
+## Types, Sources, and Data
 
-A CCID is a `bytes32` value representing a user's identity within an application domain. Each chain maintains local address-to-CCID mappings through IdentityRegistry.
-
-One CCID can be linked to multiple addresses across multiple EVM chains. This lets credentials be portable across addresses without re-verification for every chain.
-
-Privacy note: CCID-to-address mappings can create address correlation. For privacy-sensitive use cases, issue multiple CCIDs per actor and maintain correlations offchain.
-
-## Registries
-
-### IdentityRegistry
-
-Maps wallet addresses to CCIDs. Each local address maps to exactly one CCID.
-
-### CredentialRegistry
-
-Stores credentials for CCIDs and manages credential lifecycle operations such as registration, removal, renewal, expiration, and validation.
-
-### Credential Requirements
-
-Applications can define which credentials are required, which sources are trusted, and whether additional credential data validation is needed.
-
-## Credential Type Identifiers
-
-Credential type IDs are `bytes32` values generated from namespaced strings:
+Credential type IDs are `bytes32` hashes of namespaced strings:
 
 ```solidity
 keccak256("namespace.requirement_name")
 ```
 
-Common credential type strings include:
-
-| Identifier string | Purpose |
+| String | Meaning |
 | --- | --- |
-| `common.kyc` | Identity has passed KYC |
-| `common.kyb` | Business identity has passed KYB |
-| `common.aml` | Identity is not flagged by AML requirements |
-| `common.accredited` | Identity is an accredited investor |
+| `common.kyc` | passed KYC |
+| `common.kyb` | business passed KYB |
+| `common.aml` | not flagged by AML requirements |
+| `common.accredited` | accredited investor |
 
-Custom credential types must not use the `common.` prefix.
+Custom types must not use `common.`; for example `keccak256("com.yourapp.level.gold")`.
 
-Example:
+Requirements select credential types, trusted sources, and optional data validation. Different types can use different sources; one type can require one or multiple independent providers. A simple KYC transfer can require `keccak256("common.kyc")` from a trusted IdentityRegistry/CredentialRegistry pair, optionally with a data validator.
 
-```solidity
-keccak256("com.yourapp.level.gold")
-```
+Model KYC, AML, and accreditation as three separate conjunctive (AND) credential requirements, never one combined check: each has its own credential type, its own Credential Source, and its own authorized issuer.
 
-## Credential Sources
+Configure each Credential Source explicitly: credential type, trusted IdentityRegistry, trusted CredentialRegistry, and optional Credential Data Validator. Map the intended subject address from extractor output into the policy parameter; never assume it is the caller or target. Restrict identity mapping, credential issuance, renewal, and revocation to authorized registry writers/issuers with reviewed policy ordering and approval controls.
 
-A Credential Source tells a validator where to check a credential type:
+Credential data must not contain PII: store hashes, pointers, or minimal non-sensitive references. Data Validator contracts handle requirements beyond binary existence; design them defensively so one failed source does not unexpectedly break validation. Cross-Chain Identity validation-interface view functions should not revert for normal failures; return booleans instead of propagating unexpected external-call errors.
 
-- credential type ID
-- IdentityRegistry address
-- CredentialRegistry address
-- optional Credential Data Validator
+For sanctions screening, choose explicitly among a positive “not sanctioned” attestation, a deny credential with inverted/custom negative logic, or an external-list policy for onchain sanctions state.
 
-Different sources can be used for different credential types. Multiple sources can also be configured for the same type, allowing a requirement to demand one or more independent providers.
+## Lifecycle and Runtime
 
-## Credential Data and Validators
+1. A user requests verification; a trusted issuer performs offchain checks.
+2. An authorized identity-registry writer generates a CCID and registers address-to-CCID mappings.
+3. An authorized Credential Issuer writes credentials to CredentialRegistry.
+4. The application protects functions with `CredentialRegistryIdentityValidatorPolicy`.
+5. At runtime, an extractor supplies address parameters; the policy resolves each through IdentityRegistry.
+6. It checks required types across configured Credential Sources and invokes any configured Data Validator.
+7. A failing address rejects; if all pass, return `Continue`.
+8. Credentials may expire, renew, or be removed/revoked; prove that expiry or revocation immediately fails the protected path and audit issuer/revoker changes.
 
-Credential data should not contain PII. Store hashes, pointers, or minimal non-sensitive references.
+Keep real-world verification and PII offchain; store only minimal non-sensitive commitments or references. Treat issuer authorization, revocation, registry administration, parameter mapping, policy order, and address correlation as security controls.
 
-Credential Data Validator contracts can validate credential data when a requirement needs more than binary credential existence. Validator implementations must be defensive and should not let failures in one source break the whole validation model unexpectedly.
+Verify exact contract, interface, or API names against the public `smartcontractkit/chainlink-ace` repository (see Official Sources) before citing them.
 
-Critical repo requirement: view functions in Cross-Chain Identity validation interfaces should not revert under normal failure conditions. They should return boolean results rather than propagating unexpected external-call failures.
-
-## Credential Lifecycle
-
-1. User requests verification from a Credential Issuer.
-2. Credential Issuer performs offchain checks.
-3. Issuer generates a CCID.
-4. Issuer registers address-to-CCID mappings in IdentityRegistry.
-5. Issuer registers credentials in CredentialRegistry.
-6. Application protects functions with `CredentialRegistryIdentityValidatorPolicy`.
-7. At runtime, the policy resolves caller/address parameters to CCIDs and validates required credentials.
-8. Credentials can expire, be renewed, or be removed/revoked.
-
-## Runtime Validation
-
-When a protected function runs:
-
-1. The extractor supplies address parameters to `CredentialRegistryIdentityValidatorPolicy`.
-2. The policy resolves each address to a CCID through IdentityRegistry.
-3. The policy checks required credential types across configured Credential Sources.
-4. If a Credential Data Validator is configured, it validates the credential data.
-5. If an address fails requirements, the policy rejects.
-6. If all addresses pass, the policy returns `Continue`.
-
-## Designing Requirements
-
-For simple KYC-gated transfers:
-
-| Requirement field | Example |
-| --- | --- |
-| credential type | `keccak256("common.kyc")` |
-| source | trusted IdentityRegistry + CredentialRegistry pair |
-| validation | existence, optionally data validator |
-
-For sanctions screening, choose a clear model:
-- positive attestation such as "not sanctioned"
-- deny credential plus inverted/negative logic in a custom requirement
-- external list policy if sanctions state lives in another onchain source
-
-## Privacy Rules
-
-1. Never store PII onchain.
-2. Credential data should be a hash, pointer, minimal reference, or non-sensitive classification.
-3. Explain CCID address correlation when privacy matters.
-4. Keep real-world verification offchain.
-5. Treat Credential Issuer trust and revocation processes as part of the security model.
+OSS Cross-Chain Identity contracts are self-deployed and independently operated; they do not imply managed Platform visibility or capabilities. For managed use, cite the live ACE Beta scope and its curated Credential Data Validator boundary. For production OSS use, review the current repository license, obtain deployment/governance approval, and require legal/compliance review.

@@ -1,137 +1,59 @@
 # Onchain Contracts Path
 
-## Trigger Conditions
+Read for the `smartcontractkit/chainlink-ace` repo or `@chainlink/ace`; direct use of audited public contracts; self-deployment; custom policy/extractor/mapper work; Foundry/package layout; licensing; or upgrades.
 
-Read this file when:
-- The user mentions `smartcontractkit/chainlink-ace`, the Chainlink ACE GitHub repo, or `@chainlink/ace`
-- The user wants to use audited public contracts directly
-- The user wants to self-deploy PolicyEngine, policies, extractors, identity registries, or token examples
-- The user wants custom policies, custom extractors, custom mappers, or direct contract integration
-- The user wants Foundry commands, package layout, licensing, or upgrade guidance
-
-## Path Summary
-
-Use this path when the user wants to build directly with smart contracts from the public repository.
+## Scope
 
 | Dimension | Public ACE core contracts |
 | --- | --- |
-| Source | `https://github.com/smartcontractkit/chainlink-ace` |
-| Package | `@chainlink/ace` |
-| License | BUSL-1.1, change license MIT on the configured change date |
-| Tooling | Foundry, pnpm, Solidity |
-| Network scope | EVM contracts; users own deployment decisions |
-| Production use | Contact Chainlink for production/commercial licensing |
-| Management model | User deploys/configures contracts directly |
+| Source/package | `https://github.com/smartcontractkit/chainlink-ace`; `@chainlink/ace` |
+| License | Cite the current repository `LICENSE` and `chainlink-ace-License-grants`; do not assert an MIT flip date; production/commercial use requires Chainlink contact and counsel review |
+| Tooling/network | Foundry, pnpm, Solidity; EVM, user-owned deployment decisions |
+| Management | Users directly deploy/configure custom or built-in policies, extractors, mappers, identity contracts, and token integrations |
 
-The public contracts support custom policies, extractors, mappers, and self-deployment, subject to license, audit, and engineering responsibility.
+This path carries the user's licensing, audit, engineering, and operational responsibility.
 
-## Repository Structure
+## Repository Pointers
 
-Top-level resources:
-- `README.md` - product and repository overview
-- `getting_started/GETTING_STARTED.md` - basic PolicyProtected + PolicyEngine integration
-- `getting_started/advanced/GETTING_STARTED_ADVANCED.md` - tokenized-fund example with identity/credentials
-- `UPGRADE_GUIDE.md` - upgrading existing proxy contracts to ACE
-- `Glossary.md` - terms
-- `LICENSE` - BUSL-1.1 license
-- `chainlink-ace-License-grants` - additional use grant file
-- `foundry.toml`, `remappings.txt`, `package.json` - Foundry/package configuration
+- `README.md`: overview; `getting_started/GETTING_STARTED.md`: basic vault with `PolicyProtected`, PolicyEngine, and `PausePolicy`.
+- `getting_started/advanced/GETTING_STARTED_ADVANCED.md`: tokenized fund with identity/credentials.
+- `UPGRADE_GUIDE.md`: upgrade an existing proxy; `Glossary.md`: terms.
+- `LICENSE` and `chainlink-ace-License-grants`: license terms/grants.
+- `foundry.toml`, `remappings.txt`, `package.json`: build/package configuration.
+- `packages/policy-management`: engine, protected bases, policies, extractors, mappers, docs/tests.
+- `packages/cross-chain-identity`: CCIDs, identity/credential registries, validator policy, docs/tests.
+- `packages/tokens`: ERC-20 and ERC-3643 compliance examples; `packages/vendor`: vendored dependencies.
 
-Packages:
+For the current `pnpm build`, `test`, `fmt`, `fmt:check`, `lint`, and `deploy:token:erc20`, `deploy:token:erc3643`, `deploy:token:simple` command bodies, fetch live `package.json` through [official-sources.md](official-sources.md); do not copy a stale scripts block.
 
-| Path | Purpose |
-| --- | --- |
-| `packages/policy-management` | PolicyEngine, PolicyProtected, policies, extractors, mappers, docs, tests |
-| `packages/cross-chain-identity` | CCID, identity registry, credential registry, validator policy, docs, tests |
-| `packages/tokens` | Example ERC-20 and ERC-3643 compliance token integrations |
-| `packages/vendor` | Vendored dependencies |
+Before giving proxy or upgrade instructions, establish that the target is actually upgradeable and identify its proxy pattern. Apply `UPGRADE_GUIDE.md`, reinitializers, and `upgradeToAndCall` only to a confirmed compatible proxy; otherwise give the non-upgradeable integration choices and never invent an upgrade path.
 
-## Package Scripts
+## New Integration
 
-The repo package metadata identifies:
+In an existing Foundry project, run `forge install smartcontractkit/chainlink-ace@<reviewed-commit>`; keep that commit pinned, preserve its required remappings, and do not make a separate clone/build the primary path.
 
-```json
-{
-  "name": "@chainlink/ace",
-  "license": "BUSL-1.1",
-  "scripts": {
-    "build": "forge build --sizes",
-    "test": "forge test",
-    "fmt": "forge fmt",
-    "fmt:check": "forge fmt --check",
-    "lint": "solhint packages/**/*.sol",
-    "deploy:token:erc20": "forge script ./script/DeployComplianceTokenERC20.s.sol --via-ir --broadcast --rpc-url ${RPC_URL:=local}",
-    "deploy:token:erc3643": "forge script ./script/DeployComplianceTokenERC3643.s.sol --via-ir --broadcast --rpc-url ${RPC_URL:=local}",
-    "deploy:token:simple": "forge script ./script/DeploySimpleComplianceToken.s.sol --via-ir --broadcast --rpc-url ${RPC_URL:=local}"
-  }
-}
-```
-
-## Integration Pattern
-
-For a new contract:
-
-1. Inherit from `PolicyProtected`.
-2. Add `runPolicy` or `runPolicyWithContext` to protected functions.
-3. Deploy and initialize `PolicyEngine` behind a proxy.
-4. Deploy the application contract behind a proxy and connect it to the PolicyEngine.
+1. Inherit `PolicyProtected`.
+2. Protect functions with `runPolicy` or `runPolicyWithContext`.
+3. Deploy/initialize PolicyEngine behind a proxy.
+4. Deploy the application behind a proxy and connect its engine.
 5. Deploy policies behind proxies where required.
-6. Attach policies to specific function selectors through `policyEngine.addPolicy(...)`.
+6. Attach them to selectors with `policyEngine.addPolicy(...)`.
 
-The getting-started guide uses a simple vault and `PausePolicy`; token builders should inspect the token examples instead of reinventing token logic.
+Use the token examples rather than recreating regulated-token behavior. Direct users can deploy on EVM, use/write policies, extractors, and mappers, integrate custom dApps/vaults/DEXs/lending/tokens, and use Cross-Chain Identity.
 
-## Upgrade Pattern
+Policy rejection is a revert with the `PolicyRejected` error, never a returned `PolicyResult`. `PolicyResult` contains only `None`, `Allowed`, and `Continue`; integrations must handle a rejection as a reverted/error path.
 
-For an existing deployed contract, the upstream upgrade guide assumes the contract is upgradeable.
+## Existing Contracts
 
-Recommended approach:
-- Extend `PolicyProtectedUpgradeable`.
-- Add a one-time `migrateToACE(address policyEngine)` reinitializer.
-- Add `runPolicy` to functions that need policy checks.
-- Deploy ACE infrastructure.
-- Upgrade the proxy and call the migration.
+For an existing upgradeable contract, extend `PolicyProtectedUpgradeable` and call the pinned commit's exact `packages/policy-management/src/core` init from the reinitializer (e.g. `__PolicyProtected_init(policyEngine)`) — never leave it empty or guess the name. Protect every privileged entry point compliance rules cover, not only `transfer`/`transferFrom` — also `mint`, `burn`, forced-transfer, freeze/unfreeze, and recovery — each with its own extractor; never nest `runPolicy` on an outer call and the invoked function, which double-runs the policy. Restrict the reinitializer to owner/admin and call it atomically via `upgradeToAndCall` (see Production, Upgrade, and Security below); test storage-layout compatibility, preserved balances/allowances, `transferFrom` `from`/`to` extraction, single-run execution, ordering, and rollback.
 
-Alternative approach:
-- Implement `IPolicyProtected` directly when bytecode size or custom behavior requires it.
-- This requires custom storage, context handling, `policyEngine.run()` calls, attach/detach support, and ERC-165 support.
+Implement `IPolicyProtected` directly only for bytecode/custom constraints; then own storage, context handling/clearing, `policyEngine.run()`, attach/detach, and ERC-165. For non-upgradeable contracts, discuss wrappers, migration, or protection points and tradeoffs with Chainlink for production.
 
-Non-upgradeable contracts need alternatives such as wrapper contracts, contract migration, or protection at integration points. These involve tradeoffs and should be discussed with Chainlink for production use.
+## Production, Upgrade, and Security
 
-## Capabilities
-
-Direct contract users can:
-- Use pre-built policies
-- Build custom policies
-- Use or write extractors and mappers
-- Deploy on EVM networks
-- Integrate with custom dApps, vaults, DEXs, lending protocols, or tokens
-- Use Cross-Chain Identity contracts directly
-- Use reference ERC-20 and ERC-3643 token implementations
-
-## Licensing Guidance
-
-The repository license is BUSL-1.1. It grants copying, modification, derivative works, redistribution, and non-production use under the license terms, with a configured change date and change license. For production use, users should contact Chainlink for a commercial/prod license.
-
-Do not provide legal advice. Recommend counsel review and Chainlink contact for production licensing.
-
-## Security Guidance
-
-1. Treat PolicyEngine administration as critical. Unauthorized policy changes can bypass compliance controls.
-2. Use pre-built policies where possible.
-3. Custom policies, extractors, and mappers require careful review and testing.
-4. Review policy ordering because `Allowed` skips later policies.
-5. Review `postRun()` logic carefully because it can mutate state after checks pass.
-6. Ensure extractors parse calldata honestly; bad extractors can feed policies false data.
-7. For upgrades, verify storage layout and bytecode size.
-8. Run repo tests and integration tests against the specific policy chain.
-
-## Source URLs
-
-- Repo: `https://github.com/smartcontractkit/chainlink-ace`
-- README: `https://github.com/smartcontractkit/chainlink-ace/blob/main/README.md`
-- Getting started: `https://github.com/smartcontractkit/chainlink-ace/blob/main/getting_started/GETTING_STARTED.md`
-- Advanced getting started: `https://github.com/smartcontractkit/chainlink-ace/blob/main/getting_started/advanced/GETTING_STARTED_ADVANCED.md`
-- Upgrade guide: `https://github.com/smartcontractkit/chainlink-ace/blob/main/UPGRADE_GUIDE.md`
-- Policy Management: `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management`
-- Cross-Chain Identity: `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity`
-- Tokens: `https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens`
+- Cite the current repository `LICENSE` and `chainlink-ace-License-grants`; do not infer specific permissions or an MIT flip date. Production/commercial use requires Chainlink contact and counsel review.
+- Treat PolicyEngine administration as critical; unauthorized changes can bypass controls. Prefer built-ins; audit/test custom policies, extractors, mappers, and complete chains.
+- Review ordering because `Allowed` skips later checks; audit state-mutating `postRun()`; verify extractors decode honestly.
+- Never put PII or raw identity evidence onchain; use minimal non-sensitive commitments or references and obtain legal/compliance review for regulated controls.
+- Before upgrades verify proxy compatibility, storage layout, bytecode size, access-restricted reinitializer executed via `upgradeToAndCall`, and preserved state.
+- Run repository and integration tests against the actual chain/configuration before production.
