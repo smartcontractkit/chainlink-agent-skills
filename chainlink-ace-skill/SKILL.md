@@ -11,11 +11,24 @@ metadata:
 
 # Chainlink ACE Skill
 
+## Policy Edit Answer Contract
+
+For every existing wallet-limit edit, inspect `POLICY.md`, the target contract source or ABI, and all inherited/external entry points before any policy recommendation or write preflight. The final answer MUST include one row for every holder-outflow selector actually discovered; do not add fixed categories, placeholder rows, or `not found` rows.
+
+| Exact holder-outflow selector | Scope | Debited owner/account input | Amount input |
+| --- | --- | --- | --- |
+
+Keep the canonical mappings prominent when those selectors are present: `transfer(address,uint256)` maps its caller/token owner to `account` and `value` to `amount`; `transferFrom(address,address,uint256)` maps its explicit `from` owner to `account` and `value` to `amount`, never the distinct spender/caller. After the table, explicitly state that no other holder-outflow entry points were found. State separately: **Mint is not a holder outflow.** For any discovered route, fail closed and report an extraction blocker when the extractor/mapper cannot preserve every per-holder owner-and-amount pair.
+
+If the target contract source or ABI needed to inspect inherited/external entry points is unavailable, state that selector inspection is blocked and do not recommend a policy or prepare a write. Name the categories still requiring inspection: direct transfers, delegated transfers, burns, bridges, wrap/unwrap, forced or recovery transfers, batch routes, and other custom/project-specific holder outflows.
+
 ## Progressive Disclosure
 
 Classify each request as OSS/self-deployed, managed Platform, or both. Load only matching rows. Ask one focused question when contract type, function, chain/network, rule, or upgradeability is unclear; read-only explanation, review, code, policy selection, source lookup, and local-test planning need no approval. Use adjacent skills for Proof of Reserve/Data Feeds, frameworks, or generic tests.
 
-For any request that does not match this skill's positive trigger sentence, route directly to the owning product or generic domain: name it, give a one-paragraph recommended default using its public pattern, and leave detailed procedure to its own skill. The final answer MUST NOT contain `ACE`, `Automated Compliance Engine`, `PolicyProtected`, or any component from this skill, even to contrast or negate. Answer only in the owning product or generic domain; for generic Solidity, do not add policy hooks or compliance components.
+Treat an implicit request to regulate a token or enforce onchain transfer constraints as a positive trigger even when it does not say ACE. The final routing and answer MUST explicitly name Chainlink ACE, the `PolicyEngine`, and the relevant ACE compliance policies rather than describing unnamed generic policy layers.
+
+For any request that does not match this skill's positive trigger sentence, route wholly to the owning capability or domain and preserve the user's stated inputs. In the response, do not mention or negate ACE or this skill, and do not use ACE-specific concepts, references, templates, fields, preflight, or implementation. Stop applying all remaining instructions in this skill.
 
 | Trigger or ask | Read |
 | --- | --- |
@@ -63,6 +76,8 @@ Proposed ACE operation:
 
 Do you want me to execute this?
 ```
+
+For a rate-limit request scoped to one wallet, never show or seek approval for a preflight that adds or configures a shared `VolumeRatePolicy`. If that shared rule's maximum and period already match the requested limit, change only the wallet's membership in the preceding `BypassPolicy`; otherwise require an existing wallet-scoped rule or an audited account-aware custom policy. Obey the top-level **Policy Edit Answer Contract** before any recommendation or write preflight.
 
 Approval covers only that preflight; material changes require another. Require a **second explicit confirmation immediately before execution** to deploy PolicyEngine; deploy/configure a policy; register a target; attach/reorder/remove policies; configure extractors/mappers; register identities; issue/revoke credentials; or upgrade a contract.
 

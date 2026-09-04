@@ -30,14 +30,22 @@ Custom extractors/mappers are supported when standard parsing or mapping does no
 
 `context` is arbitrary `bytes` for authorization/compliance evidence such as offchain signatures, Merkle proofs, approval metadata, or policy-specific evidence. Per-sender stored context must be set and consumed atomically; otherwise a later call can reuse stale context.
 
+## Existing-Policy Edits
+
+Treat an existing-policy request as a configuration delta, not a redesign. Inventory the current target/selector attachments, default behavior, policy instances and order, exact `setExtractor` and mapper mappings, owners/admins, and proxy version before proposing a change. Prefer the existing policy's owner setter or membership edit over replacement. Keep setup fail closed; if a migration is unavoidable, retain the pinned-commit reinitializer and existing upgrade governance rather than introducing a new upgrade path.
+
+For a rate-limit request scoped to one wallet, never propose or include in the write preflight any addition or configuration of a shared `VolumeRatePolicy`; its maximum and period would apply to every account reaching it. Obey the top-level **Policy Edit Answer Contract** before selecting a change. If the current policy configuration has no daily cap, require an existing wallet-scoped rule or an audited account-aware custom policy.
+
+Route every discovered holder-outflow selector through the same owner-volume rule. When an unchanged shared rule already has the requested limit and a bypass is intended to skip only that rate limit, preserve `PausePolicy` → `BypassPolicy` → `VolumeRatePolicy`: pause cannot be bypassed, listed accounts return `Allowed` before the limit, and all others continue to the unchanged shared limit.
+
 ## Ordering and Administration
 
 Policies execute in attachment order. PolicyEngine provides `addPolicy()` (append), `addPolicyAt()` (insert), `removePolicy()`, and `getPolicies()`; reorder by remove then add at the desired position.
 
 Default order:
-1. hard restrictions: pause, denylist, sanctions, credentials;
-2. business limits: amount/volume/time/reserve;
-3. permissive bypasses, only when intentionally skipping every subsequent check.
+1. hard restrictions and business limits a bypass must never skip;
+2. a permissive bypass, only when intentional;
+3. exactly the amount/volume/time/reserve checks that listed accounts may skip.
 
 Restrict `addPolicy`, `removePolicy`, `setExtractor`, `setPolicyMapper`, and default-behavior changes; production systems should consider timelocks.
 
