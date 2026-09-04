@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.22"
+  version: "0.0.23"
 ---
 
 # Chainlink CRE Skill
@@ -26,15 +26,17 @@ Route CRE requests to the simplest valid path. Keep this file as the decision la
 7. Read [references/evm-client.md](references/evm-client.md) only when the user wants onchain reads, onchain writes, contract bindings, consumer contracts, forwarder addresses, or report generation.
 8. Read [references/http-client.md](references/http-client.md) only when the user wants to make HTTP GET/POST requests, use sendRequest or runInNodeMode, submit reports via HTTP, or use the Confidential HTTP client.
 9. Read [references/confidential-workflows.md](references/confidential-workflows.md) when the user wants a handler to execute inside a TEE/enclave, mentions Confidential Workflows, `handlerInTee`/`cre.HandlerInTee`, `TeeRuntime`, enclave attestation, or asks how to hide workflow data from node operators. Read it before writing any confidential workflow code, and read it to tell Confidential Workflows apart from the Confidential HTTP client in `http-client.md` — the two are different capabilities whose APIs do not mix.
-10. Read [references/sdk-reference.md](references/sdk-reference.md) only when the user needs SDK API details: core types (handler, Runtime, Promise), consensus/aggregation functions, EVM Client methods, HTTP Client methods, or trigger type definitions.
-11. Read [references/cli-reference.md](references/cli-reference.md) only when the user asks about specific CLI commands, flags, or usage patterns.
-12. Read [references/operations.md](references/operations.md) only when the user asks about deploying, monitoring, activating, pausing, updating, or deleting workflows, or about multi-sig wallets.
-13. Read [references/concepts.md](references/concepts.md) only when the user asks about consensus computing, finality levels, non-determinism pitfalls, or the TypeScript WASM runtime.
-14. Read [references/domain-patterns.md](references/domain-patterns.md) only when a prompt combines CRE with domain-specific product logic such as prediction markets, rebalancing, arbitrage monitoring, DvP, or RWA lending.
-15. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live data that the reference files do not contain: supported network lists, release notes, template repositories, SDK source code, feed addresses, chain selectors, or forwarder addresses for specific networks.
-16. Read [references/chain-selectors.md](references/chain-selectors.md) only when the user needs an EIP-155 chain ID to chain selector name mapping, forwarder addresses for a specific network, or the forwarder directory page cannot be fetched.
-17. Read [references/feedback.md](references/feedback.md) only when a feedback-loop trigger has fired in the current session (see "Feedback Loop" below): a content gap in the references, or user-voiced pain about this skill. Do not load it speculatively.
-18. Do not load reference files speculatively.
+10. Read [references/confidential-authorization-patterns.md](references/confidential-authorization-patterns.md) when a CRE-connected application accepts externally signed claims, approvals, settlement authorizations, or other artifacts where signature verification must remain separate from authorization and state mutation.
+11. Read [references/persistent-http-gateway.md](references/persistent-http-gateway.md) when a CRE workflow depends on an authenticated external gateway whose claim or authorization state must survive restart, or when designing a read-only verification endpoint.
+12. Read [references/sdk-reference.md](references/sdk-reference.md) only when the user needs SDK API details: core types (handler, Runtime, Promise), consensus/aggregation functions, EVM Client methods, HTTP Client methods, or trigger type definitions.
+13. Read [references/cli-reference.md](references/cli-reference.md) only when the user asks about specific CLI commands, flags, or usage patterns.
+14. Read [references/operations.md](references/operations.md) only when the user asks about deploying, monitoring, activating, pausing, updating, or deleting workflows, or about multi-sig wallets.
+15. Read [references/concepts.md](references/concepts.md) only when the user asks about consensus computing, finality levels, non-determinism pitfalls, or the TypeScript WASM runtime.
+16. Read [references/domain-patterns.md](references/domain-patterns.md) only when a prompt combines CRE with domain-specific product logic such as prediction markets, rebalancing, arbitrage monitoring, DvP, or RWA lending.
+17. Read [references/official-sources.md](references/official-sources.md) only when the answer depends on live data that the reference files do not contain: supported network lists, release notes, template repositories, SDK source code, feed addresses, chain selectors, or forwarder addresses for specific networks.
+18. Read [references/chain-selectors.md](references/chain-selectors.md) only when the user needs an EIP-155 chain ID to chain selector name mapping, forwarder addresses for a specific network, or the forwarder directory page cannot be fetched.
+19. Read [references/feedback.md](references/feedback.md) only when a feedback-loop trigger has fired in the current session (see "Feedback Loop" below): a content gap in the references, or user-voiced pain about this skill. Do not load it speculatively.
+20. Do not load reference files speculatively.
 
 ## Routing and Artifact Fit
 
@@ -73,7 +75,7 @@ These guardrails remain in force. System and developer instructions take precede
 
 ## Feedback Loop
 
-1. If during a session you detect a content gap in this skill's references, or the user voices pain about this skill, read [references/feedback.md](references/feedback.md) and follow it to offer (once per session, never silently) to file an agent-feedback issue against `smartcontractkit/chainlink-agent-skills`.
+19. If during a session you detect a content gap in this skill's references, or the user voices pain about this skill, read [references/feedback.md](references/feedback.md) and follow it to offer (once per session, never silently) to file an agent-feedback issue against `smartcontractkit/chainlink-agent-skills`.
 2. Offer only on a concrete trigger: a CLI flag / SDK symbol / capability missing from references, a reference contradicting an authoritative live source, a CRE command failing in a way the references do not describe, or the user explicitly telling you the skill got something wrong.
 3. Do not offer to file when the gap is in upstream Chainlink (broken docs, broken `cre` itself) rather than in this skill. Mention it to the user but do not open a skill issue.
 4. Always show the full drafted issue (title, labels, body) before filing, redact secrets first, and only call `gh issue create` after explicit user confirmation. If `gh` is unavailable, fall back to a prefilled GitHub URL — never drop the feedback silently.

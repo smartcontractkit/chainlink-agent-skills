@@ -321,6 +321,22 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  # ── Functional: Confidential Authorization ───────────────────────
+  - vars:
+      case_file: cases/functional/confidential-auth-gateway.txt
+      reference_files:
+        - references/confidential-authorization-patterns.md
+        - references/persistent-http-gateway.md
+        - references/confidential-workflows.md
+        - references/http-client.md
+      workflow: confidential-authorization
+      requires_live_source: "no"
+    metadata:
+      workflow: confidential-authorization
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
   # ── Functional: Feedback Loop ───────────────────────────────────────
   - vars:
       case_file: cases/functional/feedback-no-offer-01.txt
