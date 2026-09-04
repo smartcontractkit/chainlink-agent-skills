@@ -42,8 +42,15 @@ contract DataStreamsVerifier {
     using SafeERC20 for IERC20;
     error Unauthorized();
     error InvalidAddress();
+    error MalformedReport();
     error UnsupportedReportVersion(uint16 version);
-    error StaleReport(uint32 expiresAt);
+    error UnexpectedFeed(bytes32 actualFeedId);
+    error ReportNotYetValid(uint32 validFromTimestamp);
+    error FutureReport(uint32 observationsTimestamp);
+    error StaleReport(uint32 observationsTimestamp);
+    error ExpiredReport(uint32 expiresAt);
+    error Replay(uint32 observationsTimestamp, uint32 lastObservationsTimestamp);
+    error InvalidPriceRange(int192 bid, int192 price, int192 ask);
 
     struct ReportV3 {
         bytes32 feedId;
@@ -59,18 +66,24 @@ contract DataStreamsVerifier {
 
     IVerifierProxy public immutable verifierProxy;
     address public immutable authorizedUpdater;
+    bytes32 public immutable expectedFeedId;
+    uint32 public immutable maxReportAge;
+    uint32 public lastObservationsTimestamp;
     int192 public lastPrice;
 
-    constructor(address proxy, address updater) {
+    constructor(address proxy, address updater, bytes32 feedId, uint32 reportMaxAge) {
         if (proxy == address(0) || proxy.code.length == 0 ||
             updater == address(0)) revert InvalidAddress();
         verifierProxy = IVerifierProxy(proxy);
         authorizedUpdater = updater;
+        expectedFeedId = feedId;
+        maxReportAge = reportMaxAge;
     }
 
     function verifyV3(bytes calldata fullReport) external returns (ReportV3 memory report) {
         if (msg.sender != authorizedUpdater) revert Unauthorized();
         (, bytes memory reportData) = abi.decode(fullReport, (bytes32[3], bytes));
+        if (reportData.length < 2) revert MalformedReport();
         uint16 version = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
         if (version != 3) revert UnsupportedReportVersion(version);
 
@@ -87,13 +100,49 @@ contract DataStreamsVerifier {
 
         bytes memory verified = verifierProxy.verify(fullReport, parameterPayload);
         report = abi.decode(verified, (ReportV3));
-        if (report.expiresAt < block.timestamp) revert StaleReport(report.expiresAt);
+
+        uint256 timestamp = block.timestamp;
+        if (report.feedId != expectedFeedId) revert UnexpectedFeed(report.feedId);
+        if (report.validFromTimestamp > timestamp) {
+            revert ReportNotYetValid(report.validFromTimestamp);
+        }
+        if (report.observationsTimestamp > timestamp) {
+            revert FutureReport(report.observationsTimestamp);
+        }
+        if (uint256(report.observationsTimestamp) + maxReportAge < timestamp) {
+            revert StaleReport(report.observationsTimestamp);
+        }
+        if (report.expiresAt < timestamp) revert ExpiredReport(report.expiresAt);
+        if (report.observationsTimestamp <= lastObservationsTimestamp) {
+            revert Replay(report.observationsTimestamp, lastObservationsTimestamp);
+        }
+        if (report.bid > report.price || report.price > report.ask) {
+            revert InvalidPriceRange(report.bid, report.price, report.ask);
+        }
+
+        // Commit replay protection before any application-specific external interaction.
+        lastObservationsTimestamp = report.observationsTimestamp;
         lastPrice = report.price;
     }
 }
 ```
 
-`fullReport` is the complete Streams Direct payload. A zero fee manager requires empty `parameterPayload`; otherwise quote/approve LINK as shown. Stateful consumers must bind the feed and reject reports that are not yet valid, future-dated, over-age, expired, or non-increasing; enforce v3 bid/price/ask ordering. Storing is a write under [SKILL.md](../SKILL.md).
+`fullReport` is the complete Streams Direct payload. A zero fee manager requires empty `parameterPayload`; otherwise quote/approve LINK as shown. Set `expectedFeedId` and `maxReportAge` from application policy at deployment. The canonical consumer rejects a report until `validFromTimestamp`, rejects future or over-age observations, treats `expiresAt < block.timestamp` as expired, and accepts observation timestamps only when they strictly increase. It commits `lastObservationsTimestamp` after every validation and before any application-specific external interaction; do not move that update later when extending the consumer. For another schema, retain the same feed, time, replay, and schema-specific risk checks. Storing is a write under [SKILL.md](../SKILL.md).
+
+### Required compile and guard tests
+
+For a complete latest-report dashboard/service that asks for verification status, emitting only an `unverified` label is incomplete: include the local canonical verifier and focused mock test. Missing live network or verifier values must remain explicit configuration/constructor placeholders and must not block writing or compiling those local files.
+
+Write the canonical contract and focused test as the smallest complete runnable files in the generated project, then compile them against the project's installed Chainlink Contracts and OpenZeppelin versions; do not leave pseudocode imports, pasted-only excerpts, or undeclared test paths. Construct the contract with `(verifierProxy, authorizedUpdater, expectedFeedId, maxReportAge)`. Use a local verifier stub that returns ABI-encoded `ReportV3` values for guard tests, while keeping the Chainlink Local fee-path cases below.
+
+Run one focused suite with the project's runner on a local, in-process network only: `forge build && forge test --match-contract DataStreamsVerifierTest` or `npx hardhat compile && npx hardhat test --network hardhat test/DataStreamsVerifier.test.ts`. The suite must prove:
+
+- a fresh, currently valid report for `expectedFeedId` succeeds and advances both stored fields;
+- an expired report and an observation older than `maxReportAge` revert; `expiresAt == block.timestamp` and `observationsTimestamp + maxReportAge == block.timestamp` remain valid, while each one-second-older case reverts;
+- a future `validFromTimestamp`, a future `observationsTimestamp`, and a different `feedId` each revert;
+- replaying the accepted report or submitting an older observation timestamp reverts, and rejected calls leave `lastObservationsTimestamp` and `lastPrice` unchanged;
+- `bid <= price <= ask`, the v3 version check, and ABI decoding remain enforced; and
+- both zero-fee-manager and LINK-fee paths still pass the exact payload and expected `parameterPayload` to `verify`.
 
 ## Chainlink Local Simulator
 

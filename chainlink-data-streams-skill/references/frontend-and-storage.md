@@ -154,6 +154,142 @@ Reject alternate or nested response envelopes unless current official docs state
 
 Parse and validate complete streaming JSON messages, then project trades from `f/i/fid/p/t/s` to semantic `{type, symbol, feedId, price, timestamp, size}` objects and heartbeat messages from upstream `{heartbeat}` to semantic `{type:"heartbeat", timestamp}` objects before sending them to the browser; never relay raw upstream stream JSON or chunks. Split and remove complete newline-delimited frames before limits: enforce the complete-frame maximum on each frame independently, then bound only the residual partial buffer, so multiple valid coalesced frames never fail an aggregate chunk/buffer limit. Treat malformed/oversized frames and stream decode/read errors as retryable transport failures under the same nonresetting reconnect-attempt and elapsed-time budgets as EOF/timeouts; only authentication and unsubscribe bypass reconnect, and budget exhaustion still fails closed. Treat the first upstream stream connection and every reconnect while subscribers remain as one subscriber-backed stream session. Initialize `let authRetriesUsed = 0` once when that session starts and reset it only after the session ends, never on reconnect. Implement the only auth gate as `async function reauthorizeOnce(retry) { if (authRetriesUsed >= 1) throw terminalAuthError; authRetriesUsed += 1; await authorize(); return retry(); }`: the counter increments before requesting a token, and the interrupted request runs exactly once. Every reactive `401`, proactive JWT-expiry refresh, and reconnect that needs reauthorization must call this same gate; do not add a separate `getValidToken` refresh path that can reauthorize outside it. Terminal auth errors must exit the upstream loop and bypass any generic transport reconnect catch. Keep this auth budget separate from the transport reconnect attempt cap and total-time budget below. Give each upstream stream an `AbortController`, pass its signal to `fetch`, and abort on no-message timeout or unsubscribe before any reconnect. While subscribers remain, reconnect after a bounded delay only within both a configurable attempt cap and total-time budget; stop when either is exhausted, then fail closed instead of looping forever. Set the configurable watchdog timeout from the current, reverified heartbeat cadence. Complete JavaScript/TypeScript answers must declare required dependencies and include a valid build plus run command or a declared runner/start command; never instruct plain `node` to execute a TypeScript file.
 
+## Latest-Report Dashboards
+
+The backend endpoint must coalesce concurrent identical latest-report fetches with a keyed single-flight mechanism: every caller awaits the same in-flight promise/request, and the entry is removed after it settles so later refreshes can fetch again.
+
+Any complete latest-report dashboard that asks for verification status must also follow [onchain verification](onchain-verification.md) and include its local canonical verifier and focused mock test; reporting only an `unverified` label is incomplete.
+
+Retry behavior must be an allowlist over a closed typed failure contract (use the target language's equivalent of this discriminated union):
+
+```ts
+type UpstreamFailure =
+  | { kind: "http"; status: number; retryAfterMs?: number }
+  | { kind: "transport"; cause: unknown }
+  | {
+      kind:
+        | "auth"
+        | "cancelled"
+        | "configuration"
+        | "decode"
+        | "schema"
+        | "validation"
+        | "unknown";
+      cause: unknown;
+    };
+
+function isRetryable(failure: UpstreamFailure): boolean {
+  switch (failure.kind) {
+    case "transport":
+      return true;
+    case "http":
+      return (
+        failure.status === 429 ||
+        (failure.status >= 500 && failure.status <= 599)
+      );
+    default:
+      return false;
+  }
+}
+```
+
+Only the `try/catch` immediately around a raw SDK/fetch transport call may construct `kind: "transport"` without inspecting the error. Before wrapping a rejected raw call as transport, classify caller cancellation from its aborted signal or the platform/SDK's documented `AbortError`, and classify configuration failures only through a dedicated configuration error type or explicit validator result; both are non-retryable. A plain `TypeError` is not validated configuration evidence, so fetch rejecting with `TypeError("fetch failed")` remains a transport failure. A higher-level SDK call that can also throw HTTP, authentication, JSON, schema, or report-validation errors requires the typed adapter below rather than a blanket transport catch. Outside these narrow boundaries, an unknown/untyped `Error`, a missing `status`, `error instanceof Error`, loose error-message matching, or an arbitrary thrown value is never evidence of a network failure. HTTP authentication/authorization failures and every other `4xx` except `429` are non-retryable.
+
+```ts
+async function fetchAndValidateReport(
+  url: string,
+  signal?: AbortSignal,
+): Promise<Report> {
+  let response: Response;
+  try {
+    response = await rawFetch(url, { signal });
+  } catch (cause) {
+    if (
+      signal?.aborted ||
+      (cause instanceof DOMException && cause.name === "AbortError")
+    ) {
+      throw { kind: "cancelled", cause } satisfies UpstreamFailure;
+    }
+    if (isValidatedConfigurationError(cause)) {
+      throw { kind: "configuration", cause } satisfies UpstreamFailure;
+    }
+    throw { kind: "transport", cause } satisfies UpstreamFailure;
+  }
+
+  if (!response.ok) throw classifyHttp(response);
+  const json: unknown = await response.json();
+  return validateReport(json);
+}
+```
+
+Treat `response.json()` and every SDK-decoded payload as `unknown` on entry. Pass it through explicit schema validation or type guards before use; never convert it to an application type with a direct cast or an `as unknown as Report` assertion.
+
+For an official high-level SDK, import its exact exported error classes and documented status fields in an adapter like this (rename the example classes to the SDK's names; do not replace them with message heuristics):
+
+```ts
+const SDK_TRANSPORT_CODES: ReadonlySet<string> = new Set([
+  "EAI_AGAIN",
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ENOTFOUND",
+  "ETIMEDOUT",
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_SOCKET",
+]);
+
+function hasDocumentedTransportCode(cause: unknown): boolean {
+  if (!(cause instanceof Error) || !("code" in cause)) return false;
+  const code = (cause as Error & { code?: unknown }).code;
+  return typeof code === "string" && SDK_TRANSPORT_CODES.has(code);
+}
+
+function classifyOfficialSdkFailure(
+  cause: unknown,
+  signal?: AbortSignal,
+): UpstreamFailure {
+  if (
+    signal?.aborted ||
+    (cause instanceof Error && cause.name === "AbortError")
+  ) {
+    return { kind: "cancelled", cause };
+  }
+  if (cause instanceof ConfigurationError) {
+    return { kind: "configuration", cause };
+  }
+  if (cause instanceof AuthenticationError) {
+    return { kind: "auth", cause };
+  }
+  if (cause instanceof DecodeError) {
+    return { kind: "decode", cause };
+  }
+  if (cause instanceof ValidationError) {
+    return { kind: "validation", cause };
+  }
+  if (cause instanceof HttpStatusError) {
+    return {
+      kind: "http",
+      status: cause.status,
+      retryAfterMs: cause.retryAfterMs,
+    };
+  }
+  if (
+    (cause instanceof TypeError && cause.message === "fetch failed") ||
+    hasDocumentedTransportCode(cause)
+  ) {
+    return { kind: "transport", cause };
+  }
+  return { kind: "unknown", cause };
+}
+```
+
+The exact `TypeError` check above covers Node/undici's high-level `fetch failed` rejection; it does not make any other `TypeError` retryable. Keep the transport-code set limited to codes documented for the chosen SDK/runtime. The SDK adapter must emit and preserve these `UpstreamFailure` variants before the retry loop; the loop consumes the variant with `isRetryable` and must not catch and reclassify it.
+
+Keep HTTP classification, JSON decoding, schema checks, and required-field/report validation after the transport catch, as above, so none of their errors can be converted to `kind: "transport"`. The retry allowlist remains limited to the typed transport variant, HTTP `429`, and HTTP `500`–`599`; cancellation and validated configuration failures are non-retryable. Keep exponential backoff with jitter, a maximum delay, and a finite attempt or elapsed-time bound. Honor a valid server retry delay without exceeding that bound.
+
+Add focused deterministic checks with injected time/randomness: simultaneous identical callers produce one upstream request and share its result; authentication failures make no retry. The transport recovery test must make the provider's raw fetch reject first with `TypeError("fetch failed")`, then return a valid response, and assert success, exactly two raw fetch calls, exactly one sleep call, and a deterministic sleep duration no greater than the configured cap. The cancellation test must abort the caller signal or reject raw fetch with the documented `AbortError`, then assert the typed cancellation failure, exactly one raw fetch call, and no sleep call. The invalid-configuration test must reject raw fetch with the dedicated error recognized by `isValidatedConfigurationError`, then assert the typed configuration failure, exactly one raw fetch call, and no sleep call. Retain the fail-fast invalid-response test: return HTTP `200` with a report missing a required field (or otherwise invalid), invoke the latest-report path, and assert immediate validation failure, exactly one raw fetch call, and no sleep call. Check the browser response shape too: it may contain decoded display fields and timestamps, but never `fullReport`, API credentials, or authorization material. Retain `fullReport` only in backend memory/storage when required for decoding or persistence.
+
+For a high-level official SDK adapter, repeat the same exact transport, cancellation, and configuration checks against the injected SDK method instead of `rawFetch`: `TypeError("fetch failed")` then success means exactly two SDK calls and one capped deterministic sleep; `AbortError` means typed cancellation, exactly one SDK call, and no sleep; the dedicated `ConfigurationError` means typed configuration failure, exactly one SDK call, and no sleep. Also assert each named authentication, decode, and validation error plus an arbitrary `TypeError` and unknown error stays non-retryable with exactly one SDK call and no sleep.
+
 ## SQLite
 
 Use only when local persistence was requested. Default shape:
