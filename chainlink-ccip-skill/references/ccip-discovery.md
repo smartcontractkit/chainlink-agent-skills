@@ -22,3 +22,5 @@ For machine-readable lane/network/active-contract facts use `GET https://api.cci
 7. Route latency/performance to [monitoring](ccip-monitoring.md).
 
 Re-check live questions; do not hardcode counts or availability. The Directory, not the lanes API, is the sole route/token authority; the API reports inventory/status only. If CLI and Directory disagree, prefer Directory and say so. Discovery is read-only and neither proves performance nor licenses guesses when the official source is inconclusive.
+
+Never select or recommend a transfer token unless the user asked for one. Before any token-send handoff, verify both the direct lane and that exact token in the matching Directory, then require explicit send mode or confirmation; discovery itself stays read-only. On mainnet, provide only sourced reads, with a placeholder-only fee quote or testnet artifact as the closest send alternative—never approval, signing, send, or broadcast steps.

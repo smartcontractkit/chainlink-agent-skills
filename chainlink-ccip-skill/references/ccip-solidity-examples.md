@@ -259,7 +259,7 @@ contract DataReceiver is CCIPReceiver, OwnerIsCreator {
 
 ## Small programmable receiver
 
-A plain, auditable token-plus-data receiver for requests that do not ask for defensive failure handling: router authentication from `CCIPReceiver`, a source-selector-and-sender pair-bound allowlist (not two independent lists), an allowed-token set, and no self-call, try/catch, or recovery. The allowlists, rejection of empty/zero token entries, and loop accounting for every received token are mandatory correctness and asset-safety controls—not speculative business-logic complexity—so briefly explain why they remain even in the small version.
+A plain, auditable token-plus-data receiver for non-Foundry requests that do not ask for defensive failure handling: router authentication from `CCIPReceiver`, a source-selector-and-sender pair-bound allowlist (not two independent lists), an allowed-token set, and no self-call, try/catch, or recovery. Never use this small receiver for a generated Foundry token-plus-data deliverable; use the complete defensive receiver below. The allowlists, rejection of empty/zero token entries, and loop accounting for every received token are mandatory correctness and asset-safety controls—not speculative business-logic complexity—so briefly explain why they remain even in the small version.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -325,7 +325,7 @@ contract TokenDataReceiver is CCIPReceiver, OwnerIsCreator {
 
 ## Defensive programmable token receiver
 
-This active callback receiver is the default for requests that say secure, secured, defensive, or callback-capable. Router authentication, pair-bound source authorization, allowed-token validation, complete token-amount accounting, concrete try/catch, failed-message storage, and owner recovery prevent business-logic failure from forcing token delivery into a stuck manual-execution state. Never replace this requested shape with the passive token-only vault.
+Every generated Foundry token-plus-data deliverable must use this complete active callback receiver, not only requests labeled secure, defensive, or callback-capable. Do not shorten it to a happy-path receiver or omit any safety behavior: `CCIPReceiver` router authentication, pair-bound source/sender authorization, allowed-token validation and complete accounting, concrete try/catch, persistence and read access for the complete failed `Client.Any2EVMMessage` plus reason/state, owner-only recovery, unknown/resolved rejection, exact all-token recovery, and failure/recovery events. These controls prevent business-logic failure from forcing token delivery into a stuck manual-execution state; never replace this pattern with the small or passive token receiver.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -360,6 +360,7 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
     mapping(uint64 => mapping(address => bool)) public allowlistedSourceSenders;
     mapping(address => bool) public allowlistedTokens;
     mapping(bytes32 => Client.Any2EVMMessage) public s_messageContents;
+    mapping(bytes32 => bytes) public s_failureReasons;
     mapping(address => uint256) public s_receivedTotals;
     EnumerableMap.Bytes32ToUintMap internal s_failedMessages;
 
@@ -397,6 +398,7 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
         } catch (bytes memory reason) {
             s_failedMessages.set(any2EvmMessage.messageId, uint256(ErrorCode.FAILED));
             s_messageContents[any2EvmMessage.messageId] = any2EvmMessage;
+            s_failureReasons[any2EvmMessage.messageId] = reason;
             emit MessageFailed(any2EvmMessage.messageId, reason);
             return;
         }
@@ -421,10 +423,24 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
         }
     }
 
+    function getFailedMessage(bytes32 messageId)
+        external view
+        returns (Client.Any2EVMMessage memory message, bytes memory reason, ErrorCode state)
+    {
+        if (!s_failedMessages.contains(messageId)) revert MessageNotFailed(messageId);
+        return (
+            s_messageContents[messageId],
+            s_failureReasons[messageId],
+            ErrorCode(s_failedMessages.get(messageId))
+        );
+    }
+
     function retryFailedMessage(bytes32 messageId, address tokenReceiver) external onlyOwner {
         if (tokenReceiver == address(0)) revert ZeroAddress();
-        if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED))
-            revert MessageNotFailed(messageId);
+        if (
+            !s_failedMessages.contains(messageId)
+                || s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED)
+        ) revert MessageNotFailed(messageId);
         s_failedMessages.set(messageId, uint256(ErrorCode.RESOLVED));
         Client.Any2EVMMessage memory any2EvmMessage = s_messageContents[messageId];
         for (uint256 i; i < any2EvmMessage.destTokenAmounts.length; ++i) {
@@ -435,3 +451,12 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
     }
 }
 ```
+
+## Required tests for generated examples
+
+For every generated token-plus-data sender/receiver answer in Foundry, return the complete defensive receiver above and focused local Foundry tests with the generated contracts, not only a happy path. The deliverable is incomplete until its focused `forge test` suite passes; run it, fix the generated contracts or tests, and rerun it before presenting the files.
+
+- Sender: reject non-owner configuration/send calls and disallowed destinations. Isolate the insufficient-LINK branch by first funding the sender with the full non-fee transfer-token amount and satisfying every transfer-token setup/approval prerequisite, then withhold only the LINK fee; a token-transfer failure does not prove the fee guard. Cover correctly paying the exact quoted LINK fee, and assert the `forceApprove` and `ccipSend` calls plus sent-event fields on success. If the user requested tokens, verify the direct lane and exact token support before preparing the token case.
+- Receiver: reject direct non-router calls, disallowed source selectors, disallowed senders, and malformed payloads. Simulator delivery failures expose the simulator's outer `ReceiverError`, so assert that observable wrapper in `CCIPLocalSimulator` integration tests; separately exercise the receiver guards directly (using a minimal harness or authenticated-router context where necessary) and assert the exact inner custom errors. Do not expect the simulator to bubble an inner receiver error selector. Also assert accepted-message payload, accounting, and events.
+- Defensive receiver: force application or payload processing to fail and assert the failure state, reason, and complete `Client.Any2EVMMessage` (message ID, source selector, sender, data, and every destination token amount) through `getFailedMessage`; cover owner-only recovery, rejection of unknown/already-resolved messages, the exact recovered transfer of every token entry, resolved state, and recovery event.
+- Execution safety: generated scripts/tests default to no broadcast, reject mainnet writes, and require explicit testnet send mode or confirmation. A mainnet alternative may only perform reads, such as a placeholder-only fee quote.
