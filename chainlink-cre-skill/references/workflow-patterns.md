@@ -103,6 +103,49 @@ production:
 
 Preserve target names and the meaning of all user-specified schedules, plus all units, decimals, selectors, addresses, resource IDs, and secret names across code/config/docs/simulation. Normalize every five-field cron schedule to the equivalent six-field CRE form by prepending `0`, or reject it clearly if normalization is unsafe; this applies equally to target config JSON and workflow records. A target config JSON block must be strictly valid JSON: never put a `//` or `#` comment inside the fenced block — label the file's path in the prose sentence that introduces it — and it must include every field the declared TypeScript `Config` type or Go `Config` struct reads (a config that omits a field the handler uses, such as `schedule`, is not a runnable workflow). When more than one target shares an invariant, that field's value must match across every target's config file, not only the one shown first.
 
+### Receiver-free local simulation config
+
+For a handler-0 simulation before its receiver exists, model configuration as two closed variants and validate it with the runner's Standard Schema:
+
+```typescript
+type Config =
+  | { mode: 'local-simulation'; samplePreviousPrice: string; receiver?: never }
+  | { mode: 'production'; receiver: string; samplePreviousPrice?: never }
+```
+
+Add the prompt's shared endpoints, schedule, decimals, threshold, and other fields to both variants. Reject unknown modes, a receiver in the local variant, and `samplePreviousPrice` in the production variant. The sample must pass the same strict decimal syntax, scaling, sign/range, and `bigint` overflow checks as fetched prices.
+
+Use this canonical positive-decimal-to-E8 conversion for fetched prices and `samplePreviousPrice`; never derive padding from the full string length or the decimal point's absolute index:
+
+```typescript
+const UINT256_MAX = (1n << 256n) - 1n
+const E8 = 100_000_000n
+
+function parsePositiveDecimalE8(value: string): bigint {
+  const match = /^(0|[1-9]\d*)(?:\.(\d{1,8}))?$/.exec(value)
+  if (!match) {
+    throw new Error('price must be a positive base-10 decimal with at most 8 fractional digits')
+  }
+
+  const [, whole, fraction = ''] = match
+  const fractionE8 = fraction.padEnd(8, '0')
+  const scaled = BigInt(whole) * E8 + BigInt(fractionE8)
+  if (scaled <= 0n || scaled > UINT256_MAX) {
+    throw new Error('scaled price is outside uint256 bounds')
+  }
+  return scaled
+}
+```
+
+The input grammar accepts at most eight fractional digits, then pads that captured fraction to eight digits: `3500.12345678` becomes `350012345678n`. It rejects over-precision rather than rounding or truncating, along with signs, exponent notation, whitespace, leading-zero integers, missing whole/fractional digits, zero, and uint256 overflow. Generated local tests must include a focused assertion that `parsePositiveDecimalE8('3500.123456789')` throws.
+
+Do not put the branch at the top of handler 0. First run the normal real HTTP capability requests, response/status checks, decimal conversion, bounds checks, and consensus aggregation. Then:
+
+- `local-simulation`: compare the consensus price with the validated and scaled sample previous price, run the normal changed-price/threshold decision, log and return a result explicitly labeled `local-simulation`, and stop before receiver validation, CRE report creation, `EVMClient` construction, or Forwarder delivery.
+- `production`: validate the configured receiver as a well-formed nonzero address, obtain the real previous value when required, run the changed-price decision, create the CRE report and deliver it through the Forwarder when a write is due, and fail closed on every validation, capability, report, delivery, or missing-transaction-hash error.
+
+Never inject fixture observations into the local branch: it exists to exercise the handler's actual HTTP and consensus path through `cre workflow simulate`. Never deploy or broadcast a config with `mode: "local-simulation"`; those commands must select a production target. The early return must also make an accidentally broadcast local invocation incapable of constructing or sending a transaction. See [simulation.md](simulation.md) for the exact handler-0 command and [project-scaffolding.md](project-scaffolding.md) for the matching local/private target.
+
 ## Secret APIs
 
 Simulation values come from an environment or `.env` consumed by the CLI; deployed values come from Vault DON. `secrets.yaml` stores no value. Lifecycle commands and custody rules are in [operations.md](operations.md).
@@ -173,6 +216,7 @@ For TypeScript config validation, pass a Standard Schema such as Zod to `Runner.
 - Use `cre init` after reading scaffolding; do not fabricate project files.
 - Use regular HTTP unless request-level confidentiality is required; whole-handler confidentiality is a separate TEE capability.
 - Aggregate external/node-mode results; use scaled integers/decimal strings for business values and `bigint` for Solidity integers.
+- For every generated local price workflow, include and run a focused parser test that accepts `3500.12345678` as `350012345678n` and rejects the over-precision input `3500.123456789`.
 - Convert `bigint` to string before `JSON.stringify`.
 - Include the minimal consumer/ABI/interface/relay/mock boundary needed for a coherent integration.
 - Read simulation before providing its command and always include `--target`.

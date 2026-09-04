@@ -43,6 +43,31 @@ cre workflow simulate my-workflow --target staging-settings \
 
 A single cron handler often needs only `--target`; add `--non-interactive --trigger-index 0` if selection still prompts. Exercise each handler in a separate non-interactive run.
 
+## Receiver-free handler-0 simulation
+
+Use the CRE CLI—not a source-level harness—when handler 0 must run before a receiver contract exists. Define [project-scaffolding.md](project-scaffolding.md)'s matching `local-simulation` targets in `project.yaml` and `workflow.yaml`; the workflow target uses the supported literal `deployment-registry: "private"`, never a guessed account-scoped registry ID, `local-simulation-only`, or a fake receiver.
+
+Run this exact command from the project root:
+
+```bash
+cre workflow simulate <workflow> --target local-simulation --non-interactive --trigger-index 0
+```
+
+Keep `--broadcast` absent. This path still requires CRE CLI login, but it does not require an account-scoped registry ID or deployed receiver.
+
+The selected config must set `mode: "local-simulation"` and a decimal-string `samplePreviousPrice`. Handler 0 must:
+
+1. perform the same real configured HTTP capability fetches as production;
+2. apply the same response/status checks, strict decimal validation and scaling, `bigint` bounds, and consensus aggregation;
+3. validate and scale `samplePreviousPrice` by the same rules and run the normal changed-price/threshold decision; and
+4. log and return a clearly labeled local result such as `{ mode: "local-simulation", currentPrice, previousPrice, changed, wouldWrite }`, with integer values stringified.
+
+After step 4 the local branch returns. It must not validate or invent a receiver, construct a CRE report or `EVMClient`, call a Forwarder, accept a signer, or expose another write path. Do not replace real HTTP observations with injected fixtures or duplicate the handler in a local script.
+
+Every non-local branch is production: reject unknown modes; require a configured, well-formed, nonzero receiver; retain CRE report creation and Forwarder delivery for each changed-price write; resolve every capability with `.result()`; and fail closed on validation, report, delivery, or missing-transaction-hash errors.
+
+The local target is simulation-only. Never select it for `--broadcast`, deploy, update, activate, or another lifecycle command, and never allow a production target/config to set `mode: "local-simulation"`. Even if a user mistakenly appends `--broadcast`, the handler's early return must leave no report, EVM client, or transaction to send.
+
 ## Behavior by trigger
 
 Simulation compiles to WASM, loads the selected target, fires/accepts a local trigger, calls real configured HTTP/RPC endpoints, and prints user logs/result. It is a local dry run by default and does not reproduce every deployed DON behavior.

@@ -4,11 +4,11 @@ Read this file before creating any CRE project. Use `cre init`; never hand-write
 
 ## Execution vs. answer artifacts
 
-When the environment provides filesystem/shell tools and the user asks to set up a project (new or existing) and run a simulation, actually run `cre init`, install dependencies, and run the simulation with those tools; report the real command output, generated paths, and simulation result. Do not write an unattended script and a hand-off checklist while claiming the setup is done — that is not execution.
+When the environment provides filesystem/shell tools and the user asks to build, create, or set up a project, write the complete runnable project into the current run directory: run `cre init`, install dependencies, replace the template with every requested source/config/contract artifact, and execute the native receiver-free `local-simulation` target before reporting. Report the real command output, generated paths, and simulation result. Do not answer only in prose, write files outside the run directory, substitute a source-level harness, or hand off an unattended script/checklist while claiming the setup is done.
 
 When no execution tool is available, give the exact `cre init`/install/simulate commands and the file contents they will produce, but label the response as unverified: state plainly that nothing was run in this turn and that the user must run the listed commands themselves. Either way, never answer a "did it work" question with an unearned "yes," and never close with a vague "you run this" hand-off after implying the work is finished. If a runnable example is missing non-sensitive values that do not create a security or deployment decision, use clearly labeled safe sample values instead of returning only an outline or questions. Keep sensitive, account-scoped, deployment, and irreversible values as real prerequisites; never invent them.
 
-**No-tools, from-scratch TypeScript contract:** When execution tools are unavailable and the user requests a new TypeScript starter, prominently state “Nothing was run in this turn,” then show this sequence in order: (1) `cre init --non-interactive --project-name my-project --deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID" --workflow-name my-workflow --template hello-world-ts`, with `CRE_DEPLOYMENT_REGISTRY_ID` supplied from the user's authenticated `cre registry list`; (2) from the newly generated `my-project/my-workflow`, `bun install`; (3) `bunx cre-setup`; (4) back at the generated project root, `workflow_name=my-workflow; workflow_dir="$PWD/$workflow_name"; target_name="$(grep -m1 -E '^[A-Za-z0-9_.-]+:[[:space:]]*$' "$workflow_dir/workflow.yaml" | sed 's/:.*//')"; : "${target_name:?No target key found in generated workflow.yaml}"`; and (5) `cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive --trigger-index 0`. This is creation-only: never inspect, reference, or reuse an existing directory, and never claim that initialization, installation, setup, or simulation succeeded. Keep account IDs, credentials, and addresses as prerequisites, never samples.
+**No-tools, from-scratch TypeScript contract:** When execution tools are unavailable and the user requests a new TypeScript starter, prominently state “Nothing was run in this turn,” then show this sequence in order: (1) `cre init --non-interactive --project-name my-project --deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID" --workflow-name my-workflow --template hello-world-ts`, with `CRE_DEPLOYMENT_REGISTRY_ID` supplied from the user's authenticated `cre registry list`; (2) from the newly generated `my-project/my-workflow`, `bun install`; (3) `bunx cre-setup`; (4) back at the generated project root, `workflow_name=my-workflow; workflow_dir="$PWD/$workflow_name"; target_name="$(grep -m1 -E '^[A-Za-z0-9_.-]+:[[:space:]]*$' "$workflow_dir/workflow.yaml" | sed 's/:.*//')"; : "${target_name:?No target key found in generated workflow.yaml}"`; and (5) `cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive --trigger-index 0`. For receiver-free handler-0 simulation, use the literal `private` in step 1, add the dedicated target/config below after setup, and run its exact command instead of deriving a generated default target. This is creation-only: never inspect, reference, or reuse an existing directory, and never claim that initialization, installation, setup, or simulation succeeded. Keep account IDs, credentials, and addresses as prerequisites, never samples.
 
 ## Prerequisites
 
@@ -16,13 +16,13 @@ When no execution tool is available, give the exact `cre init`/install/simulate 
 - Go 1.25.3+ for Go workflows
 - Bun 1.2.21+ for TypeScript workflows
 - A funded Sepolia account only when simulation broadcasts or deployment needs gas
-- An authenticated deployment-registry ID from `cre registry list`; IDs are account/organization scoped, so never guess one
+- An authenticated CRE CLI session for local simulation; an account/organization-scoped registry ID from `cre registry list` is required for registry-bound initialization, deployment, broadcast, and lifecycle operations, but the receiver-free local target below uses the supported literal `private` selector
 
 ## Non-interactive initialization
 
-Agents always supply `--non-interactive`, `--project-name`, `--deployment-registry`, and a template. Omitting the registry can still prompt.
+Agents always supply `--non-interactive`, `--project-name`, `--deployment-registry`, and a template. Omitting the registry can still prompt. Use the CLI-supported literal `private` for the receiver-free local scaffold below or an authenticated registry returned by `cre registry list` for a registry-bound path; never invent an ID.
 
-An unattended initialization wrapper must fail fast and validate every externally supplied value that `cre init` consumes:
+For registry-bound initialization, an unattended wrapper must fail fast and validate every externally supplied value that `cre init` consumes:
 
 ```bash
 #!/usr/bin/env bash
@@ -30,7 +30,7 @@ set -euo pipefail
 : "${CRE_DEPLOYMENT_REGISTRY_ID:?Set an ID from cre registry list}"
 ```
 
-Use the validated registry ID in `--deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID"`.
+Use the validated registry ID in `--deployment-registry "$CRE_DEPLOYMENT_REGISTRY_ID"` for that registry-bound path.
 
 ```bash
 cre init \
@@ -57,6 +57,42 @@ cre workflow simulate "$workflow_name" --target "$target_name" --non-interactive
 
 An unattended wrapper must not require or default `CRE_TARGET` before `cre init`; the authoritative `workflow.yaml` does not exist yet, so that is a circular prerequisite. Initialize first, then read and assign the generated target before simulation in the same run.
 
+### Receiver-free local simulation target
+
+When handler 0 must run before a receiver is deployed, do not invent an account-scoped registry ID, receiver, or source-level harness. Initialize with the CLI-supported literal `--deployment-registry private`, then add one conspicuously local target with the same name in both generated YAML files:
+
+```yaml
+# project.yaml
+local-simulation: {}
+```
+
+```yaml
+# <workflow>/workflow.yaml
+local-simulation:
+  user-workflow:
+    workflow-name: my-workflow-local-simulation
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.local-simulation.json"
+    secrets-path: ""
+```
+
+`private` is a supported registry selector, not a placeholder ID. Never use `local-simulation`, `local-simulation-only`, a zero value, or another made-up value as `deployment-registry`. CLI login is still required, but a registry lookup and deployed receiver are not prerequisites for this non-broadcast run.
+
+The local config must be visibly non-production and contain the prompt-supplied previous price as a decimal string:
+
+```json
+{
+  "mode": "local-simulation",
+  "samplePreviousPrice": "1234.56000000"
+}
+```
+
+The handler's local branch must first perform the same real configured HTTP fetches, response checks, strict decimal validation and scaling, `bigint` bounds, consensus aggregation, and changed-price decision as production, using `samplePreviousPrice` as the previous value. It then logs and returns a result labeled `local-simulation` before receiver validation, CRE report creation, `EVMClient` construction, Forwarder delivery, or any other write-capable operation. The production branch must reject unknown modes, reject a missing, malformed, or zero receiver, construct the CRE report, deliver it through the Forwarder when a write is due, and fail closed on every validation or capability error.
+
+Use [simulation.md](simulation.md)'s exact handler-0 command. Never select this target/config for `--broadcast`, deploy, update, activate, or another lifecycle command; every such path must select a production target whose config cannot set `mode: "local-simulation"`.
+
 When a shared value (schedule, RPC, or other invariant) must stay identical across environments, enumerate every top-level target the same way and write the value into each one's referenced config file — never only the first:
 
 ```bash
@@ -69,7 +105,7 @@ Repeat `--rpc-url chain-name=url` when a template requires RPC configuration. Th
 |---|---|---|
 | `--non-interactive` | Fail rather than prompt | Always |
 | `-p, --project-name` | New project name | Required for a new project |
-| `--deployment-registry` | Target registry ID | Required to guarantee no prompt |
+| `--deployment-registry` | Registry selector | Supply `private` for a receiver-free local scaffold or a verified registry ID for a registry-bound path; never fabricate an ID |
 | `-w, --workflow-name` | Workflow name | Optional; template default otherwise |
 | `-t, --template` | Template name | Supply explicitly |
 | `--rpc-url` | Repeatable `chain-name=url` RPC | Template-dependent |
