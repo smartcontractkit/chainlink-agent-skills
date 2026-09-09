@@ -1,0 +1,60 @@
+# A/B Comparison Rubric
+
+Compare responses to the same prompt:
+- **baseline**: no CRE Connect skill
+- **with_skill**: CRE Connect skill activated
+
+Do not reward the skill response for merely mentioning CRE Connect. Reward accurate product boundaries, useful event/operation guidance, source discipline, and safer irreversible-action handling. Penalize verbosity and over-triggering on ordinary CRE or generic ERC-4337 prompts.
+
+Score each response from 1 to 5:
+
+| Criterion | Reward |
+|---|---|
+| task_satisfaction | Directly answers the request at the requested level |
+| correctness | Gets signed events, EIP-712 authorization, Smart Accounts, atomicity, and product routing right |
+| chainlink_specificity | Adds relevant CRE Connect detail without inventing APIs, networks, or access facts |
+| deliverable_completeness | Supplies enough structure, boundaries, and next steps to act |
+| safety | Requires local verification and suitable confidence/finality before side effects; protects credentials and authorization |
+| proportionality | Avoids SDK fiction, unnecessary implementation detail, and near-miss over-triggering |
+
+Winner values:
+- `skill`: with-skill is materially better
+- `baseline`: baseline is materially better, safer, or less overfit
+- `tie`: roughly equal usefulness
+- `mixed`: each is better on important different dimensions
+
+Likely wins include safe event handling, correct atomic operation design, and DTA/product-boundary guidance. Read-only architecture can tie if both are accurate. Ordinary CRE and generic ERC-4337 cases should tie or favor the less over-triggered answer.
+
+Return strict JSON only:
+
+```json
+{
+  "case": "<case-id>",
+  "winner": "skill|baseline|tie|mixed",
+  "confidence": 0.0,
+  "scores": {
+    "baseline": {
+      "task_satisfaction": 1,
+      "correctness": 1,
+      "chainlink_specificity": 1,
+      "deliverable_completeness": 1,
+      "safety": 1,
+      "proportionality": 1
+    },
+    "with_skill": {
+      "task_satisfaction": 1,
+      "correctness": 1,
+      "chainlink_specificity": 1,
+      "deliverable_completeness": 1,
+      "safety": 1,
+      "proportionality": 1
+    }
+  },
+  "skill_helped": ["short concrete observation"],
+  "skill_hurt": ["short concrete observation"],
+  "recommended_skill_changes": ["short concrete change"],
+  "reason": "one or two sentences explaining the verdict"
+}
+```
+
+Use confidence from 0.0 to 1.0. Keep observations specific enough to guide a later skill edit.

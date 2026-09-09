@@ -1,0 +1,1 @@
+Help me design a CRE Connect EIP-712-authorized gas-less batch from our Chainlink Smart Account, with clear atomicity and authorization boundaries.

@@ -1,0 +1,1 @@
+We're in the CRE Connect private beta. How should my backend consume DON-signed events and decide when a verified event is safe enough to trigger an irreversible fulfillment action?

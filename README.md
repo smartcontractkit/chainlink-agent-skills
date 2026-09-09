@@ -7,10 +7,12 @@ Official Repo for Chainlink coding skills. Each skill follows the [Agent Skills 
 | Skill                                                         | Description                                                                                           |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | [chainlink-cre-skill](chainlink-cre-skill/)                   | CRE onboarding, workflow generation, CLI/SDK help, and runtime operations                             |
+| [chainlink-cre-connect-skill](chainlink-cre-connect-skill/)   | CRE Connect watchers, verifiable events, gas-less operations, Smart Accounts, and DTA                     |
 | [chainlink-ccip-skill](chainlink-ccip-skill/)                 | CCIP sends, contracts, local testing, monitoring, discovery, and CCT workflows                        |
 | [chainlink-data-feeds-skill](chainlink-data-feeds-skill/)     | Data Feeds contracts, multi-chain Data Feeds integration                                              |
 | [chainlink-data-streams-skill](chainlink-data-streams-skill/) | Data Streams REST/WebSocket SDKs, report decoding, on-chain verification, and real-time frontend apps |
 | [chainlink-ace-skill](chainlink-ace-skill/)                   | ACE core contracts, Policy Management, Cross-Chain Identity, and compliance token examples            |
+| [chainlink-confidential-ai-attester-skill](chainlink-confidential-ai-attester-skill/) | Confidential AI Attester: TEE LLM inference over private documents with attested results |
 | [chainlink-vrf-skill](chainlink-vrf-skill/)                   | VRF v2.5 subscription and direct-funding consumers, migration from V2, billing, and network addresses |
 
 ## Install
@@ -31,10 +33,12 @@ Note the use of `--skill` to specify which specific skill to install.
 
 ```bash
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-cre-skill -g
+npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-cre-connect-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-ccip-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-data-feeds-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-data-streams-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-ace-skill -g
+npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-confidential-ai-attester-skill -g
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-vrf-skill -g
 ```
 

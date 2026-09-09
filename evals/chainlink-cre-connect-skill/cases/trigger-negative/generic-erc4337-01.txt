@@ -1,0 +1,1 @@
+I'm building a generic ERC-4337 wallet. Show me how to sponsor UserOperations through a bundler and paymaster and explain EntryPoint nonce handling. This project does not use Chainlink.

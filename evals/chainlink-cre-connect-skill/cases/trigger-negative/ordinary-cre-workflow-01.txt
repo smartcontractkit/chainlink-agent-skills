@@ -1,0 +1,1 @@
+Create a TypeScript CRE workflow with an HTTP trigger, DON consensus over an API response, simulation configuration, and deployment steps.

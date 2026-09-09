@@ -1,0 +1,175 @@
+description: Promptfoo eval suite for chainlink-cre-connect-skill
+commandLineOptions:
+  maxConcurrency: 2
+
+providers:
+  - id: "anthropic:messages:${PROMPTFOO_BASELINE_PROVIDER:-claude-sonnet-4-20250514}"
+    label: baseline
+    prompts:
+      - baseline_prompt
+    config:
+      temperature: 0
+      max_tokens: 4096
+      showThinking: false
+  - id: "anthropic:messages:${PROMPTFOO_WITH_SKILL_PROVIDER:-claude-sonnet-4-20250514}"
+    label: with-skill
+    prompts:
+      - with_skill_prompt
+    config:
+      temperature: 0
+      max_tokens: 4096
+      showThinking: false
+
+defaultTest:
+  assert:
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: must-pass
+      value: file://rubrics/must-pass.txt
+
+x-assertions:
+  functional_asserts: &functional_asserts
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: correctness
+      value: file://rubrics/correctness.txt
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: completeness
+      value: file://rubrics/completeness.txt
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: safety
+      value: file://rubrics/safety.txt
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: freshness
+      value: file://rubrics/freshness.txt
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-anthropic:messages:claude-sonnet-4-20250514}"
+      metric: clarification
+      value: file://rubrics/clarification.txt
+  trigger_positive_asserts: &trigger_positive_asserts
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: triggering
+      value: file://rubrics/triggering-positive.txt
+  trigger_negative_asserts: &trigger_negative_asserts
+    - type: llm-rubric
+      provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+      metric: triggering
+      value: file://rubrics/triggering-negative.txt
+
+prompts:
+  - id: file://prompts/baseline.js
+    label: baseline_prompt
+  - id: file://prompts/with-skill.js
+    label: with_skill_prompt
+
+tests:
+  - description: functional / verified-event-side-effect
+    vars:
+      case_file: cases/functional/verified-event-side-effect-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/events.md
+      workflow: events
+      requires_live_source: "no"
+    metadata:
+      workflow: events
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / atomic-gasless-operation
+    vars:
+      case_file: cases/functional/atomic-gasless-operation-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/operations.md
+      workflow: operations
+      requires_live_source: "yes"
+    metadata:
+      workflow: operations
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / dta-integration
+    vars:
+      case_file: cases/functional/dta-integration-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/dta.md
+      workflow: dta
+      requires_live_source: "no"
+    metadata:
+      workflow: dta
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: functional / product-boundary
+    vars:
+      case_file: cases/functional/product-boundary-01.txt
+      reference_files:
+        - references/concepts.md
+      workflow: concepts
+      requires_live_source: "yes"
+    metadata:
+      workflow: concepts
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - description: trigger-positive / signed-events
+    vars:
+      case_file: cases/trigger-positive/signed-events-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/events.md
+      workflow: events
+      expected_trigger: "yes"
+    metadata:
+      workflow: events
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
+  - description: trigger-positive / gasless-operations
+    vars:
+      case_file: cases/trigger-positive/gasless-operations-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/operations.md
+      workflow: operations
+      expected_trigger: "yes"
+    metadata:
+      workflow: operations
+      category: trigger-positive
+      smoke: true
+    assert: *trigger_positive_asserts
+
+  - description: trigger-negative / ordinary-cre-workflow
+    vars:
+      case_file: cases/trigger-negative/ordinary-cre-workflow-01.txt
+      reference_files: []
+      workflow: none
+      expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts
+
+  - description: trigger-negative / generic-erc4337
+    vars:
+      case_file: cases/trigger-negative/generic-erc4337-01.txt
+      reference_files: []
+      workflow: none
+      expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_asserts

@@ -1,0 +1,14 @@
+You are evaluating whether the response appropriately activates CRE Connect for a direct CRE Connect request.
+
+A positive response should use the applicable product-specific model:
+- client-facing private-beta integration, not user-authored internal CRE workflows
+- DON/OCR-signed inbound events with local verification and confidence/finality before side effects
+- EIP-712-authorized gas-less outbound operations through Chainlink-native Smart Accounts
+- atomic actions within an operation, with separate operations for independent partial success
+
+It must not invent provisioned APIs or claim Smart Accounts are ERC-4337. It need only cover the concepts relevant to the prompt.
+
+Score:
+- 1.0: Clear, accurate, proportional CRE Connect behavior (PASS)
+- 0.5: Ambiguous or generic activation (FAIL)
+- 0.0: Wrong product or execution model (FAIL)

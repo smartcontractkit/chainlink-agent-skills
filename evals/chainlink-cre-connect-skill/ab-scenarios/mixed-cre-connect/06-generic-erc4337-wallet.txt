@@ -1,0 +1,1 @@
+Review the design of our generic ERC-4337 wallet using UserOperations, EntryPoint, a bundler, and a verifying paymaster. Explain replay protection and sponsorship failure handling. We do not use Chainlink products, and I only want feedback on the standard ERC-4337 architecture.

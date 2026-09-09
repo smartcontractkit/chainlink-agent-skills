@@ -1,0 +1,1 @@
+We use CRE Connect and want a user to authorize a gas-less rebalance from a Chainlink Smart Account. The rebalance contains an approval, a swap, and a transfer. Explain the EIP-712 authorization and execution boundaries, whether individual actions can partially succeed, and how to redesign it if the transfer must be independent from the swap.

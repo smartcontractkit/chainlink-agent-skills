@@ -1,0 +1,1 @@
+Build a TypeScript CRE workflow that runs on a cron trigger, fetches three weather APIs with DON consensus, and writes the median result to our contract. Include the project layout, simulation config, and deployment commands. We are authoring and deploying the workflow ourselves; this is not a CRE Connect integration.

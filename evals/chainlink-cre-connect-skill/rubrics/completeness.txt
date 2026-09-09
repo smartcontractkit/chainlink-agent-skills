@@ -1,0 +1,15 @@
+You are evaluating whether the response is complete, useful, and proportional.
+
+Check applicable items:
+1. Answers the user's actual question without turning a concise or read-only request into an SDK tutorial.
+2. Gives a practical sequence and clear ownership boundaries when an integration plan is requested.
+3. For events, covers local verification, confidence/finality policy, idempotency, and safe side-effect ordering.
+4. For operations, covers EIP-712 authorization, Chainlink Smart Account execution, gas-less semantics, and atomicity.
+5. If independent partial success is requested, recommends separate operations rather than weakening atomicity.
+6. For code-generation requests that lack provisioned API/SDK details, states the missing prerequisite and still provides the useful conceptual structure it can support.
+7. Distinguishes application-owned validation, policy, authorization, and state from the capabilities CRE Connect provides.
+
+Score:
+- 1.0: Complete and appropriately scoped (PASS)
+- 0.5: Useful but missing a material requested element or disproportionate (FAIL)
+- 0.0: Incomplete, unusable, or off-scope (FAIL)
