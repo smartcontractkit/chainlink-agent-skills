@@ -48,7 +48,24 @@ The documented domain is:
 
 The domain prevents reuse across accounts and chains. The deadline, ID, account, call order, destinations, values, and calldata are authorization-critical; show them to the approver and never alter them after signing.
 
-The public source describes the signing boundary conceptually but does not publish a CRE Connect client or signer API. Require the organization's provisioned API/SDK types and use its canonical typed-data construction. Do not invent methods or manually approximate a hidden serialization contract.
+## Signers
+
+A signer produces an ECDSA signature over a 32-byte hash. Use the official adapter table; do not invent extra named adapters:
+
+https://docs.chain.link/crec/concepts/eip712-signing#signers
+
+| Adapter | Notes |
+| --- | --- |
+| Local (ECDSA) | In-process key. Local development only. |
+| AWS KMS | KMS-managed `secp256k1` key. |
+| HashiCorp Vault | Vault Transit secrets engine, ECDSA `secp256k1` key. |
+| Fireblocks | Hosted custody with optional human approval. |
+| Privy | Privy embedded wallet via REST. |
+| Custom | Any implementation that signs a 32-byte hash. |
+
+Some adapters can render the EIP-712 typed data to a human approver. Custom means "signs a 32-byte hash", not a new product API.
+
+The public source does not publish a CRE Connect client or signer construction API. Require the organization's provisioned API/SDK types and use its canonical typed-data construction. Do not invent client methods or manually approximate a hidden serialization contract.
 
 ## Smart Accounts
 

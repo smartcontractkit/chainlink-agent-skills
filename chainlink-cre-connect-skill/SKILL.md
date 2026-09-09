@@ -42,7 +42,7 @@ CRE Connect Smart Accounts are Chainlink-native, not ERC-4337 accounts. Do not t
 
 1. Classify the request before producing an artifact. Separate ordinary CRE workflow development from CRE Connect client integration.
 2. Establish private-beta provisioning before implementation. The public source is conceptual and does not publish a client package, endpoint, authentication contract, or method signatures.
-3. For code generation that depends on provisioned API or SDK details, state the missing prerequisite and request the official provisioned client/API documentation or types. Never invent endpoints, package names, client methods, signer adapters, credentials, network support, or provisioning steps.
+3. For code generation that depends on provisioned API or SDK details, state the missing prerequisite and request the official provisioned client/API documentation or types. Never invent endpoints, package names, client methods, credentials, network support, or provisioning steps. Supported signer adapters are documented in [operations.md](references/operations.md); do not invent adapters outside that table.
 4. Until those details are available, provide architecture, data-flow, validation rules, and clearly labeled pseudocode or application-owned interfaces—not fake runnable CRE Connect client code.
 5. Preserve the user's chain, chain selector, contract addresses, event signatures, confidence level, Smart Account, operation ID, deadline, transaction order, values, and signer choice.
 6. Keep answers proportional and distinguish documented facts from assumptions.
@@ -62,7 +62,7 @@ CRE Connect Smart Accounts are Chainlink-native, not ERC-4337 accounts. Do not t
 ## Documentation and Freshness
 
 1. Use bundled references first for CRE Connect integration patterns and conceptual questions.
-2. Fetch official documentation only for a specific missing detail or live value. Do not invent CRE Connect access requirements, supported networks, service names, signer support, schemas, or product interfaces.
+2. Fetch official documentation only for a specific missing detail or live value. Do not invent CRE Connect access requirements, supported networks, service names, schemas, or product interfaces. Use the documented signer adapter table; do not invent extra adapters.
 3. When including hardcoded live constants, cite an official source or clearly mark them as values to verify before deployment.
 4. If a needed CRE Connect detail is unavailable, state that it is missing instead of inferring it from another Chainlink product.
 
