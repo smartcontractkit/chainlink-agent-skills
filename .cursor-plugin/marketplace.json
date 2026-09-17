@@ -1,0 +1,55 @@
+{
+  "name": "chainlink-agent-skills",
+  "owner": {
+    "name": "Chainlink",
+    "email": "devrel@chain.link"
+  },
+  "metadata": {
+    "description": "Official Chainlink agent skills for CRE, CCIP, Data Feeds, Data Streams, ACE, and VRF.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "chainlink-cre-skill",
+      "source": "chainlink-cre-skill",
+      "description": "CRE workflows, CLI/SDK, triggers, simulation, deployment, and monitoring.",
+      "category": "blockchain",
+      "tags": ["chainlink", "cre", "workflows", "automation"]
+    },
+    {
+      "name": "chainlink-ccip-skill",
+      "source": "chainlink-ccip-skill",
+      "description": "CCIP cross-chain transfers, messaging, contracts, monitoring, discovery, and CCT.",
+      "category": "blockchain",
+      "tags": ["chainlink", "ccip", "cross-chain", "bridging"]
+    },
+    {
+      "name": "chainlink-data-feeds-skill",
+      "source": "chainlink-data-feeds-skill",
+      "description": "Chainlink Data Feeds integration across EVM and non-EVM chains.",
+      "category": "blockchain",
+      "tags": ["chainlink", "oracle", "price-feeds", "data-feeds"]
+    },
+    {
+      "name": "chainlink-data-streams-skill",
+      "source": "chainlink-data-streams-skill",
+      "description": "Data Streams SDKs, report decoding, WebSocket HA, and on-chain verification.",
+      "category": "blockchain",
+      "tags": ["chainlink", "data-streams", "oracle", "low-latency"]
+    },
+    {
+      "name": "chainlink-ace-skill",
+      "source": "chainlink-ace-skill",
+      "description": "ACE compliance engine, policies, Cross-Chain Identity, and regulated tokens.",
+      "category": "blockchain",
+      "tags": ["chainlink", "ace", "compliance", "erc-3643"]
+    },
+    {
+      "name": "chainlink-vrf-skill",
+      "source": "chainlink-vrf-skill",
+      "description": "VRF v2.5 subscription and direct-funding consumers, billing, and network addresses.",
+      "category": "blockchain",
+      "tags": ["chainlink", "vrf", "randomness", "solidity"]
+    }
+  ]
+}

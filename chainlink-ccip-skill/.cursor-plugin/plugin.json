@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-ccip-skill",
+  "displayName": "Chainlink CCIP",
+  "version": "0.0.5",
+  "description": "CCIP cross-chain transfers, messaging, contracts, monitoring, discovery, and CCT.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/ccip",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "ccip", "cross-chain", "bridging", "messaging"],
+  "logo": "assets/chainlink-icon.png"
+}

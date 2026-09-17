@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-cre-skill",
+  "displayName": "Chainlink CRE",
+  "version": "0.0.8",
+  "description": "CRE workflows, CLI/SDK, triggers, simulation, deployment, and monitoring.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/cre",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "cre", "workflows", "automation", "oracle"],
+  "logo": "assets/chainlink-icon.png"
+}

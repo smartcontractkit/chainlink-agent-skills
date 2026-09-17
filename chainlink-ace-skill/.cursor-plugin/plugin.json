@@ -1,0 +1,14 @@
+{
+  "name": "chainlink-ace-skill",
+  "displayName": "Chainlink ACE",
+  "version": "0.0.5",
+  "description": "ACE compliance engine, policies, Cross-Chain Identity, and regulated tokens.",
+  "author": {
+    "name": "Chainlink"
+  },
+  "homepage": "https://docs.chain.link/ace",
+  "repository": "https://github.com/smartcontractkit/chainlink-agent-skills",
+  "license": "MIT",
+  "keywords": ["chainlink", "ace", "compliance", "erc-3643", "kyc", "aml"],
+  "logo": "assets/chainlink-icon.png"
+}

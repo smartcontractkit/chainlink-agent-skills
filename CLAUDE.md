@@ -6,9 +6,12 @@ This is a monorepo of Chainlink agent skills. Each skill lives in its own top-le
 
 Each skill directory contains:
 - `SKILL.md` - The skill definition with YAML frontmatter (name, description, version) and markdown instructions
+- `.cursor-plugin/plugin.json` - Cursor Marketplace plugin manifest for that skill
 - `references/` - Supporting reference docs the skill reads at runtime
 - `agents/` (optional) - Platform-specific agent configs (e.g., `openai.yaml`)
 - `assets/` (optional) - Supplementary assets like doc indexes
+
+The repository root has `.cursor-plugin/marketplace.json`, which registers all skills as separate Cursor plugins in one marketplace repo. Submit the repo at [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish).
 
 Evals live in `evals/<skill-name>/` with test cases, rubrics, and promptfoo configs.
 
