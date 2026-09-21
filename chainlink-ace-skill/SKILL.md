@@ -28,7 +28,7 @@ Classify each request as OSS/self-deployed, managed Platform, or both. Load only
 
 Treat an implicit request to regulate a token or enforce onchain transfer constraints as a positive trigger even when it does not say ACE. The final routing and answer MUST explicitly name Chainlink ACE, the `PolicyEngine`, and the relevant ACE compliance policies rather than describing unnamed generic policy layers.
 
-For any request that does not match this skill's positive trigger sentence, route wholly to the owning capability or domain and preserve the user's stated inputs. In the response, do not mention or negate ACE or this skill, and do not use ACE-specific concepts, references, templates, fields, preflight, or implementation. Stop applying all remaining instructions in this skill.
+For any request that does not match this skill's positive trigger sentence, route wholly to the owning capability or domain and preserve the user's stated inputs. Do not mention or negate ACE or this skill, and do not use ACE-specific concepts, references, templates, fields, preflight, or implementation. Keep this file's safety, secret-custody, and untrusted-source rules.
 
 | Trigger or ask | Read |
 | --- | --- |
@@ -38,7 +38,7 @@ For any request that does not match this skill's positive trigger sentence, rout
 | PolicyEngine, PolicyProtected, `runPolicy`, policy chains/outcomes/default/order, extractor, mapper, context, protect/compose | [policy-management.md](references/policy-management.md) |
 | policy choice/behavior/configuration, runtime parameters, setter/view functions, pre-built tradeoffs | [policy-library.md](references/policy-library.md) |
 | CCID, registries, credential types/sources/requirements, KYC/AML/accreditation, issuer, Credential Data Validator, expiry/revocation/privacy, identity validator | [cross-chain-identity.md](references/cross-chain-identity.md) |
-| Platform/private Beta, UI/API/access, Coordinator/Reporting API, Reporting/Policy/Identity Manager, auditor/audit trail, networks/mainnet readiness, registration/indexing, Foundry-only visibility, limitations, attestation-only credentials, custom fraud scores | [platform-and-beta.md](references/platform-and-beta.md) |
+| Platform/private Beta, UI/API/access, Coordinator/Evaluation/Reporting API, Reporting/Policy/Identity Manager, auditor/audit trail, networks/mainnet readiness, registration/indexing, Foundry-only visibility, limitations, attestation-only credentials, custom fraud scores | [platform-and-beta.md](references/platform-and-beta.md) |
 | current facts; source/interface names/locations; repository/package docs/scripts; token implementations; license; API resources/docs paths | [official-sources.md](references/official-sources.md) |
 
 For implementation start with onchain, then policy management/library or identity. Policy recommendations include a chain, default, order, and extracted parameters. Separate OSS Credential Data Validators from possibly attestation-only managed Beta.
@@ -52,7 +52,7 @@ Do not assume this skill is the only capability available.
 | OSS/self-deployed | `smartcontractkit/chainlink-ace`: BUSL-1.1 `@chainlink/ace`, Foundry/pnpm/Solidity; `packages/policy-management`, `packages/cross-chain-identity`, `packages/tokens`. Policy Management is standalone; identity depends on it. EVM self-deployment and custom components remain subject to commercial licensing, counsel, audit, and operator responsibility. |
 | Managed Platform | `docs.chain.link/ace`: Policy, Identity, and Reporting Manager UI/APIs. Access, Beta, networks/mainnet, indexing, signing/upgrades, custom-policy UI, credentials, Coordinator control plane, and Reporting read-only plane are product-scoped/freshness-sensitive. Never infer managed support from OSS or apply Beta limits to OSS. |
 
-Reporting exposes Transactions, Policies, Targets, Identities and, where documented, `as_of` state. Coordinator manages resources; it is not the auditor evidence API.
+Managed APIs are Coordinator (control plane), Evaluation (MVP offchain permits), and Reporting (read-only). Reporting currently documents Transactions, Policies, Targets, Identities, Permits, and Registry usage, with `as_of` only where the APIs page lists it. Re-check [platform-and-beta.md](references/platform-and-beta.md) and `https://docs.chain.link/ace/reference/apis.md`. Coordinator manages resources; it is not the auditor evidence API.
 
 ## Boundary and Preflight
 

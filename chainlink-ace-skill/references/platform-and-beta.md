@@ -8,8 +8,8 @@ Current product sources:
 - Overview: `https://docs.chain.link/ace.md`
 - Beta: `https://docs.chain.link/ace/beta-scope.md`
 - Networks: `https://docs.chain.link/ace/supported-networks.md`
-- Coordinator: `https://docs.chain.link/ace/reference/api/coordinator.md`
-- Reporting API/concept: `https://docs.chain.link/ace/reference/api/reporting.md`, `https://docs.chain.link/ace/concepts/reporting.md`
+- APIs (Coordinator, Evaluation MVP, Reporting): `https://docs.chain.link/ace/reference/apis.md`
+- Reporting concept: `https://docs.chain.link/ace/concepts/reporting.md`
 
 Before answering, fetch and cite the exact live official page for every current managed claim—including resources, `as_of`, availability, networks, mainnet, and Beta limits—and state when it was verified. Make network feasibility conditional on the current supported-network list and ask for the target chain when it changes the answer.
 
@@ -37,7 +37,7 @@ As verified against the official Beta scope, August 24, 2026:
 
 ### Coordinator API
 
-Privileged write/control-plane API for the management operations currently listed at `https://docs.chain.link/ace/reference/api/coordinator`; cite that page rather than extrapolating a resource from the UI or OSS contracts:
+Privileged write/control-plane API for the management operations currently listed at `https://docs.chain.link/ace/reference/apis.md#coordinator-api`; cite that page rather than extrapolating a resource from the UI or OSS contracts:
 - delegated signing-wallet creation where supported;
 - PolicyEngine deployment/configuration on supported networks;
 - policy-library instance creation and parameters;
@@ -49,9 +49,13 @@ Privileged write/control-plane API for the management operations currently liste
 
 It changes ACE resources and is not the auditor evidence API.
 
+### Evaluation API (MVP)
+
+Runtime interface for managed offchain risk policies, currently documented at `https://docs.chain.link/ace/reference/apis.md#evaluation-api-mvp`. It is an MVP: interfaces can change during Beta; contact a Chainlink representative before integrating. Use it to request a TRM wallet risk evaluation, receive a permit ID, poll until `ready`, then submit the protected transaction. It is not the Reporting evidence API and not a substitute for Coordinator resource management.
+
 ### Reporting API
 
-Read-only audit/monitoring plane for the resources currently listed at `https://docs.chain.link/ace/reference/api/reporting`. As verified August 24, 2026, these are **Transactions, Policies, Targets, Identities, and Permits**; `as_of` point-in-time queries are documented for Policies, Targets, and Identities, not every resource. Cite and re-check the page before repeating either list. Reporting data is indexed evidence, not a substitute for chain state: reconcile it with onchain logs, deployed addresses, policy wiring/snapshots, credential-issuer records, and governance/admin history.
+Read-only audit/monitoring plane for the resources currently listed at `https://docs.chain.link/ace/reference/apis.md#reporting-api`. As verified September 21, 2026, these are **Transactions, Policies, Targets, Identities, Permits, and Registry usage**; `as_of` point-in-time queries are documented for Policies, Targets, and Identities, not every resource. Cite and re-check the page before repeating either list. Reporting data is indexed evidence, not a substitute for chain state: reconcile it with onchain logs, deployed addresses, policy wiring/snapshots, credential-issuer records, and governance/admin history.
 
 Do not invent exact event names: identify the deployed contract and verify its ABI or pinned source before naming logs. Do not equate a managed Reporting `Identities` record with an OSS CCID registry record; state the boundary and reconcile each against its actual onchain registry.
 

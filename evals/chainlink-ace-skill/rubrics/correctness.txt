@@ -9,8 +9,8 @@ Workflow definitions:
 - cross-chain-identity: CCID, IdentityRegistry, CredentialRegistry, Credential Issuer, credential types, credential sources, KYC/AML/accreditation
 - token-examples: ERC-20 and ERC-3643 compliance token examples, including frozen-token behavior differences
 - platform-beta: managed ACE Platform private/Beta scope, mainnet/testnet readiness, product limitations, and OSS self-deploy separation
-- platform-reporting: Reporting API, audit evidence, Transactions, Policies, Targets, Identities, point-in-time state, and onchain reconciliation
-- platform-apis: Coordinator API vs Reporting API, write/control-plane management vs read-only evidence queries
+- platform-reporting: Reporting API, audit evidence, Transactions, Policies, Targets, Identities, Permits, Registry usage, point-in-time state, and onchain reconciliation
+- platform-apis: Coordinator API vs Evaluation API (MVP) vs Reporting API, write/control-plane management vs offchain evaluation vs read-only evidence queries
 - platform-identity: managed-platform credential modes vs OSS Cross-Chain Identity credential validators
 - platform-visibility: whether self-deployed/Foundry contracts are visible in ACE Platform, registration, provisioning, and indexing boundaries
 

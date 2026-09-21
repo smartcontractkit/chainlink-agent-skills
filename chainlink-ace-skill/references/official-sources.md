@@ -4,7 +4,7 @@ Use for current repository/product facts, exact source or interface locations, s
 
 ## Freshness
 
-Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Every current managed-product claim must cite the exact live official URL and state the verification date. Before listing Coordinator or Reporting resources/capabilities or `as_of` support, fetch both API pages, report only what each currently documents, and say which resource types support `as_of`; never generalize it to every endpoint. Prefer live official source over a bundled reference and name any change from it.
+Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Every current managed-product claim must cite the exact live official URL and state the verification date. Before listing Coordinator, Evaluation, or Reporting resources/capabilities or `as_of` support, fetch `https://docs.chain.link/ace/reference/apis.md`, report only what it currently documents, and say which resource types support `as_of`; never generalize `as_of` to every endpoint. If that fetch fails, name the URL and do not invent resources or treat the failure as an empty inventory. Prefer live official source over a bundled reference and name any change from it.
 
 ## Product Docs
 
@@ -16,8 +16,7 @@ Re-check repository source before exact signatures, schemas, scripts, remappings
 | Release notes | `https://docs.chain.link/ace/release-notes.md` |
 | Architecture | `https://docs.chain.link/ace/concepts/architecture.md` |
 | Reporting | `https://docs.chain.link/ace/concepts/reporting.md` |
-| Coordinator API | `https://docs.chain.link/ace/reference/api/coordinator.md` |
-| Reporting API | `https://docs.chain.link/ace/reference/api/reporting.md` |
+| APIs (Coordinator, Evaluation MVP, Reporting) | `https://docs.chain.link/ace/reference/apis.md` |
 | SecureMintPolicy | `https://docs.chain.link/ace/reference/policy-library/secure-mint-policy.md` |
 
 ## Repository Docs
@@ -32,6 +31,7 @@ Paths below are relative to `https://github.com/smartcontractkit/chainlink-ace/b
 | Upgrade Guide | `UPGRADE_GUIDE.md` |
 | Glossary | `Glossary.md` |
 | License | `LICENSE` |
+| License grants | `chainlink-ace-License-grants` |
 | Package metadata | `package.json` |
 | Remappings | `remappings.txt` |
 | Policy Management README | `packages/policy-management/README.md` |
@@ -85,7 +85,7 @@ Token examples are implementation references, not a compliance determination. Fo
 - Overview/start: README; new OSS integration: Getting Started plus package README; existing proxy: Upgrade Guide.
 - Policy behavior: policies README, or the docs.chain.link policy page for product scope; exact signature/schema: corresponding Solidity interface/source.
 - Identity/credentials: identity package docs for OSS, Beta Scope for managed credential limitations.
-- Production licensing: `LICENSE`; tell the user to contact Chainlink and consult counsel.
-- Managed Platform/Beta/mainnet/network: Beta Scope plus Supported Networks; auditor/reporting: Reporting concept plus Reporting API.
-- Coordinator versus Reporting: fetch both; distinguish write/control-plane management from read-only evidence queries.
+- Production licensing: `LICENSE` and `chainlink-ace-License-grants`; tell the user to contact Chainlink and consult counsel.
+- Managed Platform/Beta/mainnet/network: Beta Scope plus Supported Networks; auditor/reporting: Reporting concept plus the APIs page.
+- Coordinator versus Evaluation versus Reporting: fetch `https://docs.chain.link/ace/reference/apis.md`; distinguish write/control-plane management, MVP offchain evaluation, and read-only evidence queries.
 - Current scripts: fetch `package.json` rather than copying a potentially stale script block.
