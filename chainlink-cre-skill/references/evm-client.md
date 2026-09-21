@@ -36,7 +36,7 @@ const readBalance = (runtime: Runtime<Config>, owner: Address): bigint => {
 }
 ```
 
-Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. `LAST_FINALIZED_BLOCK_NUMBER` is the SDK's exported opaque finalized sentinel; import and use it directly rather than replacing it with a numeric literal. `-1n` is latest, `-2n` safe, `-3n` pending, and a positive value selects an exact block. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). See [concepts.md](concepts.md) for Go's distinct generated/low-level constants.
+Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). Use the Block numbers table; TypeScript `-3n` is pending, not finalized.
 
 ### Multi-output reads: tuple-to-object decoding
 
@@ -73,6 +73,20 @@ const readLatestRoundData = (runtime: Runtime<Config>): RoundData => {
   return { roundId, answer, startedAt, updatedAt, answeredInRound }
 }
 ```
+
+## Block numbers
+
+TypeScript `callContract` sentinels are not the Go sentinels. Do not copy a numeric literal from one language into the other.
+
+| Level | TypeScript | Go generated bindings | Go low-level `CallContract` / `BalanceAt` / `HeaderByNumber` |
+|---|---|---|---|
+| finalized | `LAST_FINALIZED_BLOCK_NUMBER` (opaque export; do not replace with a numeric literal) | `nil` or `big.NewInt(-3)` | `big.NewInt(-3)` |
+| latest | `-1n` | `big.NewInt(-2)` | `nil` or `big.NewInt(-2)` |
+| safe | `-2n` | — | — |
+| pending | `-3n` | — | — |
+| exact block | positive `bigint` | positive `*big.Int` | positive `*big.Int` |
+
+Prefer finalized for high-value reads. Avoid pending in production. Finality timings are in [concepts.md](concepts.md).
 
 ## Write/report flow
 
@@ -129,7 +143,7 @@ Generated packages live under `contracts/evm/src/generated`. A constructor retur
 ```go
 binding, err := storage.NewStorage(client, common.HexToAddress(config.Address), nil)
 if err != nil { return nil, err }
-value, err := binding.Get(runtime, big.NewInt(-3)).Await()
+value, err := binding.Get(runtime, big.NewInt(-3)).Await() // generated-binding finalized; TypeScript `-3n` is pending
 ```
 
 No-input ABI methods omit the input struct. Generated `WriteReportFrom<StructName>(runtime, data, gasConfig)` helpers are named for public/external ABI input structs and perform encoding, `GenerateReport`, and `WriteReport`.

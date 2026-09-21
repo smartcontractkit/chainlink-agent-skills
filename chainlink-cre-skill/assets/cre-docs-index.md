@@ -130,6 +130,7 @@ URL-only map of every indexed CRE destination. Fetch only the smallest relevant 
 - https://docs.chain.link/cre/reference/cli/authentication.md
 - https://docs.chain.link/cre/reference/cli/project-setup-go.md
 - https://docs.chain.link/cre/reference/cli/project-setup-ts.md
+- https://docs.chain.link/cre/reference/cli/registry.md
 - https://docs.chain.link/cre/reference/cli/secrets.md
 - https://docs.chain.link/cre/reference/cli/utilities.md
 - https://docs.chain.link/cre/reference/cli/workflow.md

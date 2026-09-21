@@ -35,6 +35,14 @@ Use for exact CRE commands and flags. [project-scaffolding.md](project-scaffoldi
 
 The agent never reads key material. Account creation is browser-only.
 
+## Registry
+
+Login is required. `cre registry list` reads the cached tenant context from `~/.cre/context.yaml` (populated by `cre login`) and prints each registry's label, ID, type, and onchain address when present. Use an ID from that output as `--deployment-registry` / `user-workflow.deployment-registry`. Do not invent IDs. The receiver-free local scaffold uses the supported literal `private`; registry-bound init, deploy, broadcast, and lifecycle use an authenticated ID from this command. There is no `--json` flag for this command.
+
+```bash
+cre registry list
+```
+
 ## Project and templates
 
 ```bash
@@ -119,5 +127,6 @@ Create uploads; update replaces; delete removes; list shows namespaces. Follow s
 ## Sources
 
 - https://docs.chain.link/cre/reference/cli.md
+- https://docs.chain.link/cre/reference/cli/registry.md
 - https://docs.chain.link/cre/reference/cli/workflow.md
 - https://docs.chain.link/cre/reference/cli/secrets.md

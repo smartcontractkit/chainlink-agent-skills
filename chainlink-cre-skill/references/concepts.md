@@ -22,17 +22,7 @@ For an HTTP request specifically: each node performs the request independently t
 
 Finality semantics vary by chain. Prefer finalized for high-value reads and decisions that lead to writes; latest trades reorg safety for freshness; avoid pending in production.
 
-TypeScript `EVMClient.callContract` block numbers:
-
-| Value | Level |
-|---|---|
-| `LAST_FINALIZED_BLOCK_NUMBER` | exported opaque finalized sentinel (default/recommended) |
-| `-1n` | latest |
-| `-2n` | safe |
-| `-3n` | pending |
-| positive `bigint` | exact block |
-
-Go generated bindings use `nil` or `big.NewInt(-3)` for finalized and `big.NewInt(-2)` for latest; positive values select an exact block. Low-level Go `CallContract`, `BalanceAt`, and `HeaderByNumber` use `nil`/`-2` for latest and `-3` for finalized. Do not mix the generated-binding and low-level conventions.
+Language-specific block-number sentinels live in [evm-client.md](evm-client.md). TypeScript `-3n` is pending; Go generated bindings use `-3` for finalized. Do not mix those conventions, and do not mix generated-binding constants with low-level Go `CallContract` / `BalanceAt` / `HeaderByNumber` constants.
 
 Ethereum finalized is roughly 15 minutes behind head and safe roughly 6 minutes; L2 safe/finalized behavior depends on L1 confirmation. Check the target chain rather than assuming these timings.
 
