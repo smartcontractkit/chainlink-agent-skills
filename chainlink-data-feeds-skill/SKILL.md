@@ -52,4 +52,5 @@ For a configuration-focused SVR protocol integration or migration, give concise 
 - Read EVM proxies, not underlying aggregators.
 - Preserve the starter kit layout/README invariants; replace illustrations and tune heartbeat/mock values.
 - Use `AggregatorV3Interface` for single values, `IBundleAggregatorProxy` for MVR, and `AggregatorV2V3Interface` for sequencer uptime.
-- Verify unknown addresses, feed IDs, schemas, parameters, and support.
+- A live feed address in config must be copied from the official address page fetched in this turn. When that page lists more than one contract for the pair, use the contract for the product the user asked for. A normal price read uses the standard proxy, not an SVR, backup, or legacy proxy. If the page was not fetched, use a placeholder and say the address is unverified. Never present a remembered address as the verified current feed.
+- Verify unknown feed IDs, schemas, parameters, and support.
