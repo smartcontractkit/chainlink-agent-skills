@@ -1,73 +1,52 @@
 # ACE Architecture
 
-## Trigger Conditions
+Read for component relationships, Policy Management plus Cross-Chain Identity, protected-call flow, or a high-level diagram.
 
-Read this file when:
-- The user asks how ACE components fit together
-- The user asks how Policy Management and Cross-Chain Identity interact
-- The user asks how a policy-protected function is evaluated
-- The user asks for a high-level diagram or mental model
+## System
 
-## System Overview
+The public `chainlink-ace` repository is modular:
 
-The public `chainlink-ace` repository presents ACE as a modular toolkit:
-
-| Component | Description | Dependency |
+| Component | Role | Dependency |
 | --- | --- | --- |
-| Policy Management | Dynamic engine to create and enforce onchain rules | Standalone |
-| Cross-Chain Identity | Portable identity system for EVM chains; attach credentials once, verify anywhere | Requires Policy Management |
-| Token examples | ERC-20 and ERC-3643 examples showing full integrations | Policy Management, optionally Cross-Chain Identity |
+| Policy Management | Dynamic onchain rule creation/enforcement | Standalone |
+| Cross-Chain Identity | Portable EVM identity: attach credentials once, verify across addresses/chains | Policy Management |
+| Token examples | Full ERC-20 and ERC-3643 integrations | Policy Management; identity when required |
 
-Policy Management is the enforcement layer. Cross-Chain Identity is an optional identity/credential layer governed and consumed by Policy Management.
-
-## Policy Management Components
+Policy Management is the enforcement layer; Cross-Chain Identity is an optional credential layer that it governs and consumes.
 
 | Component | Role |
 | --- | --- |
-| `PolicyProtected` / `PolicyProtectedUpgradeable` | Base contract inherited by applications. Provides `runPolicy` and context handling. |
-| `IPolicyProtected` | Interface for custom/manual integration when inheriting the base contract is not suitable. |
-| `PolicyEngine` | Central orchestrator that manages policies, extractors, and mappers for protected functions. |
-| `Policy` | Modular contract implementing a single rule through `run()` and optional `postRun()`. |
-| `Extractor` | Parses calldata into named parameters. |
-| `Mapper` | Optionally transforms or selects parameters before policy evaluation. |
+| `PolicyProtected` / `PolicyProtectedUpgradeable` | Application bases providing `runPolicy` and context handling |
+| `IPolicyProtected` | Manual integration when inheritance is unsuitable |
+| `PolicyEngine` | Orchestrates policies, extractors, and mappers by target/function |
+| `Policy` | One rule through `run()` and optional `postRun()` |
+| Extractor | Parses calldata into named parameters |
+| Mapper | Selects/transforms parameters for a policy |
+| CCID | `bytes32` cross-chain identity |
+| Identity Registry | Maps local addresses to CCIDs |
+| Credential Registry / Issuer | Stores CCID credentials / trusted offchain verifier that writes them |
+| Credential Source / validator policy | Selects trusted registries / checks credential requirements |
 
-## Protected Transaction Flow
+Identity registries are policy-governed, so issuer authorization can change without hardcoded ownership.
 
-1. User calls a protected function on an application contract.
-2. The `runPolicy` modifier or manual `_runPolicy()` call sends a payload to `PolicyEngine`.
-3. `PolicyEngine` uses the configured extractor for the function selector to parse calldata.
-4. Parameters are mapped to each policy.
-5. Policies execute in the order they were added.
-6. A policy can revert with `PolicyRejected`, return `Allowed`, or return `Continue`.
-7. If a policy returns `Allowed`, later policies are skipped.
-8. If every policy returns `Continue`, the engine applies its default behavior.
-9. If the call is allowed, the protected function body runs.
+## Canonical Protected-Transaction Flow
 
-## Cross-Chain Identity Components
+1. A user calls a protected application function, such as ERC-20 `transfer(address,uint256)` or `transferFrom(address,address,uint256)`.
+2. Before the protected function body or balance update, `runPolicy` or `_runPolicy()` submits the call payload to `PolicyEngine`.
+3. The selector's extractor decodes calldata into named parameters.
+4. A configured/default mapper supplies each policy's expected parameters.
+5. Policies run in attachment order.
+6. `PolicyRejected` reverts; `Allowed` skips later policies; `Continue` advances.
+7. If all policies continue, the engine applies its configured default behavior.
+8. After the call is allowed, optional `postRun()` hooks run before the protected function body.
+9. Only then does the protected function body, such as the ERC-20 balance update, execute.
 
-| Component | Role |
-| --- | --- |
-| CCID | `bytes32` identifier representing an identity across EVM chains |
-| Identity Registry | Maps local wallet addresses to CCIDs |
-| Credential Registry | Stores credentials linked to CCIDs |
-| Credential Issuer | Offchain trusted entity that verifies real-world information and writes resulting credentials onchain |
-| Credential Source | Configuration telling validators which identity/credential registries to trust |
-| Credential Registry Identity Validator Policy | Policy that checks credential requirements during protected function calls |
+Never describe `postRun()` as occurring after `transfer` or `transferFrom`.
 
-The identity registries are governed by Policy Management, so issuer authorization can be changed through policies rather than hardcoded ownership.
+Example: for a tokenized bond trade, an identity policy can require KYC/accreditation before a volume/rate policy checks limits; rejection stops business logic.
 
-## Example: Tokenized Bond Trade
+## Design Rules
 
-1. Investor calls a protected function on a tokenized bond application.
-2. PolicyEngine runs an identity policy to check required credentials such as KYC or accreditation.
-3. PolicyEngine runs a volume or rate policy to ensure the trade is within allowed limits.
-4. If all checks pass, the application executes the trade.
-5. If any policy rejects, the transaction reverts before the application logic proceeds.
-
-## Design Guidance
-
-1. Use Policy Management standalone for rules that depend only on calldata, sender, time, roles, limits, or external onchain data.
-2. Add Cross-Chain Identity when rules depend on credentials tied to users across addresses or chains.
-3. Keep administrative control over PolicyEngine highly restricted.
-4. Treat policies, extractors, and mappers as trusted components. A bad extractor can feed false data to correct policies.
-5. For production, review the BUSL license, audit configuration, and test policy chains end to end.
+- Use Policy Management alone for calldata, sender, time, role, limit, or external-onchain-data rules; add identity when rules depend on credentials portable across addresses/chains.
+- Restrict PolicyEngine administration. Treat policies, extractors, and mappers as trusted: a dishonest extractor can defeat correct policies.
+- For production, review BUSL licensing, audit the configuration, and test complete policy chains.

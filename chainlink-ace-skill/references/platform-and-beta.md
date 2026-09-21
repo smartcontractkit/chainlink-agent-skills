@@ -1,124 +1,72 @@
 # ACE Platform and Beta Scope
 
-## Trigger Conditions
+Read for ACE Platform/private Beta, product UI or managed API, Policy/Identity/Reporting Manager, Coordinator/Reporting API, auditors, audit trails, networks/mainnet readiness, managed registration/indexing, externally deployed contract visibility, custom managed capabilities, credentials, or product limitations.
 
-Read this file when:
-- The user mentions ACE Platform, private beta, Beta, product UI, managed API, Coordinator API, Reporting API, Reporting Manager, Policy Manager UI, Identity Manager UI, auditors, audit trail, supported networks, mainnet readiness, platform registration, platform indexing, Foundry-only deployments, or managed product limitations
-- The user asks whether ACE can be used on mainnet through the managed platform
-- The user asks whether custom policies, custom extractors, custom fraud scores, or Credential Data Validators are available through the managed product
-- The user asks what evidence auditors can retrieve from ACE
+## Authority and Boundary
 
-## Source Of Truth
-
-Use official Chainlink ACE docs for product-scope claims:
-- ACE overview: `https://docs.chain.link/ace.md`
-- Beta scope: `https://docs.chain.link/ace/beta-scope.md`
-- Supported networks: `https://docs.chain.link/ace/supported-networks.md`
-- Coordinator API: `https://docs.chain.link/ace/reference/api/coordinator.md`
-- Reporting API: `https://docs.chain.link/ace/reference/api/reporting.md`
+Current product sources:
+- Overview: `https://docs.chain.link/ace.md`
+- Beta: `https://docs.chain.link/ace/beta-scope.md`
+- Networks: `https://docs.chain.link/ace/supported-networks.md`
+- APIs (Coordinator, Evaluation MVP, Reporting): `https://docs.chain.link/ace/reference/apis.md`
 - Reporting concept: `https://docs.chain.link/ace/concepts/reporting.md`
 
-Product scope changes quickly. When the user asks about current availability, supported networks, mainnet readiness, API resources, or Beta limitations, verify the live docs before giving a definitive answer.
+Before answering, fetch and cite the exact live official page for every current managed claim—including resources, `as_of`, availability, networks, mainnet, and Beta limits—and state when it was verified. Make network feasibility conditional on the current supported-network list and ask for the target chain when it changes the answer.
 
-## Product vs OSS Boundary
+| Surface | Authority and scope |
+| --- | --- |
+| OSS/self-deployed contracts | `smartcontractkit/chainlink-ace`; users deploy/extend under BUSL/commercial licensing, security review, and their own infrastructure |
+| Managed ACE Platform | `docs.chain.link/ace`; managed UI/APIs subject to access, provisioning, supported networks, private-Beta scope, and product limitations |
 
-ACE has two distinct surfaces:
+Never infer managed support from a repository capability, or infer that a managed Beta limitation prevents OSS evaluation/self-deployment.
 
-| Surface | Source of truth | What to say |
-| --- | --- | --- |
-| OSS/self-deployed contracts | `smartcontractkit/chainlink-ace` repo | Users can deploy and integrate contracts themselves, subject to BUSL/commercial licensing, security review, and their own infrastructure. |
-| Managed ACE Platform | `docs.chain.link/ace` docs | Users operate ACE through managed UI/API surfaces, subject to private Beta scope, supported networks, provisioning, and product limitations. |
+## Beta Defaults
 
-Always separate these in answers. A capability in the repo does not mean the managed ACE Platform supports it, and a Beta limitation in the managed product does not mean the OSS contracts cannot be self-deployed or extended.
+As verified against the official Beta scope, August 24, 2026:
+- The Platform is a provisioned private Beta for selected mainnet and testnet networks; confirm the requested chain against the live supported-network list.
+- Users can register custom policies. Custom extractors and mappers are unavailable through the Platform, so the full managed experience is limited to the documented ERC-20 and ERC-3643 function signatures.
+- Contracts deployed outside the Platform can function onchain but do not appear in its UI, API responses, reporting, or monitoring; do not propose registration or indexing unless current official docs explicitly add it.
+- Credential Data Validators come from Chainlink's curated catalog; do not promise a user-deployed validator. Re-fetch the Beta page because all product scope can change.
+- For production, distinguish managed availability from self-deployed OSS, which still needs current license review, audits, operational ownership, deployment approval, and legal/compliance review.
 
-## Current Beta Defaults
+## Managed Surfaces
 
-As documented on April 28, 2026:
-- ACE Platform is in private Beta and requires access/provisioning.
-- The Beta scope page describes the managed product as testnet-only.
-- The Beta scope page calls out supported contract types, attestation-only credentials, self-deployed contract visibility, custom policies and extractors, signing model, and contract upgradeability as scoped/limited Beta areas.
-- Do not claim managed-platform mainnet readiness unless current docs explicitly say it is supported.
-- Do not claim custom policies, custom extractors, custom fraud-score configuration, or custom Credential Data Validator logic are available through the Platform UI/API unless current docs explicitly say so.
+- **Policy Manager (UI + API):** configure/deploy compliance rules.
+- **Identity Manager (UI + API):** manage CCIDs, identities, credential registries/types, issuers, and credentials.
+- **Reporting Manager (API):** query policy-run history, transactions, and onchain compliance state.
 
-For mainnet or production questions, lead with this distinction:
+### Coordinator API
 
-```text
-Managed ACE Platform: currently governed by Beta/product scope; verify docs for network and feature availability.
-Self-deployed OSS contracts: possible to evaluate separately, but production requires BUSL/commercial license review, audits, operational ownership, and explicit deployment approval.
-```
+Privileged write/control-plane API for the management operations currently listed at `https://docs.chain.link/ace/reference/apis.md#coordinator-api`; cite that page rather than extrapolating a resource from the UI or OSS contracts:
+- delegated signing-wallet creation where supported;
+- PolicyEngine deployment/configuration on supported networks;
+- policy-library instance creation and parameters;
+- target registration and function-selector protection attachment;
+- extractor management;
+- identity/credential registry creation;
+- CCID and wallet mapping registration;
+- credential-type definition, credential issuance/management, and trusted-issuer management.
 
-## Managed Product Surfaces
+It changes ACE resources and is not the auditor evidence API.
 
-ACE Platform provides:
-- Policy Manager (UI + API): configure and deploy compliance rules for smart contracts
-- Identity Manager (UI + API): manage CCIDs, identities, credential registries, credential types, issuers, and credentials
-- Reporting Manager (API): query policy run history, transaction data, and onchain compliance state
+### Evaluation API (MVP)
 
-## Coordinator API
+Runtime interface for managed offchain risk policies, currently documented at `https://docs.chain.link/ace/reference/apis.md#evaluation-api-mvp`. It is an MVP: interfaces can change during Beta; contact a Chainlink representative before integrating. Use it to request a TRM wallet risk evaluation, receive a permit ID, poll until `ready`, then submit the protected transaction. It is not the Reporting evidence API and not a substitute for Coordinator resource management.
 
-Coordinator API is the managed control-plane API for ACE resources. Use it for management operations, including:
-- Creating and managing delegated signing wallets where supported
-- Deploying and configuring PolicyEngine instances on supported networks
-- Creating policy instances from the policy library and configuring parameters
-- Registering target contracts
-- Attaching policy protections to function selectors
-- Managing extractors
-- Creating identity and credential registries
-- Registering CCIDs and wallet mappings
-- Defining credential types
-- Issuing and managing credentials
-- Managing trusted credential issuers
+### Reporting API
 
-Coordinator API is not the auditor evidence API. It changes ACE configuration and resources, so treat it as a privileged management surface.
+Read-only audit/monitoring plane for the resources currently listed at `https://docs.chain.link/ace/reference/apis.md#reporting-api`. As verified September 21, 2026, these are **Transactions, Policies, Targets, Identities, Permits, and Registry usage**; `as_of` point-in-time queries are documented for Policies, Targets, and Identities, not every resource. Cite and re-check the page before repeating either list. Reporting data is indexed evidence, not a substitute for chain state: reconcile it with onchain logs, deployed addresses, policy wiring/snapshots, credential-issuer records, and governance/admin history.
 
-## Reporting API
+Do not invent exact event names: identify the deployed contract and verify its ABI or pinned source before naming logs. Do not equate a managed Reporting `Identities` record with an OSS CCID registry record; state the boundary and reconcile each against its actual onchain registry.
 
-Reporting API is the managed read-only API for audit and monitoring workflows. Mention it when users ask about auditors, evidence, transaction history, policy decisions, or product-level visibility.
+## External Deployments
 
-Resource families to name:
-- Transactions
-- Policies
-- Targets
-- Identities
+Current Beta docs say Foundry/self-deployed contracts do not appear in Platform UI, API responses, reporting, or monitoring because the Platform tracks contracts it deploys. Cite the live Beta page and do not claim an external registration/indexing path unless that page explicitly documents one.
 
-Important reporting concepts:
-- Reporting API is for read-only access to onchain compliance state and transaction history.
-- Use `as_of` or equivalent point-in-time fields where the docs expose them to explain what state was true at a transaction or audit cutoff.
-- For audits, pair Reporting API records with onchain event logs, deployed contract addresses, policy configuration snapshots, credential issuer records, and governance/admin change history.
+## Managed-Answer Guardrails
 
-## Foundry-Only Or Self-Deployed Contracts
-
-If a user asks whether Foundry-deployed or self-deployed ACE contracts show up in ACE UI:
-- Do not assume the ACE Platform automatically indexes arbitrary deployments.
-- Explain that platform visibility usually depends on managed registration/provisioning/indexing through the product surface.
-- Tell the user to verify Beta docs or their Chainlink contact for whether externally deployed contracts can be registered, how indexing works, and what metadata the Platform requires.
+Every managed workflow must state the applicable private-Beta/access and feature limits. Require authorized access and explicit human or governance approval before Coordinator operations or onchain writes; keep PII and raw identity evidence offchain; apply least-privilege access and documented retention to reports; and include legal/compliance review where the design governs regulated activity. Always include the onchain reconciliation step for audit or reporting guidance and review policy order because an earlier `Allowed` result can skip later controls.
 
 ## Credential Modes
 
-For OSS contracts:
-- Cross-Chain Identity supports credential registries and Credential Data Validator patterns.
-
-For managed ACE Platform Beta:
-- Treat credential checks as product-scoped.
-- If the Beta docs say the managed product is attestation-only, say that clearly and do not promise custom Credential Data Validator behavior through the managed UI/API.
-- If the user needs custom credential data inspection, distinguish between building it with OSS contracts and having it supported in managed Beta.
-
-## Answer Patterns
-
-Mainnet regulated ERC-20:
-
-```text
-For the managed ACE Platform, do not assume mainnet support: Beta scope is product-limited and should be checked against current docs. Separately, the OSS contracts can be evaluated for a self-deployed integration, but production use needs BUSL/commercial license review, audits, operational ownership, and legal/compliance sign-off.
-```
-
-Coordinator API vs Reporting API:
-
-```text
-Coordinator API is the write/control-plane API for managing ACE resources. Reporting API is the read-only evidence plane for transactions, policies, targets, identities, and point-in-time compliance state.
-```
-
-Auditor evidence checklist:
-
-```text
-Use Reporting API first for product-level audit evidence, then reconcile it against onchain logs, policy configuration snapshots, target registrations, identity/credential state, issuer administration, and governance/admin changes.
-```
+OSS Cross-Chain Identity supports credential registries and Credential Data Validator patterns. Managed credentials are product-scoped: cite the current official ACE Beta docs at `https://docs.chain.link/ace/beta-scope` before stating attestation-only or any other Beta limit, and do not promise custom data-validator behavior through UI/API. When contrasting the modes, require production OSS BUSL/commercial-license and counsel review, trusted-issuer controls, and credential expiry/revocation handling; separate what OSS contracts can implement from what managed Beta exposes.

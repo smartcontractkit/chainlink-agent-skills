@@ -146,7 +146,7 @@ tests:
       reference_files:
         - references/onchain-contracts.md
         - references/policy-management.md
-        - references/contracts-and-source.md
+        - references/official-sources.md
     metadata:
       workflow: upgrade
       category: functional
@@ -197,7 +197,7 @@ tests:
       workflow: token-examples
       requires_live_source: "no"
       reference_files:
-        - references/contracts-and-source.md
+        - references/official-sources.md
         - references/onchain-contracts.md
     metadata:
       workflow: token-examples
@@ -262,7 +262,7 @@ tests:
       reference_files:
         - references/onchain-contracts.md
         - references/policy-management.md
-        - references/contracts-and-source.md
+        - references/official-sources.md
     metadata:
       workflow: onchain-contracts
       category: trigger-positive
