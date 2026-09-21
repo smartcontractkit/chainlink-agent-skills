@@ -1,556 +1,223 @@
 # SDK Reference
 
-Use this file when the user needs SDK API details: core types, consensus/aggregation functions, EVM Client methods, HTTP Client methods, or trigger type definitions.
+Exact API map for `@chainlink/cre-sdk` and `github.com/smartcontractkit/cre-sdk-go`. Use capability guides for examples. Match installed versions when a live declaration differs.
 
-## Trigger Conditions
+## TypeScript core
 
-- "What types does the CRE SDK expose?"
-- "How do I use the Runtime type?"
-- "What aggregation methods are available?"
-- "What's the API for the EVM client?"
+`Runtime<Config>`:
 
-Do not use for workflow structure (see workflow-patterns.md), specific usage examples (see evm-client.md, http-client.md, triggers.md), or CLI commands (see cli-reference.md).
+| Member | Contract |
+|---|---|
+| `config: Config` | parsed target config |
+| `log(message): void` | workflow log |
+| `now(): Date` | consensus time |
+| `getSecret({id,namespace?})` | lazy `Secret`; `.result().value` |
+| `getSecrets(requests)` | lazy map keyed by ID |
+| `runInNodeMode(fn,aggregation,unwrapOptions?)` | returns an argument-taking function whose result is lazy |
+| `report(input)` | lazy signed `Report`; use `prepareReportRequest(encoded)` |
 
-## TypeScript SDK
-
-Package: `@chainlink/cre-sdk`
-
-### Core Types
-
-#### `Runtime<Config>`
-
-The main runtime object passed to handler callbacks. Provides access to configuration, logging, time, secrets, and report generation.
-
-| Property/Method | Return Type | Description |
-|-----------------|-------------|-------------|
-| `config` | `Config` | Parsed configuration from config.json |
-| `log(message: string)` | `void` | Log a message (visible in simulation and monitoring) |
-| `now()` | `Date` | Consensus-derived timestamp (DON mode) |
-| `getSecret(request)` | `{ result(): Secret }` | Fetch one secret. Takes an object (`{ id, namespace? }`), not a string |
-| `getSecrets(requests)` | `{ result(): Record<string, Secret> }` | Fetch several secrets in one call, keyed by `id` |
-| `runInNodeMode(fn, aggregation, unwrapOptions?)` | `(...args) => { result(): TOutput }` | Run `fn` on each node and reach consensus on the results |
-| `report(input)` | `{ result(): Report }` | Generate a signed report; build `input` with `prepareReportRequest(encodedData)` |
-
-#### Secrets: `getSecret` / `getSecrets`
-
-`getSecret` is **synchronous** and returns a lazy handle, not a `Promise` and not `string | undefined`. Resolve it with `.result()`, then read `.value`:
-
-```typescript
-const apiKey = runtime.getSecret({ id: "API_KEY" }).result().value
-```
-
-Batch form — the result is keyed by secret `id`:
-
-```typescript
-const requests = [{ id: "KEY_A" }, { id: "KEY_B" }]
-const secrets = runtime.getSecrets(requests).result()
-const keyA = secrets.KEY_A.value
-```
-
-Rules that trip people up:
-
-- Never `await` it. There is no `Promise` anywhere in this API; `.result()` blocks until the value is available.
-- Never pass a bare string. `runtime.getSecret("API_KEY")` does not type-check — the argument is `{ id, namespace? }`. `namespace` defaults to `main` when omitted.
-- A missing or unauthorized secret **throws** (`SecretsError`, or `SecretsBatchError` from `getSecrets`) when `.result()` is called. It does not return `undefined`, so do not write `?? fallback` guards against it — use try/catch if you need a fallback.
-- `TeeRuntime` exposes the identical `getSecret`/`getSecrets` shape, because both `Runtime` and `TeeRuntime` extend the same `SecretsProvider` type. Confidential Workflows code and normal DON code read secrets exactly the same way.
-- **Secrets are unavailable in node mode.** `NodeRuntime` extends `BaseRuntime` only — not `SecretsProvider` — so `nodeRuntime.getSecret(...)` does not compile. Closing over the outer DON runtime inside a `runInNodeMode` callback fails too: entering node mode sets a `DonModeError` on it, which is thrown from `.result()`. Read secrets in DON mode and pass the values into the node function as arguments.
-
-#### `handler(trigger, callback)`
-
-Creates a handler definition binding a trigger to a callback function.
+`getSecret` never takes a string or returns `undefined`; `.result()` throws `SecretsError`/`SecretsBatchError`. `namespace` defaults to `main`. `NodeRuntime` lacks secrets; closing over DON runtime while in node mode yields `DonModeError`. `TeeRuntime` shares the secrets provider.
 
 ```typescript
 handler(trigger: TriggerDefinition, callback: HandlerCallback): HandlerDefinition
+const runner = await Runner.newRunner<Config>({ configSchema? })
+await runner.run(initWorkflow)
 ```
 
-#### `handlerInTee(trigger, fn, tees, hooks?)` and `TeeRuntime<Config>`
+Every capability returns a synchronous lazy handle resolved by `.result()`, not a JavaScript `Promise`.
 
-Confidential Workflows equivalent of `handler`: the callback runs inside a TEE and receives a `TeeRuntime<Config>` instead of a `Runtime<Config>`.
+### Confidential Workflow core
 
 ```typescript
 handlerInTee(
   trigger: Trigger,
-  fn: (runtime: TeeRuntime<Config>, triggerOutput) => TResult,
+  fn: (runtime: TeeRuntime<Config>, output) => TResult,
   tees: TeeConstraint,
   hooks?: Hooks,
 ): HandlerEntry
 ```
 
-`TeeRuntime<Config>` extends the base runtime and the secrets provider, adding:
+`TeeRuntime`: `getSecret`, `getSecrets`, `usingTheDons(): Runtime<Config>`, `reportFromDon(input)`, base `config`/`now`/`log`. Constraints accept `{}`, `{regions:[...]}`, or `[{tee:'nitro',regions:[...]}]`. See [confidential-workflows.md](confidential-workflows.md) for the security boundary.
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `getSecret(request)` | `{ result(): Secret }` | Fetch a secret, decrypted only inside the enclave |
-| `usingTheDons()` | `Runtime<Config>` | Cross back to the Workflow DON; values passed onward are no longer confidential |
-| `reportFromDon(input)` | `{ result(): Report }` | Generate a report from the DON without a full crossover |
+## TypeScript consensus
 
-`TeeConstraint` accepts `{}` (any TEE, any region), `{ regions: [...] }`, or `[{ tee: 'nitro', regions: [...] }]`. See `confidential-workflows.md` for patterns, the confidentiality boundary, and the Go equivalents.
+Whole-value functions are called:
 
-#### `Runner`
+| Function | Input/result |
+|---|---|
+| `consensusMedianAggregation<T>()` | numeric (`number`, `bigint`, `Date`, `Decimal`, `Int64`, `UInt64`) → median |
+| `consensusIdenticalAggregation<T>()` | any serializable value → identical |
+| `consensusCommonPrefixAggregation<T>()` | arrays → common prefix |
+| `consensusCommonSuffixAggregation<T>()` | arrays → common suffix |
+| `consensusFrequencyListAggregation<T>()` | values → `FrequencyListEntry<T>[]` |
 
-Manages workflow lifecycle.
-
-```typescript
-const runner = await Runner.newRunner<Config>(options?)
-await runner.run(initWorkflow)
-```
-
-Options:
-- `configSchema?: StandardSchema` - Optional schema for runtime config validation (Zod, ArkType)
-
-#### `Promise<T>` / `.result()`
-
-All capability calls return an object with `.result()` which blocks execution synchronously until the consensus-verified result is available.
+Each supports `.withDefault(value)`. Field aggregation is a function call with bare aggregator references:
 
 ```typescript
-const response = httpClient.sendRequest(runtime, fetchFn, agg)(url).result()
-const contractData = evmClient.callContract(runtime, opts).result()
-```
-
-### Consensus/Aggregation
-
-Aggregation is always expressed by **calling SDK functions**. There are no aggregation object literals in this SDK: `{ method: "median" }`, `{ method: "byFields", fields: {...} }`, and any `method:` string tag are invented shapes and will not type-check.
-
-#### Whole-value aggregators
-
-Call these with no arguments; each returns a `ConsensusAggregation` value to hand to `sendRequest` or `runInNodeMode`.
-
-| Function | Applies to | Result |
-|----------|-----------|--------|
-| `consensusMedianAggregation<T>()` | numeric `T` (`number`, `bigint`, `Date`) | Median across nodes |
-| `consensusIdenticalAggregation<T>()` | any `T` | Requires every node to return the same value |
-| `consensusCommonPrefixAggregation<T>()` | `T[]` | Longest shared prefix of the arrays |
-| `consensusCommonSuffixAggregation<T>()` | `T[]` | Longest shared suffix of the arrays |
-| `consensusFrequencyListAggregation<T>()` | `T[]` | `FrequencyListEntry<T>[]` — each value with its observation count |
-
-```typescript
-import { consensusIdenticalAggregation } from "@chainlink/cre-sdk"
-
-const answer = httpClient
-  .sendRequest(runtime, fetchAnswer, consensusIdenticalAggregation<string>())(url)
-  .result()
-```
-
-Every aggregation value also has `.withDefault(value)`, which supplies a fallback when a node's execution fails instead of failing the whole aggregation:
-
-```typescript
-consensusMedianAggregation<number>().withDefault(0)
-```
-
-#### `ConsensusAggregationByFields<T>(fields)`
-
-`ConsensusAggregationByFields` is a **function, not a type**. Never write it as a type annotation on an object literal. Call it with a type parameter for the object being aggregated, and pass a map from field name to a **field aggregator function reference**:
-
-```typescript
-import { ConsensusAggregationByFields, median, identical } from "@chainlink/cre-sdk"
-
-type ReserveInfo = {
-  totalReserve: number
-  lastUpdated: number
-  symbol: string
-}
-
-const aggregation = ConsensusAggregationByFields<ReserveInfo>({
-  totalReserve: median,
-  lastUpdated: median,
-  symbol: identical,
+ConsensusAggregationByFields<Input, Output?>({
+  price: median, symbol: identical, observations: frequencyList, noise: ignore,
 })
 ```
 
-The values are the functions themselves — bare `median`, not `median()` and not `{ method: "median" }`. `ConsensusAggregationByFields` invokes them internally.
+Other reference: `commonPrefix`, `commonSuffix`. Never use `ConsensusAggregationByFields` as a type, call field functions, or invent `{method:'median'}`/`method:'byFields'`. There is no `mode`.
 
-Field aggregators, imported from `@chainlink/cre-sdk`:
+## TypeScript capabilities
 
-| Aggregator | Applies to | Result |
-|------------|-----------|--------|
-| `median` | numeric field | Median across nodes |
-| `identical` | any field | Requires every node to agree |
-| `commonPrefix` | array field | Longest shared prefix |
-| `commonSuffix` | array field | Longest shared suffix |
-| `frequencyList` | any field | Each observed value with its count |
-| `ignore` | any field | Field is dropped from the consensus result |
+Top-level and `cre.capabilities.*` exports are the same class objects; top-level `handler`/`handlerInTee` equal `cre.handler`/`cre.handlerInTee`.
 
-There is no `mode` aggregator. Use `frequencyList` if you need observation counts.
+| Capability | Constructor |
+|---|---|
+| `EVMClient` | `new EVMClient(chainSelector: bigint)` |
+| `SolanaClient` | `new SolanaClient(chainSelector: bigint)` |
+| `HTTPClient` | `new HTTPClient()` |
+| `ConfidentialHTTPClient` | `new ConfidentialHTTPClient()` |
+| `HTTPCapability` | `new HTTPCapability()` |
+| `CronCapability` | `new CronCapability()` |
 
-If a field aggregator reshapes the field type — `frequencyList` turns a field of type `F` into `FrequencyListEntry<F>[]` — pass the result type as the second type parameter so `.result()` is typed correctly:
+There are no `EVMClientCapability`, `HTTPClientCapability`, or `EVMLogCapability` exports.
 
-```typescript
-ConsensusAggregationByFields<Observed, Aggregated>({ votes: frequencyList })
-```
-
-#### Common mistakes
+### EVM
 
 ```typescript
-// WRONG — used as a type annotation on an object literal
-const agg: ConsensusAggregationByFields<T> = { method: "byFields", fields: { ... } }
-
-// WRONG — field values as objects with a method tag
-ConsensusAggregationByFields<T>({ valueScaled: { method: "median" } })
-
-// WRONG — field aggregators called
-ConsensusAggregationByFields<T>({ valueScaled: median() })
-
-// RIGHT
-ConsensusAggregationByFields<T>({ valueScaled: median })
-```
-
-### Capability Class Names
-
-Every capability class is exported twice, under one canonical name: as a top-level export and as a member of the `cre.capabilities` namespace object. `cre.capabilities.EVMClient` **is** the same class object as the top-level `EVMClient` — the namespace is built from the same imports, so the two forms are interchangeable and their constructors take identical arguments. Match whichever style the user's project already uses.
-
-| Capability | Import name | Namespaced form | Constructor |
-|------------|-------------|-----------------|-------------|
-| EVM client | `EVMClient` | `cre.capabilities.EVMClient` | `new EVMClient(chainSelector: bigint)` |
-| Solana client | `SolanaClient` | `cre.capabilities.SolanaClient` | `new SolanaClient(chainSelector: bigint)` |
-| HTTP client | `HTTPClient` | `cre.capabilities.HTTPClient` | `new HTTPClient()` |
-| Confidential HTTP client | `ConfidentialHTTPClient` | `cre.capabilities.ConfidentialHTTPClient` | `new ConfidentialHTTPClient()` |
-| HTTP trigger | `HTTPCapability` | `cre.capabilities.HTTPCapability` | `new HTTPCapability()` |
-| Cron trigger | `CronCapability` | `cre.capabilities.CronCapability` | `new CronCapability()` |
-
-There are **no** `EVMClientCapability` or `HTTPClientCapability` exports. Those names do not exist in `@chainlink/cre-sdk` and will fail to import. The blockchain clients are named `EVMClient` / `SolanaClient`; only the trigger capabilities carry the `Capability` suffix (`CronCapability`, `HTTPCapability`).
-
-`cre` also exposes `cre.handler` and `cre.handlerInTee`, which are the same functions as the top-level `handler` / `handlerInTee` exports.
-
-### EVM Client API
-
-#### `EVMClient`
-
-The constructor takes the chain selector for the chain this client talks to, so you need one instance per chain:
-
-```typescript
-import { cre, getNetwork } from "@chainlink/cre-sdk"
-
-const network = getNetwork({ chainFamily: "evm", chainSelectorName: "ethereum-testnet-sepolia", isTestnet: true })
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
-
-// identical to:
-import { EVMClient } from "@chainlink/cre-sdk"
-const sameThing = new EVMClient(network.chainSelector.selector)
-```
-
-#### `callContract(runtime, options)`
-
-Read from a smart contract.
-
-The target chain comes from the client's constructor, not from the call arguments — there is no `chainSelectorName` field here.
-
-```typescript
-evmClient.callContract(runtime, {
-  call: CallMsg,          // build with encodeCallMsg({ from, to, data })
-  blockNumber?: BigInt,   // e.g. LAST_FINALIZED_BLOCK_NUMBER
+client.callContract(runtime, {
+  call: encodeCallMsg({from,to,data}),
+  blockNumber?: bigint,
 }): { result(): CallContractReply }
 ```
 
-`CallContractReply`:
-- `data: Uint8Array` - ABI-encoded return data. Convert with `bytesToHex(reply.data)` before passing to viem's `decodeFunctionResult`.
-
-#### `writeReport(runtime, options)`
-
-Write a signed report onchain.
+`CallContractReply.data` is `Uint8Array`; convert with `bytesToHex` before `viem.decodeFunctionResult`. The chain is fixed by the client constructor.
 
 ```typescript
-evmClient.writeReport(runtime, {
-  receiver: string,                      // consumer contract address
-  report: Report,                        // from runtime.report(...).result()
-  gasConfig?: { gasLimit: string },      // uint64 as a decimal string
+client.writeReport(runtime, {
+  receiver: string,
+  report: Report,
+  gasConfig?: { gasLimit: string },
 }): { result(): WriteReportReply }
 ```
 
-`WriteReportReply`:
-- `txStatus: TxStatus` - compare against the `TxStatus` enum, not string literals
-- `txHash?: Uint8Array` - transaction hash; convert with `bytesToHex`
-- `errorMessage?: string` - populated on failure
+Reply: `txStatus: TxStatus`, optional `txHash: Uint8Array`, optional `errorMessage`. Compare the enum, not strings. Report: `runtime.report(prepareReportRequest(encoded)).result()`.
 
-`runtime.report` also returns a lazy handle: `runtime.report(prepareReportRequest(encodedData)).result()`.
-
-### HTTP Client API
-
-#### `HTTPClient`
+### HTTP and node mode
 
 ```typescript
-const httpClient = new HTTPClient()
-// or: new cre.capabilities.HTTPClient()
-```
-
-#### `sendRequest(runtime, fetchFn, aggregation)`
-
-Execute a fetch function in DON mode with consensus aggregation. `fetchFn`'s **first parameter is always an `HTTPSendRequester`** supplied by the SDK; your own arguments follow it and are passed to the returned function.
-
-```typescript
-httpClient.sendRequest<TArgs extends unknown[], TInput, TOutput = TInput>(
+http.sendRequest<TArgs extends unknown[], TIn, TOut = TIn>(
   runtime: Runtime<unknown>,
-  fetchFn: (sendRequester: HTTPSendRequester, ...args: TArgs) => TInput,
-  consensusAggregation: ConsensusAggregation<TInput, TOutput, true>,
-  unwrapOptions?: UnwrapOptions<TInput>,
-): (...args: TArgs) => { result(): TOutput }
+  fn: (sender: HTTPSendRequester, ...args: TArgs) => TIn,
+  aggregation: ConsensusAggregation<TIn,TOut,true>,
+  unwrapOptions?: UnwrapOptions<TIn>,
+): (...args: TArgs) => { result(): TOut }
 ```
 
-There is a second, simpler overload for use **inside** a node-mode callback, which takes a request object directly instead of a function:
+Inside node/TEE mode:
 
 ```typescript
-httpClient.sendRequest(
-  runtime: NodeRuntime<unknown> | TeeRuntime<unknown>,
-  input: Request,
+http.sendRequest(
+  runtime: NodeRuntime<unknown> | TeeRuntime<unknown>, request: Request,
 ): { result(): Response }
 ```
 
-Read the response with the exported helpers `ok(response)`, `json(response)`, `text(response)`, `getHeader(response, name)` — `response.body` is raw bytes.
-
-#### `runtime.runInNodeMode(fn, aggregation, unwrapOptions?)`
-
-Runs `fn` on each node and reaches consensus on the results. This is a **`Runtime` method, not an HTTP client method** — there is no `httpClient.runInNodeMode`. `HTTPClient.sendRequest` is itself a thin wrapper that calls `runtime.runInNodeMode` for you.
+Response helpers: `ok`, `json`, `text`, `getHeader`; body is bytes. `Runtime.runInNodeMode` (not an HTTP-client method):
 
 ```typescript
-runtime.runInNodeMode<TArgs extends unknown[], TInput, TOutput = TInput>(
-  fn: (nodeRuntime: NodeRuntime<Config>, ...args: TArgs) => TInput,
-  consensusAggregation: ConsensusAggregation<TInput, TOutput, true>,
-  unwrapOptions?: UnwrapOptions<TInput>,
-): (...args: TArgs) => { result(): TOutput }
+runtime.runInNodeMode<TArgs extends unknown[],TIn,TOut = TIn>(
+  fn: (node: NodeRuntime<Config>, ...args: TArgs) => TIn,
+  aggregation: ConsensusAggregation<TIn,TOut,true>,
+  unwrapOptions?: UnwrapOptions<TIn>,
+): (...args: TArgs) => { result(): TOut }
 ```
 
-The callback's first parameter is a `NodeRuntime<Config>`, supplied by the SDK. Reach for this directly only when `sendRequest` cannot express the work (several requests per node, or non-HTTP per-node computation).
+### Triggers
 
-### Trigger Types
+| Trigger | Definition / callback |
+|---|---|
+| cron | `new CronCapability().trigger({schedule:string})`; `(Runtime<C>, CronPayload?)` |
+| HTTP | `new HTTPCapability().trigger({authorizedKeys:string[]})`; `(Runtime<C>, HTTPTriggerPayload)` |
+| EVM log | `new EVMClient(selector).logTrigger({addresses,topics,confidence?})`; `(Runtime<C>, Log)` |
 
-#### `CronCapability`
+`HTTPTriggerPayload`: `body`, `headers`, `url`. `Log` fields include address, topics, data, block number, transaction hash; protobuf byte fields are `Uint8Array`. Generated bindings expose typed event helpers.
 
-```typescript
-const cron = new CronCapability()
-cron.trigger({ schedule: string }): TriggerDefinition
-```
-
-Callback receives: `(runtime: Runtime<Config>) => T`
-
-#### `HTTPCapability`
+### Confidential HTTP
 
 ```typescript
-const http = new HTTPCapability()
-http.trigger({ authorizedKeys: string[] }): TriggerDefinition
-```
-
-Callback receives: `(runtime: Runtime<Config>, event: HTTPTriggerPayload) => T`
-
-`HTTPTriggerPayload`:
-- `body: object`
-- `headers: Record<string, string>`
-- `url: string`
-
-#### EVM log triggers
-
-There is no `EVMLogCapability` export. Log triggers come off the EVM client itself, via `logTrigger`:
-
-```typescript
-const evmClient = new EVMClient(network.chainSelector.selector)
-
-evmClient.logTrigger({
-  addresses: string[],           // contract addresses to watch
-  topics: TopicValues[],         // indexed topic filters
-  confidence?: ConfidenceLevel,  // e.g. finalized
-}): Trigger<Log, Log>
-```
-
-Callback receives: `(runtime: Runtime<Config>, log: EVMLog) => T`, where `EVMLog` is the SDK's exported log type (`address`, `topics`, `data`, `blockNumber`, `txHash`, all as protobuf-shaped values — byte fields are `Uint8Array`).
-
-In practice, generated contract bindings wrap this. A binding produced from an ABI exposes a per-event helper, which is the form the starter templates use:
-
-```typescript
-const monitoredToken = new MonitoredToken(evmClient, config.contractAddress as Address)
-cre.handler(monitoredToken.logTriggerLargeTransfer(), onLargeTransfer)
-```
-
-### ConfidentialHTTPClient
-
-```typescript
-import {
-  ConfidentialHTTPClient,
-  ConfidentialHTTPSendRequester,
-  ConsensusAggregationByFields,
-  identical,
-} from "@chainlink/cre-sdk"
-
-const confClient = new ConfidentialHTTPClient()
-
-confClient.sendRequest<R>(
+new ConfidentialHTTPClient().sendRequest<R>(
   runtime: Runtime,
-  callback: (req: ConfidentialHTTPSendRequester) => R,
+  callback: (sender: ConfidentialHTTPSendRequester) => R,
   aggregation: ConsensusAggregation<R>,
 ): { result(): R }
 ```
 
-Inside the callback, use `req.sendRequest()`:
+Callback request:
 
 ```typescript
-req.sendRequest({
-  request: {
-    url: string,
-    method: string,
-    bodyString?: string,
-    multiHeaders?: Record<string, { values: string[] }>,
-  },
-  vaultDonSecrets: Array<{ key: string, owner: string }>,
+sender.sendRequest({
+  request: { url, method, bodyString?, multiHeaders? },
+  vaultDonSecrets: [{ key, owner }],
   encryptOutput?: boolean,
-}): { result(): { body: ArrayBuffer } }
+}).result()
 ```
 
-Secrets use `{{.SECRET_NAME}}` template syntax in headers/body. See http-client.md for full usage patterns.
+Secrets use `{{.SECRET_NAME}}` in headers/body.
 
-## Go SDK
+## Go core
 
-Package: `github.com/smartcontractkit/cre-sdk-go`
-
-### Core Types
-
-#### `cre.Runtime`
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `Logger()` | `Logger` | Structured logger |
-| `Now()` | `time.Time` | Consensus-derived timestamp |
-| `Rand()` | `(*rand.Rand, error)` | Consensus-safe random source |
-| `GetSecret(name string)` | `(string, error)` | Retrieve a secret |
-| `GenerateReport(*cre.ReportRequest)` | `Promise[*cre.Report]` | Generate a signed report from the DON |
-
-#### `cre.NodeRuntime`
-
-Available inside `RunInNodeMode` callbacks:
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `Fetch(req *http.Request)` | `(*http.Response, error)` | Execute HTTP request |
-| `Logger()` | `Logger` | Structured logger |
-
-#### `cre.Handler(trigger, callback)`
+`cre.Runtime`: `Logger()`, `Now() time.Time`, `Rand() (*rand.Rand,error)`, secret provider methods, and `GenerateReport(*cre.ReportRequest) cre.Promise[*cre.Report]`. `cre.NodeRuntime` supplies `Fetch(*http.Request)` and `Logger()`.
 
 ```go
 cre.Handler[C any, M proto.Message, T any, O any](
-    trigger Trigger[M, T],
-    callback func(config C, runtime cre.Runtime, payload T) (O, error),
-) ExecutionHandler[C, Runtime]
+    trigger Trigger[M,T],
+    callback func(config C, runtime cre.Runtime, payload T) (O,error),
+) ExecutionHandler[C,Runtime]
 ```
-
-#### `cre.HandlerInTee(trigger, callback, tees)` and `cre.TeeRuntime`
-
-Confidential Workflows equivalent of `cre.Handler`: the callback receives a `cre.TeeRuntime`.
 
 ```go
 cre.HandlerInTee[C any, M proto.Message, T any, O any](
-    trigger Trigger[M, T],
-    callback func(config C, runtime cre.TeeRuntime, payload T) (O, error),
+    trigger Trigger[M,T],
+    callback func(config C, runtime cre.TeeRuntime, payload T) (O,error),
     tees cre.TeeConstraint,
-) ExecutionHandler[C, Runtime]
+) ExecutionHandler[C,Runtime]
 ```
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `GetSecret(*cre.SecretRequest)` | `Promise[*Secret]` | Fetch one secret, decrypted only inside the enclave |
-| `GetSecrets([]*cre.SecretRequest)` | `Promise[[]*Secret]` | Batch secret fetch |
-| `UsingTheDons()` | `cre.Runtime` | Cross back to the Workflow DON; values passed onward are no longer confidential |
-| `ReportFromDon(*cre.ReportRequest)` | `Promise[*Report]` | Generate a report from the DON without a full crossover |
+`cre.Promise[T].Await() (T,error)`. `cre.TeeRuntime`: `GetSecret(*cre.SecretRequest)`, `GetSecrets([]*cre.SecretRequest)`, `UsingTheDons() cre.Runtime`, `ReportFromDon(*cre.ReportRequest)`. Constraints: `cre.AnyTee{}`, `cre.AnyTeeInRegions{...}`, `cre.OneOfTees{cre.Nitro{...}}`. In-enclave HTTP: `http.Client.SendRequestInTee(runtime,req)`.
 
-`cre.TeeConstraint` implementations: `cre.AnyTee{}`, `cre.AnyTeeInRegions{Regions: []cre.Region{...}}`, `cre.OneOfTees{cre.Nitro{Regions: []cre.NitroRegion{...}}}`. HTTP from inside the enclave uses `http.Client.SendRequestInTee(runtime, req)`. See `confidential-workflows.md`.
-
-#### `cre.Promise[T]`
-
-Asynchronous result wrapper.
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `Await()` | `(T, error)` | Block until result is available |
-
-### EVM Client API (Go)
+## Go EVM
 
 ```go
-import "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
-
-evmClient := &evm.Client{ChainSelector: config.ChainSelector}
+client := &evm.Client{ChainSelector: selector} // uint64
+selector, err := evm.ChainSelectorFromName(name)
 ```
 
-`ChainSelector` is a `uint64`. Use `evm.ChainSelectorFromName(name)` to resolve a chain selector name first.
+Generated binding calls: `binding.Method(runtime, Input{...}, blockNumber).Await()`; no-input methods omit `Input`. Generated writes use `WriteReportFrom<StructName>(runtime,data,gasConfig)`.
 
-#### Generated Bindings
+Low-level stable signature:
 
 ```go
-contractAddress := common.HexToAddress(config.ContractAddress)
-binding, err := my_contract.NewMyContract(evmClient, contractAddress, nil)
-if err != nil {
-    return nil, fmt.Errorf("create MyContract binding: %w", err)
+WriteReport(runtime cre.Runtime, input *evm.WriteCreReportRequest) cre.Promise[*evm.WriteReportReply]
+```
+
+Request: `Receiver []byte`, `Report *cre.Report`, optional `GasConfig *evm.GasConfig` (`GasLimit uint64`). Reply: `TxStatus`, `ReceiverContractExecutionStatus`, `TxHash []byte`, `TransactionFee *pb.BigInt`, `ErrorMessage *string`. Statuses: `TX_STATUS_SUCCESS`, `TX_STATUS_REVERTED`, `TX_STATUS_FATAL`.
+
+Report fields:
+
+```go
+&cre.ReportRequest{
+  EncodedPayload: encoded, EncoderName: "evm",
+  SigningAlgo: "ecdsa", HashingAlgo: "keccak256",
 }
-result, err := binding.MyMethod(runtime, my_contract.MyMethodInput{Arg1: arg1, Arg2: arg2}, blockNumber).Await()
 ```
 
-#### WriteReport
+## Go HTTP and triggers
 
-Generate a report, then submit it through the EVM client:
+HTTP client: `creHttp.NewHTTPClient()`; `RunInNodeMode(runtime,fetchFn,aggregation).Await()`. Node HTTP is `cre.NodeRuntime.Fetch`.
 
-```go
-report, err := runtime.GenerateReport(&cre.ReportRequest{
-    EncodedPayload: encoded,
-    EncoderName:    "evm",
-    SigningAlgo:    "ecdsa",
-    HashingAlgo:    "keccak256",
-}).Await()
-if err != nil {
-    return nil, err
-}
+| Trigger | API / payload |
+|---|---|
+| cron | `cron.Trigger(&cron.Config{Schedule: ...})`; `*cron.Payload` |
+| HTTP | `http.Trigger(&http.Config{AuthorizedKeys: []*http.AuthorizedKey{...}})`; `*http.Payload` (`Input []byte`, `Key`) |
+| EVM log | generated helper preferred; low-level `evmlogtrigger` config/filter types |
 
-resp, err := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
-    Receiver:  consumerAddress.Bytes(),
-    Report:    report,
-    GasConfig: &evm.GasConfig{GasLimit: gasLimit},
-}).Await()
-```
+## Sources
 
-The stable low-level signature is `WriteReport(runtime cre.Runtime, input *evm.WriteCreReportRequest) cre.Promise[*evm.WriteReportReply]`. `evm.WriteCreReportRequest` contains `Receiver []byte`, `Report *cre.Report`, and optional `GasConfig *evm.GasConfig`; `evm.GasConfig.GasLimit` is a `uint64`.
-
-`evm.WriteReportReply` contains `TxStatus TxStatus`, `ReceiverContractExecutionStatus *ReceiverContractExecutionStatus`, `TxHash []byte`, `TransactionFee *pb.BigInt`, and `ErrorMessage *string`. `TxStatus` is one of `evm.TxStatus_TX_STATUS_SUCCESS`, `evm.TxStatus_TX_STATUS_REVERTED`, or `evm.TxStatus_TX_STATUS_FATAL`.
-
-Prefer the generated helper for ABI structs: the generator creates a `WriteReportFrom<StructName>(runtime, data, gasConfig)` method named after each input struct, which performs the encoding, `runtime.GenerateReport()`, and client `WriteReport()` calls.
-
-### HTTP Client API (Go)
-
-```go
-httpClient := creHttp.NewHTTPClient()
-```
-
-#### RunInNodeMode
-
-```go
-result, err := httpClient.RunInNodeMode(runtime, fetchFn, aggregation).Await()
-```
-
-### Trigger Types (Go)
-
-#### Cron
-
-```go
-import "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
-
-cron.Trigger(&cron.Config{Schedule: "*/30 * * * * *"})
-```
-
-Callback: `func(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*Result, error)`
-
-#### Webhook (HTTP)
-
-```go
-import "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/webhooktrigger"
-
-webhooktrigger.Trigger(webhooktrigger.Config{AuthorizedSenders: []string{}})
-```
-
-#### EVM Log
-
-```go
-import "github.com/smartcontractkit/cre-sdk-go/capabilities/triggers/evmlogtrigger"
-
-evmlogtrigger.Trigger(evmlogtrigger.Config{
-    ContractAddress:   "0x...",
-    ChainSelectorName: "ethereum-testnet-sepolia",
-    EventSignature:    "Transfer(address,address,uint256)",
-})
-```
-
-## Official Documentation
-
-- TypeScript SDK source: `https://github.com/smartcontractkit/cre-sdk-typescript`
-- Go SDK source: `https://github.com/smartcontractkit/cre-sdk-go`
+- https://github.com/smartcontractkit/cre-sdk-typescript
+- https://github.com/smartcontractkit/cre-sdk-go
+- https://docs.chain.link/cre/reference/sdk/overview-ts.md
+- https://docs.chain.link/cre/reference/sdk/overview-go.md

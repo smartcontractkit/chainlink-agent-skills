@@ -79,6 +79,7 @@ tests:
         - references/project-scaffolding.md
         - references/triggers.md
         - references/evm-client.md
+        - references/workflow-patterns.md
       workflow: workflow-generation
       requires_live_source: "no"
     assert: *functional_asserts
@@ -141,6 +142,7 @@ tests:
         - references/project-scaffolding.md
         - references/triggers.md
         - references/simulation.md
+        - references/workflow-patterns.md
       workflow: project-scaffolding
       requires_live_source: "no"
     assert: *functional_asserts
@@ -183,6 +185,7 @@ tests:
       reference_files:
         - references/evm-client.md
         - references/concepts.md
+        - references/workflow-patterns.md
       workflow: evm-client
       requires_live_source: "no"
     metadata:
@@ -339,7 +342,6 @@ tests:
   - vars:
       case_file: cases/functional/feedback-url-fallback-01.txt
       reference_files:
-        - references/feedback.md
         - references/cli-reference.md
         - references/operations.md
       workflow: feedback
@@ -357,6 +359,7 @@ tests:
         - references/project-scaffolding.md
         - references/http-client.md
         - references/evm-client.md
+        - references/workflow-patterns.md
       workflow: workflow-generation
       expected_trigger: "yes"
     metadata:
@@ -378,6 +381,7 @@ tests:
       case_file: cases/trigger-positive/evm-client-01.txt
       reference_files:
         - references/evm-client.md
+        - references/workflow-patterns.md
       workflow: evm-client
       expected_trigger: "yes"
     metadata:
@@ -445,7 +449,6 @@ tests:
   - vars:
       case_file: cases/trigger-positive/feedback-gap-01.txt
       reference_files:
-        - references/feedback.md
         - references/cli-reference.md
         - references/simulation.md
       workflow: feedback
@@ -459,7 +462,6 @@ tests:
   - vars:
       case_file: cases/trigger-positive/feedback-pain-01.txt
       reference_files:
-        - references/feedback.md
         - references/workflow-patterns.md
       workflow: feedback
       expected_trigger: "yes"
