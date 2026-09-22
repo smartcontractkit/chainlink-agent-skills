@@ -80,7 +80,8 @@ Example shape, not a project scaffold:
 ```yaml
 # secrets.yaml: IDs and environment references only
 secretsNames:
-  MY_API_KEY: MY_API_KEY_VAR
+  MY_API_KEY:
+    - MY_API_KEY_VAR
 ```
 
 ```yaml
@@ -177,7 +178,8 @@ Resolution can fail with `secret not found` when the environment-variable name i
 
 ```yaml
 secretsNames:
-  GEMINI_API_KEY_SECRET: GEMINI_API_KEY_VAR
+  GEMINI_API_KEY_SECRET:
+    - GEMINI_API_KEY_VAR
 ```
 
 ## DON Time and randomness
