@@ -126,31 +126,3 @@ Ondo GM feeds report Total Return Value: `Token Price = Underlying Equity Market
 2. Specific feed addresses, parameters, and availability by network change — fetch the relevant address page from `official-sources.md`.
 3. Tokenized equity feed provider details and issuer-specific behaviors may change — fetch the provider page when the user needs current operational specifics.
 
-## Triggering Tests
-
-- "What types of data feeds does Chainlink offer?"
-- "I need a Proof of Reserve feed for my RWA token"
-- "How do I read the Bitcoin interest rate curve from Chainlink?"
-- "What's the difference between SmartData and a regular price feed?"
-
-## Functional Tests
-
-1. Response correctly maps the user's use case to the right feed type.
-2. SmartData guidance distinguishes between single-value and MVR variants.
-3. Rate/Volatility guidance says to read like a standard price feed with a different address.
-4. Tokenized equity response mentions the contact requirement and session-specific risks.
-
-## Eval Checks
-
-1. Decision path correctly routes: asset prices → Price Feed, multiple values → MVR, reserves → SmartData PoR.
-2. PoR guidance mentions risk levels for self-reported vs. audited sourcing.
-3. Tokenized equity response includes pausing/corporate action behavior.
-4. Response does not conflate MVR with single-value SmartData.
-5. Rate/Volatility response does not introduce a special interface — it uses AggregatorV3Interface.
-
-## A/B Prompt Pack
-
-- "What kind of Chainlink feed do I need for my lending protocol that holds tokenized treasury bills?"
-- "I want to use Chainlink's ETH staking APR feed in my yield optimizer"
-- "How do I integrate Ondo tokenized equity feeds?"
-- "What's a SmartData feed and how is it different from a price feed?"

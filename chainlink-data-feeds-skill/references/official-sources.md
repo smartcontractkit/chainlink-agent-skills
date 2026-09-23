@@ -1,95 +1,58 @@
 # Official Sources
 
-Use this file only when the answer depends on live Data Feeds facts that the other reference files do not contain — feed addresses for a specific chain, current deprecation schedules, or specific network parameters.
+Use live sources only when embedded references lack a current address, deprecation state, network parameter, signature, or implementation detail.
 
-## Freshness Policy
+## Freshness and destination matrix
 
-1. Do not hardcode live Data Feeds facts such as specific feed addresses, proxy addresses, deprecation dates, or network-specific Flags contract addresses.
-2. Re-check official sources whenever the request depends on a specific feed address, current deprecation status, or network-specific configuration.
-3. Distinguish between conceptual guidance (stable — use reference files directly) and live configuration data (changes — check sources below).
-4. If a live source conflicts with cached assumptions, prefer the live source and say so.
+| Need | Official destination | Use |
+|---|---|---|
+| Concepts, architecture, interfaces, feed types, responsibilities | `https://docs.chain.link/data-feeds.md` | Stable documentation; prefer curated references for ordinary integration |
+| Price feed addresses | `https://docs.chain.link/data-feeds/price-feeds/addresses.md` | Network/pair proxy, heartbeat, deviation, decimals |
+| SmartData and MVR addresses/schemas | `https://docs.chain.link/data-feeds/smartdata/addresses.md` | Proxy and exact **MVR Bundle Info** field order/types |
+| Rate/volatility addresses | `https://docs.chain.link/data-feeds/rates-feeds/addresses.md` | Current network availability and parameters |
+| U.S. government macro addresses | `https://docs.chain.link/data-feeds/us-government-macroeconomic/addresses.md` | Current macro feed directory |
+| Deprecations | `https://docs.chain.link/data-feeds/deprecating-feeds.md` | Dates, networks, replacement guidance |
+| Registry | `https://docs.chain.link/data-feeds/contract-registry.md` | Network `IFlags` address and active official proxies |
+| Broad fallback | `https://docs.chain.link/data-feeds/llms-full.txt` | Last resort only; prefer the smallest page above |
 
-## Source Map
+Re-check live sources for specific addresses, deprecations, availability, and network configuration. Prefer a conflicting live source over cached data and identify the change. Do not use documentation prose as a substitute for a feed's address/schema table.
 
-### Chainlink Data Feeds Docs
+## Source and example fetch matrix
 
-URL:
-- `https://docs.chain.link/data-feeds.md`
+Fetch one exact file when debugging an interface mismatch, proxy behavior, signature, return type, or implementation. Use the embedded integration references instead of browsing source for routine answers, and use address pages—not repositories—for live configuration.
 
-Use for:
-- concepts and architecture
-- integration tutorials and patterns
-- interface documentation (AggregatorV3Interface, IBundleAggregatorProxy)
-- feed type explanations (Price, SmartData, MVR, SVR, Rates)
-- developer responsibilities and best practices
+### `smartcontractkit/documentation`
 
-Do not use as the primary source for:
-- specific feed addresses (use the address pages below)
-- current deprecation schedules (use the deprecation page)
+Base: `https://github.com/smartcontractkit/documentation/blob/main/`
 
-### Feed Address Pages
+| Shape | Paths under the base |
+|---|---|
+| EVM consumers | `public/samples/DataFeeds/DataConsumerV3.sol`; `DataConsumerWithSequencerCheck.sol`; `PriceConverter.sol`; `HistoricalDataConsumer.sol`; `ReserveConsumerV3.sol`; `ENSConsumer.sol` |
+| Offchain EVM | `public/samples/DataFeeds/PriceConsumerV3.js`; `PriceConsumerV3Ethers.js`; `PriceConsumerV3.py`; `HistoricalDataConsumer.js`; `HistoricalDataConsumer.py`; `ENSConsumer.js` |
+| MVR | `public/samples/DataFeeds/MVR/MVRDataConsumer.sol` |
+| SVR searcher code | `public/samples/DataFeeds/SVR/broadcaster.go`; `broadcaster.ts`; `decoder.go`; `decoder.ts`; `listener.go`; `listener.ts` |
+| SVR payload/decoding data | `public/samples/DataFeeds/SVR/bundle-bid.json`; `bundle-transaction-event.json`; `single-transaction-event.json`; `decoding-abi.json` |
+| Solana readers | `public/samples/Solana/PriceFeeds/on-chain-read.rs`; `on-chain-read-anchor.rs`; `off-chain-read.js`; `off-chain-read.ts` |
 
-URLs:
-- Price Feeds: `https://docs.chain.link/data-feeds/price-feeds/addresses.md`
-- SmartData / MVR Feeds: `https://docs.chain.link/data-feeds/smartdata/addresses.md`
-- Rate and Volatility Feeds: `https://docs.chain.link/data-feeds/rates-feeds/addresses.md`
-- US Government Macroeconomic: `https://docs.chain.link/data-feeds/us-government-macroeconomic/addresses.md`
+Repository directory: `https://github.com/smartcontractkit/documentation/tree/main/public/samples/DataFeeds`
 
-Use for:
-- looking up the correct proxy address for a specific pair on a specific network
-- confirming feed availability on a given chain
-- checking feed parameters (heartbeat, deviation threshold, decimals)
+### `smartcontractkit/chainlink-evm`
 
-### Feed Deprecation Schedule
+Base: `https://github.com/smartcontractkit/chainlink-evm/blob/develop/`
 
-URL:
-- `https://docs.chain.link/data-feeds/deprecating-feeds.md`
+| Question | Paths under the base |
+|---|---|
+| Upgradeable price proxy behavior | `contracts/src/v0.6/data-feeds/AggregatorProxy.sol`; `EACAggregatorProxy.sol` |
+| Price/sequencer interfaces | `contracts/src/v0.6/data-feeds/interfaces/AggregatorV3Interface.sol`; `AggregatorV2V3Interface.sol`; legacy `AggregatorInterface.sol` |
+| MVR proxy/cache | `contracts/src/v0.8/data-feeds/BundleAggregatorProxy.sol`; `DataFeedsCache.sol` |
+| MVR interfaces | `contracts/src/v0.8/data-feeds/interfaces/IBundleAggregatorProxy.sol`; `IBundleAggregator.sol`; `ICommonAggregator.sol` |
 
-Use for:
-- checking if a specific feed is scheduled for deprecation
-- finding deprecation dates, affected networks, and replacement guidance
-- advising users whose contracts reference potentially deprecated feeds
+Repository directories: legacy `https://github.com/smartcontractkit/chainlink-evm/tree/develop/contracts/src/v0.6/data-feeds`; MVR `https://github.com/smartcontractkit/chainlink-evm/tree/develop/contracts/src/v0.8/data-feeds`.
 
-### Contract Registry
+## Fetch selection
 
-URL:
-- `https://docs.chain.link/data-feeds/contract-registry.md`
-
-Use for:
-- finding the IFlags contract address for a specific network
-- verifying whether a feed proxy address is officially operated by Chainlink
-
-### GitHub Repositories
-
-URLs:
-- Example contracts: `https://github.com/smartcontractkit/documentation/tree/main/public/samples/DataFeeds`
-- Contract source (v0.6 legacy): `https://github.com/smartcontractkit/chainlink-evm/tree/develop/contracts/src/v0.6/data-feeds`
-- Contract source (v0.8 MVR): `https://github.com/smartcontractkit/chainlink-evm/tree/develop/contracts/src/v0.8/data-feeds`
-
-Use for:
-- inspecting actual contract implementations when debugging interface mismatches
-- verifying function signatures against deployed code
-- finding working example contracts as reference
-
-Do not use as the primary source for:
-- integration guidance (use the reference files instead)
-- feed addresses or configuration (use the address pages)
-
-### Full-Text Documentation Dump
-
-URL:
-- `https://docs.chain.link/data-feeds/llms-full.txt`
-
-Use only as a last resort when:
-- no specific doc page covers the topic
-- you need broad coverage across multiple Data Feeds topics
-- other sources failed to load
-
-## Practical Selection Rules
-
-1. For "what is the feed address for X on Y" → fetch the matching address page.
-2. For "is feed X being deprecated" → fetch the deprecation page.
-3. For "how do I read a price feed" → use `reading-price-feeds.md` directly, no fetch needed.
-4. For "what interface does MVR use" → use `mvr-feeds.md` directly, no fetch needed.
-5. For "what's the IFlags address on Arbitrum" → fetch the contract registry page.
-6. For everything else → try to answer from reference files first. Fetch only if a specific detail is missing.
+- Interface mismatch: fetch the specific interface and compare its function signature to the caller.
+- Proxy delegation: fetch `AggregatorProxy.sol` or `EACAggregatorProxy.sol`; consumers still read the proxy.
+- Runnable example: fetch only the matching sample file.
+- MVR internals: fetch `BundleAggregatorProxy.sol` or `IBundleAggregatorProxy.sol` after confirming the live schema on SmartData Addresses.
+- Unknown live fact: do not guess; name and fetch the smallest URL in the destination matrix.

@@ -1,6 +1,7 @@
 # Reading Price Feeds
 
 Use this file for any request that involves reading Chainlink price feed data on EVM chains, whether onchain via Solidity or offchain via JavaScript/Python.
+For price-reading implementation requests, emit the requested Solidity consumer or runnable Node.js script—not a description of one. Direct the user to verify the address on the official Chainlink Feed Addresses page (and registry when applicable), and include runtime `decimals()`, answer bounds, incomplete/future/stale `updatedAt` rejection, and applicable install, configuration, deployment, and run steps.
 
 ## Trigger Conditions
 
@@ -40,6 +41,7 @@ Important notes:
 ## Solidity Consumer Pattern
 
 Full working consumer with all required validation:
+For an implicit current-price getter, preserve the exact named-return shape shown below, including predeclaring `updatedAt` and assigning `(, price,, updatedAt,) = dataFeed.latestRoundData();`; do not substitute an unnamed return or alternate compiling tuple form.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -48,34 +50,28 @@ pragma solidity ^0.8.7;
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract DataConsumerV3 {
-    AggregatorV3Interface internal dataFeed;
-    uint256 public constant STALENESS_THRESHOLD = 3600; // 1 hour; adjust to feed heartbeat + buffer
+    AggregatorV3Interface internal immutable dataFeed;
+    uint256 public immutable maxAge;
 
-    constructor(address feedAddress) {
+    constructor(address feedAddress, uint256 maxAgeSeconds) {
+        require(feedAddress != address(0), "Invalid feed");
+        require(maxAgeSeconds != 0, "Invalid max age");
         dataFeed = AggregatorV3Interface(feedAddress);
+        maxAge = maxAgeSeconds; // feed heartbeat + buffer
     }
 
-    function getLatestPrice() public view returns (int256) {
-        (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        ) = dataFeed.latestRoundData();
-
-        // Round completeness
-        require(updatedAt > 0, "Round not complete");
-        // Staleness
-        require(block.timestamp - updatedAt <= STALENESS_THRESHOLD, "Stale price");
-        // Answer bounds
-        require(answer > 0, "Invalid price");
-
-        return answer;
-    }
-
-    function getDecimals() public view returns (uint8) {
-        return dataFeed.decimals();
+    function getLatestPrice()
+        external
+        view
+        returns (int256 price, uint8 decimals)
+    {
+        uint256 updatedAt;
+        (, price,, updatedAt,) = dataFeed.latestRoundData();
+        require(updatedAt != 0, "Round not complete");
+        require(updatedAt <= block.timestamp, "Future timestamp");
+        require(block.timestamp - updatedAt <= maxAge, "Stale price");
+        require(price > 0, "Invalid price");
+        decimals = dataFeed.decimals();
     }
 }
 ```
@@ -84,7 +80,7 @@ contract DataConsumerV3 {
 
 Every consumer must include these checks:
 
-1. **Staleness**: `require(block.timestamp - updatedAt <= STALENESS_THRESHOLD)`. Set the threshold to the feed's heartbeat interval plus a reasonable buffer. ETH/USD on Ethereum mainnet has a 3600s heartbeat; other feeds differ.
+1. **Staleness**: reject zero or future `updatedAt` before subtracting, then require `block.timestamp - updatedAt <= maxAge`. Constructor-configure `maxAge` from this feed's heartbeat plus a buffer; feeds differ.
 2. **Answer bounds**: `require(answer > 0)` at minimum. For production, consider tighter min/max bounds appropriate for the specific asset.
 3. **Round completeness**: `require(updatedAt > 0)`. A zero `updatedAt` indicates the round has not completed.
 4. **Decimals**: Always call `decimals()` at runtime or store the result in an immutable. Never hardcode 8. ETH/USD uses 8 decimals, but other feeds (especially non-USD quote pairs) may use 18.
@@ -103,57 +99,54 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
 import {AggregatorV2V3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV2V3Interface.sol";
 
 contract DataConsumerWithSequencerCheck {
-    AggregatorV3Interface internal dataFeed;
-    AggregatorV2V3Interface internal sequencerUptimeFeed;
-
-    uint256 public constant STALENESS_THRESHOLD = 3600;
+    AggregatorV3Interface internal immutable dataFeed;
+    AggregatorV2V3Interface internal immutable sequencerUptimeFeed;
+    uint256 public immutable maxAge;
     uint256 public constant GRACE_PERIOD_TIME = 3600;
 
     error SequencerDown();
+    error InvalidSequencerTimestamp();
     error GracePeriodNotOver();
+    error InvalidPriceTimestamp();
 
-    constructor(address feedAddress, address sequencerFeedAddress) {
+    constructor(
+        address feedAddress,
+        address sequencerFeedAddress,
+        uint256 maxAgeSeconds
+    ) {
+        require(
+            feedAddress != address(0)
+                && sequencerFeedAddress != address(0)
+                && maxAgeSeconds != 0,
+            "Invalid config"
+        );
         dataFeed = AggregatorV3Interface(feedAddress);
         sequencerUptimeFeed = AggregatorV2V3Interface(sequencerFeedAddress);
+        maxAge = maxAgeSeconds;
     }
 
-    function getLatestPrice() public view returns (int256) {
-        // Step 1: Check sequencer status
-        (
-            /*uint80 roundId*/,
-            int256 sequencerAnswer,
-            uint256 startedAt,
-            /*uint256 updatedAt*/,
-            /*uint80 answeredInRound*/
-        ) = sequencerUptimeFeed.latestRoundData();
-
-        // answer == 0: sequencer is up
-        // answer == 1: sequencer is down
-        if (sequencerAnswer != 0) {
-            revert SequencerDown();
+    function getLatestPrice()
+        external
+        view
+        returns (int256, uint8)
+    {
+        (, int256 status, uint256 startedAt,,) =
+            sequencerUptimeFeed.latestRoundData();
+        if (status != 0) revert SequencerDown();
+        if (startedAt == 0 || startedAt > block.timestamp) {
+            revert InvalidSequencerTimestamp();
         }
-
-        // Enforce grace period after sequencer recovery
-        // startedAt is the timestamp when the status last changed
-        uint256 timeSinceUp = block.timestamp - startedAt;
-        if (timeSinceUp < GRACE_PERIOD_TIME) {
+        if (block.timestamp - startedAt < GRACE_PERIOD_TIME) {
             revert GracePeriodNotOver();
         }
 
-        // Step 2: Read and validate price feed
-        (
-            uint80 roundId,
-            int256 answer,
-            uint256 priceStartedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        ) = dataFeed.latestRoundData();
-
-        require(updatedAt > 0, "Round not complete");
-        require(block.timestamp - updatedAt <= STALENESS_THRESHOLD, "Stale price");
+        (, int256 answer,, uint256 updatedAt,) = dataFeed.latestRoundData();
+        if (updatedAt == 0 || updatedAt > block.timestamp) {
+            revert InvalidPriceTimestamp();
+        }
+        require(block.timestamp - updatedAt <= maxAge, "Stale price");
         require(answer > 0, "Invalid price");
-
-        return answer;
+        return (answer, dataFeed.decimals());
     }
 }
 ```
@@ -181,15 +174,17 @@ const ABI = [
 
 const priceFeed = new ethers.Contract(FEED_ADDRESS, ABI, provider);
 
-async function getPrice() {
+async function getPrice(maxAge) { // heartbeat + buffer for this feed
   const [roundId, answer, startedAt, updatedAt, answeredInRound] =
     await priceFeed.latestRoundData();
   const decimals = await priceFeed.decimals();
 
   const now = Math.floor(Date.now() / 1000);
-  if (now - updatedAt.toNumber() > STALENESS_THRESHOLD) {
-    throw new Error("Stale price data");
+  const timestamp = updatedAt.toNumber();
+  if (!timestamp || timestamp > now || now - timestamp > maxAge) {
+    throw new Error("Stale or incomplete price data");
   }
+  if (answer.lte(0)) throw new Error("Invalid price");
 
   console.log(`Price: ${ethers.utils.formatUnits(answer, decimals)}`);
 }
@@ -271,6 +266,15 @@ Common testnet examples (Sepolia):
 
 Always verify addresses against the official documentation before use. Feed addresses change across networks and can be deprecated.
 
+## Debugging
+
+For a failing consumer, return the complete applicable consumer above—not a fragment with undeclared feeds, thresholds, or errors—and map the observed failure:
+
+- `SequencerDown`: sequencer status is nonzero; wait for recovery.
+- `InvalidSequencerTimestamp` / `GracePeriodNotOver`: status time is zero/future, or the 3600-second grace period is active.
+- `InvalidPriceTimestamp` / `Stale price`: incomplete/future round, wrong max-age, deprecated feed, or wrong proxy/network.
+- `Invalid price`: non-positive answer or unsuitable feed; `latestRoundData()` reverting usually means a wrong address/network or non-feed contract.
+
 ## Common Errors
 
 1. **Using AggregatorV3Interface for the L2 sequencer uptime feed.** The sequencer feed requires `AggregatorV2V3Interface`. Using the wrong interface will cause compilation errors or missing data.
@@ -287,50 +291,3 @@ Always verify addresses against the official documentation before use. Feed addr
 3. L2 sequencer uptime feed proxy addresses are network-specific and should be verified against the official L2 Sequencer Uptime Feeds documentation.
 4. When in doubt about whether a feed is still active, check the deprecation schedule at `https://docs.chain.link/data-feeds/deprecating-feeds.md`.
 
-## Triggering Tests
-
-These prompts should trigger this reference:
-
-- "I need to read the ETH/USD price in my Solidity contract."
-- "How do I use Chainlink price feeds with ethers.js?"
-- "Add price feed validation to this contract."
-- "My DeFi protocol runs on Arbitrum and needs a price oracle."
-- "How do I get historical price data from a Chainlink feed?"
-
-These prompts should not trigger this reference:
-
-- "How do I read a Chainlink feed on Solana?"
-- "Send tokens cross-chain with CCIP."
-- "How do I use Chainlink Data Streams?"
-- "Decode an MVR bundle."
-
-## Functional Tests
-
-1. If the user asks for a Solidity price feed consumer, the generated code includes a staleness check using `updatedAt`.
-2. If the user asks for a Solidity price feed consumer, the generated code includes `require(answer > 0)` or equivalent bounds check.
-3. If the user asks for a consumer on an L2 chain (Arbitrum, Optimism, Base, Scroll, etc.), the generated code includes a sequencer uptime check using `AggregatorV2V3Interface` and a grace period after recovery.
-4. If the user asks for decimals handling, the code calls `decimals()` rather than hardcoding a value.
-5. If the user asks for offchain reading, the code uses the correct library pattern (ethers.js, web3.js, or web3.py) and includes a staleness check.
-6. If the user asks for historical data, the response explains proxy roundId encoding and warns against on-chain iteration.
-7. If the user provides a target network, the response uses the correct feed address or directs the user to the official address page.
-
-## Eval Checks
-
-The workflow passes if it:
-
-1. generates a consumer contract that compiles without errors
-2. includes all three validation checks (staleness, answer bounds, round completeness)
-3. uses `AggregatorV2V3Interface` (not `AggregatorV3Interface`) for the L2 sequencer uptime feed when targeting an L2
-4. never hardcodes decimals in the consumer logic
-5. never uses `answeredInRound` for freshness logic
-6. reads through the proxy contract, not directly from an aggregator
-7. provides correct import paths from `@chainlink/contracts`
-
-## A/B Prompt Pack
-
-Use these prompts with and without the skill installed:
-
-1. "Write a Solidity contract that reads the ETH/USD Chainlink price feed on Ethereum mainnet with proper validation."
-2. "I am building a lending protocol on Arbitrum. Write the price feed consumer with all necessary safety checks."
-3. "Show me how to read a Chainlink price feed in ethers.js and handle stale data."
-4. "I need to query historical Chainlink price data for the last 100 rounds. What is the best approach?"
