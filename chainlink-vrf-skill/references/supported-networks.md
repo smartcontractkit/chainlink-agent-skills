@@ -2,6 +2,8 @@
 
 **Always verify addresses and key hashes against the live docs before deploying.** If any value here conflicts with https://docs.chain.link/vrf/v2-5/supported-networks.md, treat the docs as authoritative.
 
+**Max Gas Limit:** 2,500,000
+
 ---
 
 ## Mainnet Networks
@@ -14,7 +16,6 @@
   - 200 gwei: `0x8077df514608a09f83e4e8d300645594e5d7234665448ba83f51a50f842bd3d9`
   - 500 gwei: `0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b`
   - 1000 gwei: `0xc6bf2e7b88e5cfbb4946ff23af846494ae1f3c65270b79ee7876c9aa99d3d45f`
-- **Max Gas Limit:** 2,500,000
 
 ### Arbitrum Mainnet
 - **VRF Coordinator:** `0x3C0Ca683b403E37668AE3DC4FB62F4B29B6f7a3e`
@@ -24,7 +25,6 @@
   - 2 gwei: `0x9e9e46732b32662b9adc6f3abdf6c5e926a666d174a4d6b8e39c4cca76a38897`
   - 30 gwei: `0x8472ba59cf7134dfe321f4d61a430c4857e8b19cdd5230b09952a92671c24409`
   - 150 gwei: `0xe9f223d7d83ec85c4f78042a4845af3a1c8df7757b4997b815ce4b8d07aca68c`
-- **Max Gas Limit:** 2,500,000
 
 ### Avalanche Mainnet
 - **VRF Coordinator:** `0xE40895D055bccd2053dD0638C9695E326152b1A4`
@@ -34,7 +34,6 @@
   - 200 gwei: `0xea7f56be19583eeb8255aa79f16d8bd8a64cedf68e42fefee1c9ac5372b1a102`
   - 500 gwei: `0x84213dcadf1f89e4097eb654e3f284d7d5d5bda2bd4748d8b7fada5b3a6eaa0d`
   - 1000 gwei: `0xe227ebd10a873dde8e58841197a07b410038e405f1180bd117be6f6557fa491c`
-- **Max Gas Limit:** 2,500,000
 
 ### BASE Mainnet
 - **VRF Coordinator:** `0xd5D517aBE5cF79B7e95eC98dB0f0277788aFF634`
@@ -43,7 +42,6 @@
 - **Key Hashes:**
   - 2 gwei: `0x00b81b5a830cb0a4009fbd8904de511e28631e62ce5ad231373d3cdad373ccab`
   - 30 gwei: `0xdc2f87677b01473c763cb0aee938ed3341512f6057324a584e5944e786144d70`
-- **Max Gas Limit:** 2,500,000
 
 ### BNB Chain Mainnet
 - **VRF Coordinator:** `0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9`
@@ -53,7 +51,6 @@
   - 200 gwei: `0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4`
   - 500 gwei: `0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c`
   - 1000 gwei: `0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd`
-- **Max Gas Limit:** 2,500,000
 - **Note:** BNB Chain Bridge LINK is not ERC-677. Use PegSwap (see `billing.md`) to convert before funding VRF.
 
 ### OP Mainnet
@@ -63,14 +60,12 @@
 - **Key Hashes:**
   - 2 gwei: `0xa16a2316f92fa0abfd0029eea74e947d0613728e934d9794cd78bc02e2f69de4`
   - 30 gwei: `0x8e7a847ba0757d1c302a3f0fde7b868ef8cf4acc32e48505f1a1d53693a10a19`
-- **Max Gas Limit:** 2,500,000
 
 ### Polygon Mainnet
 - **VRF Coordinator:** `0xec0Ed46f36576541C75739E915ADbCb3DE24bD77`
 - **LINK Token:** `0xb0897686c545045aFc77CF20eC7A532E3120E0F1`
 - **VRF Wrapper:** `0xc8F13422c49909F4Ec24BF65EDFBEbe410BB9D7c`
 - **Key Hashes:** see https://docs.chain.link/vrf/v2-5/supported-networks.md for current values
-- **Max Gas Limit:** 2,500,000
 - **Note:** Polygon Bridge LINK is not ERC-677. Use PegSwap (see `billing.md`) to convert before funding VRF.
 
 ### Ronin Mainnet
@@ -78,14 +73,12 @@
 - **LINK Token:** `0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b`
 - **VRF Wrapper:** `0x3B7d0d0CeC08eBF8dad58aCCa4719791378b2329`
 - **Key Hashes:** see https://docs.chain.link/vrf/v2-5/supported-networks.md for current values
-- **Max Gas Limit:** 2,500,000
 
 ### Soneium Mainnet
 - **VRF Coordinator:** `0xb89BB0aB64b219Ba7702f862020d879786a2BC49`
 - **LINK Token:** `0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec`
 - **VRF Wrapper:** `0x656155C8bD09d1741385C525010590522758345c`
 - **Key Hashes:** see https://docs.chain.link/vrf/v2-5/supported-networks.md for current values
-- **Max Gas Limit:** 2,500,000
 
 ---
 
