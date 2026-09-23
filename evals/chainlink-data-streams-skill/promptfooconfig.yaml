@@ -154,6 +154,23 @@ tests:
       category: functional
       requiresApproval: yes
     assert: *functional_asserts
+  - description: functional / candlestick-server-workflow / candlestick-server-workflow-01
+    vars:
+      case_file: cases/functional/candlestick-server-workflow-01.txt
+      reference_files:
+        - references/credentials-and-auth.md
+        - references/frontend-and-storage.md
+        - references/public-endpoints-and-addresses.md
+        - references/official-sources.md
+      workflow: candlestick-server-workflow
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: candlestick-server-workflow
+      category: functional
+      requiresApproval: no
+    assert: *functional_asserts
   - description: trigger-positive / report-decoding / report-decoding-01
     vars:
       case_file: cases/trigger-positive/report-decoding-01.txt

@@ -1,0 +1,7 @@
+Build a complete, read-only server-side workflow for a Candlestick dashboard. Use environment-backed login/user ID and password/API key to authorize and obtain a JWT; list groups, discover symbols with an optional group filter, fetch OHLC history in both column and row formats, and consume a symbol-filtered HTTP-chunked live stream with bounded no-message timeouts and reconnects. On a 401 or token expiry, reauthorize once and retry once; otherwise fail closed. Deliver allowlisted candlestick fields through a concrete browser-facing endpoint without exposing credentials, JWTs, or raw upstream payloads, and keep the Candlestick base URL configurable.
+
+Return the complete code, configuration, and run steps inline. Do not create or modify files in this evaluation.
+
+This eval has no live-fetch tools. Cite https://docs.chain.link/data-streams/reference/candlestick-api, label the current Candlestick parameters "unverified as of 2026-08-25", and do not claim live verification. Use placeholders only—do not reveal real credentials or perform any write operations.
+
+Include this exact sentence: Never put the API key, password, JWT, or upstream authorization headers in browser/frontend code.

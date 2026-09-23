@@ -1,87 +1,48 @@
 # Official Sources
 
-Use this file when the answer depends on current Data Streams facts such as available schemas, deprecated streams, endpoints, SDK APIs, verifier addresses, or supported networks.
-
-## Freshness Policy
-
-1. Do not hardcode live Data Streams facts such as current feed IDs, endpoint availability, schema deprecation status, verifier addresses, supported networks, or SDK method names.
-2. Re-check official sources whenever the user needs a current feed, current schema status, current endpoint, current SDK behavior, or current verifier deployment.
-3. Distinguish stable concepts from live configuration data.
-4. If a live source conflicts with cached assumptions, prefer the live source and say so.
-5. Cite the exact official source used for freshness-sensitive answers.
+Use this map for current endpoints, feeds, schemas/deprecation, SDK APIs, verifier deployments, or supported networks. Follow [SKILL.md](../SKILL.md)'s five-line freshness policy: live source beats cached assumptions; distinguish stable concepts from deployment data and cite the exact source checked.
 
 ## Source Map
 
-### Data Streams Docs
+### Concepts and architecture
 
-URLs:
 - `https://docs.chain.link/data-streams.md`
 - `https://docs.chain.link/data-streams/llms-full.txt`
 
-Use for:
-- architecture and concepts
-- Standard API vs Streams Trade implementation
-- developer responsibilities and best practices
-- pointers to tutorials, API references, and report schemas
+Use for architecture, Standard API vs Streams Trade, responsibilities/best practices, and tutorial/API/schema pointers—not alone for current SDK methods, deprecation, or verifier addresses.
 
-Do not use as the only source for:
-- current SDK method names
-- current schema deprecation status
-- current verifier proxy addresses
+### Access and authentication
 
-### Credentials and Authentication
-
-URLs:
 - `https://docs.chain.link/data-streams/reference/data-streams-api/authentication.md`
 - `https://chain.link/contact?ref_id=datastreams`
 
-Use for:
-- explaining the official process to request Data Streams access
-- REST and WebSocket authentication requirements
-- HMAC header generation only when the user is not using an SDK
+Use for access requests and REST/WebSocket HMAC only when not using an SDK. Local details: [credentials-and-auth.md](credentials-and-auth.md).
 
-### Report Schemas and Deprecation
+### Schemas and deprecation
 
-URLs:
 - `https://docs.chain.link/data-streams/reference/report-schema-overview.md`
 - `https://docs.chain.link/data-streams/deprecating-streams.md`
 
-Use for:
-- available stream categories and report schema versions
-- current field names and field meanings
-- deprecated stream or schema guidance
+Use for stream categories, fields/meanings, current schema availability, and deprecation. Then check the language SDK decoder; local catalog: [report-schemas.md](report-schemas.md).
 
-### REST and WebSocket API
+### REST and WebSocket APIs
 
-URLs:
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api.md`
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-ws.md`
 
-Local fallback:
-- `references/public-endpoints-and-addresses.md`
-
-Use for:
-- REST endpoints for latest reports, timestamp lookups, bulk report queries, and paginated report history
-- WebSocket subscription parameters, payloads, and errors
-- testnet and mainnet endpoint domains
-- local public endpoint fallbacks when docs fetching is unavailable
+Use for latest/timestamp/bulk/history endpoints; subscription parameters, payloads, and errors; and testnet/mainnet domains. Offline defaults: [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md).
 
 ### SDKs
 
-URLs:
 - `https://github.com/smartcontractkit/data-streams-sdk`
 - `https://github.com/smartcontractkit/data-streams-sdk/tree/main/go`
 - `https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust`
 - `https://github.com/smartcontractkit/data-streams-sdk/tree/main/typescript`
 
-Use for:
-- official Go, Rust, and TypeScript SDK APIs
-- examples for fetching, decoding, streaming, HA mode, and metrics
-- package names and language-specific setup
+Use for current Go/Rust/TypeScript packages, methods, versions, fetch/decode/stream/HA examples, and metrics.
 
-### Onchain Verification
+### Onchain verification
 
-URLs:
 - `https://docs.chain.link/data-streams/reference/data-streams-api/onchain-verification.md`
 - `https://docs.chain.link/data-streams/tutorials/evm-onchain-report-verification.md`
 - `https://docs.chain.link/data-streams/supported-networks.md`
@@ -90,59 +51,29 @@ URLs:
 - `https://docs.chain.link/data-streams/tutorials/solana-offchain-report-verification.md`
 - `https://docs.chain.link/data-streams/tutorials/stellar-onchain-report-verification.md`
 
-Local fallback:
-- `references/public-endpoints-and-addresses.md`
+Use the chain-specific tutorial for verifier interfaces, flows, code review/generation, and current deployments. Offline address fallback: [public-endpoints-and-addresses.md](public-endpoints-and-addresses.md); canonical examples: [onchain-verification.md](onchain-verification.md).
 
-Use for:
-- verifier interfaces and current addresses
-- EVM, Solana, and Stellar verification flows
-- code generation and review for verification contracts/programs
-- local public verifier address fallbacks when docs fetching is unavailable
+### Chainlink Local tests
 
-### Chainlink Local For Data Streams Tests
-
-URLs:
 - `https://github.com/smartcontractkit/chainlink-local`
 - `https://www.npmjs.com/package/@chainlink/local`
 - `https://github.com/smartcontractkit/chainlink-local/releases`
 
-Use for:
-- local Foundry, Hardhat, or Remix tests that mock Data Streams verification
-- `DataStreamsLocalSimulator.sol`, `MockReportGenerator.sol`, `MockVerifierProxy.sol`, and related package APIs
-- package-source examples that are not yet reflected in the official Data Streams docs
+Use for local Foundry/Hardhat/Remix simulator tests and current package source. Re-check versions/APIs; the package includes Data Streams simulator/fork, mock report generator/verifier/proxy/fee manager, and billing modes. Exact APIs and smoke matrix: [onchain-verification.md](onchain-verification.md).
 
-Re-check package version and source files before relying on newly added simulator APIs. Known package-sourced Data Streams mock support includes `DataStreamsLocalSimulator`, `DataStreamsLocalSimulatorFork`, `MockReportGenerator`, `MockVerifier`, `MockVerifierProxy`, `MockFeeManager`, and billing-mode helpers such as `enableOffChainBilling()` and `enableOnChainBilling()`.
+### Candlesticks
 
-### Frontend and Candlestick Data
-
-URLs:
 - `https://docs.chain.link/data-streams/reference/candlestick-api.md`
 
-Use for:
-- OHLC history endpoints
-- supported symbol and group discovery
-- live price updates for frontend charting
+Use for OHLC history, symbols/groups, and live chart updates; keep credentials server-side.
 
 ### Billing
 
-URLs:
 - `https://docs.chain.link/data-streams/billing.md`
 - `https://chain.link/contact?ref_id=datastreams`
 
-Use only to redirect users to official Chainlink contact channels. Do not expose, infer, or summarize private billing details.
+Redirect to Chainlink; do not infer or summarize private billing details.
 
-## Practical Selection Rules
+## Selection
 
-1. For credentials or auth setup, start with the authentication page and prefer SDK-managed auth.
-2. For report decoding or schema properties, start with the report schema overview, then the language SDK docs.
-3. For REST latest/timestamp/history work, use the REST API docs plus the target language SDK. Use the local public endpoint table only as a fallback or default example.
-4. For WebSocket or HA work, use the WebSocket docs plus the target language SDK. Use the local public endpoint table only as a fallback or default example.
-5. For onchain verification, use the chain-specific verification tutorial and fetch current verifier addresses. Use the local public verifier table only as an offline fallback and tell the user to re-check before deployment or transactions.
-6. For candlestick charts, use the Candlestick API docs and keep Data Streams credentials server-side.
-7. For billing questions, do not speculate. Direct the user to Chainlink.
-
-## Documentation Fetching
-
-1. If WebFetch, a browser tool, or an MCP server can retrieve docs, use it before answering freshness-sensitive questions.
-2. If Context7 (`@upstash/context7-mcp`) is available, use it as a fallback for `docs.chain.link` and SDK documentation.
-3. If all fetch methods fail, explicitly tell the user which URL could not be verified and use only the embedded reference files as a floor.
+Start with authentication for access/auth; schema overview then SDK for decoding; REST or WebSocket interface plus SDK for retrieval/HA; chain tutorial plus current deployment data for verification; Candlestick docs for charts. Use local endpoint/address tables only as fallbacks. If retrieval fails, name the URL and use embedded references only as a floor; Context7 (`@upstash/context7-mcp`) is the fallback fetcher.
