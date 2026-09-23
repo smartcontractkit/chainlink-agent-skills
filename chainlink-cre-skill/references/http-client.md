@@ -81,7 +81,8 @@ Every `getSecret`/`GetSecret` call must be paired with the matching root `secret
 
 ```yaml
 secretsNames:
-  API_KEY: API_KEY_VAR
+  API_KEY:
+    - API_KEY_VAR
 ```
 
 Go's high-level client is `creHttp.NewHTTPClient()` and resolves `RunInNodeMode(runtime, fetchFn, aggregation).Await()`. Node callbacks receive `cre.NodeRuntime`, whose `Fetch(*http.Request)` performs the request; use Go consensus/field aggregation types from the installed SDK. Capability completion is always `.Await()`.
