@@ -1,50 +1,29 @@
 # Chainlink Confidential AI — Troubleshooting
 
-## File Format Decision Tree
+## File Format
 
-Choose the resource format based on what you have:
-
-```
-What file do you have?
-│
-├── PNG / JPG image
-│   → Upload as base64, content_type: "image/png" or "image/jpeg"
-│   → preprocess: false (or omit)
-│   → Fastest path. Recommended for demos and first tests.
-│
-├── HTML file
-│   → Upload as base64, content_type: "text/html"
-│   → preprocess: false (or omit)
-│   → Fast. Good for rendered financial statements saved from a browser.
-│
-├── PDF
-│   ├── Simple or printable PDF (can be rendered as image)
-│   │   → Convert to PNG first (see commands below), resubmit as image/png
-│   └── Must use PDF (conversion not possible)
-│       → Allow up to 5 minutes for Docling preprocessing
-│       → If timeout → convert to PNG and resubmit
-│
-└── URL (publicly accessible)
-    → Use the url resource field: { "url": "https://...", "method": "GET" }
-    → Must be reachable by the enclave server
-    → If the URL returns 4xx → switch to base64 upload
-```
+| Format | Action |
+|--------|--------|
+| PNG/JPG | Base64 upload as `image/png` or `image/jpeg`; set `preprocess: false` (or omit). Fastest and recommended for demos. |
+| HTML | Base64 upload as `text/html`; set `preprocess: false` (or omit). Fast and suitable for browser-saved statements. |
+| PDF | Convert printable PDFs to PNG. Otherwise allow up to 5 minutes for Docling preprocessing; on timeout, convert and resubmit as PNG. |
+| Public URL | Use `{ "url": "https://...", "method": "GET" }`; it must be enclave-reachable. On 4xx, use base64 upload. |
 
 ## Error Reference Table
 
-| Symptom | Likely cause | Fix |
-|---------|-------------|-----|
-| `status: failed`, error contains `context deadline exceeded` | PDF preprocessing (Docling) timed out | Convert the PDF to PNG using `qlmanage -t -s 2400 -o /tmp/ file.pdf` and resubmit as `image/png` with `preprocess: false` |
-| `status: failed`, error contains `resource returned status 4xx` | URL resource is not publicly accessible | Switch to base64 upload instead of a URL resource |
-| `status: failed`, error contains `resource returned status 5xx` | Remote server error when fetching URL resource | Check the URL is reachable, retry, or switch to base64 upload |
-| `401` HTTP response | Missing or invalid `Authorization` header | Verify `Authorization: Bearer <API_KEY>` is present and the key is correct |
-| `429 per_key_limit` | Too many concurrent in-flight requests for this API key | Wait for current requests to complete before submitting new ones |
-| `503 queue_full` | Server at capacity | Retry with exponential backoff: wait 5s, 10s, 20s, etc. |
-| `503 maintenance_mode` | Planned maintenance | Wait and retry |
-| LLM output is "I cannot determine this without more information..." | Prompt is too open-ended and the model is refusing | Add "Assess based on available evidence only — do not refuse due to missing documents" before the JSON schema in the user prompt |
-| LLM output is prose, not JSON | Prompt does not enforce JSON format | Add "Respond with ONLY a valid JSON object" to the user prompt and include the exact JSON schema |
-| LLM wraps JSON in markdown code fences (` ```json ... ``` `) | Prompt instructions not strong enough | Add "Do not include markdown formatting, code fences, or any text outside the JSON object" |
-| `output` field is missing from a `completed` response | Unexpected — should not happen on success | Check `error` field, log the full response, retry the request |
+| Symptom | Action |
+|---------|--------|
+| Docling `context deadline exceeded` | Convert with `qlmanage -t -s 2400 -o /tmp/ file.pdf`; resubmit as `image/png` with `preprocess: false`. |
+| URL resource 4xx | Switch to base64 upload. |
+| URL resource 5xx | Check reachability, retry, or switch to base64 upload. |
+| `401` | Supply a valid `Authorization: Bearer <API_KEY>` header. |
+| `429 per_key_limit` | Wait for in-flight requests to complete. |
+| `503 queue_full` | Retry with exponential backoff: 5s, 10s, 20s, etc. |
+| `503 maintenance_mode` | Wait and retry. |
+| Refusal for insufficient information | Before the JSON schema add: "Assess based on available evidence only — do not refuse due to missing documents". |
+| Prose instead of JSON | Require "Respond with ONLY a valid JSON object" and include the exact schema. |
+| JSON in markdown fences | Require "Do not include markdown formatting, code fences, or any text outside the JSON object". |
+| Missing `output` on `completed` | Check `error`, log the full response, and retry. |
 
 ---
 
