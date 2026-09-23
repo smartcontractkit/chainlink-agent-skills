@@ -4,7 +4,7 @@ Use for current repository/product facts, exact source or interface locations, s
 
 ## Freshness
 
-Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Every current managed-product claim must cite the exact live official URL and state the verification date. Before listing Coordinator, Evaluation, or Reporting resources/capabilities or `as_of` support, fetch `https://docs.chain.link/ace/reference/apis.md`, report only what it currently documents, and say which resource types support `as_of`; never generalize `as_of` to every endpoint. If that fetch fails, name the URL and do not invent resources or treat the failure as an empty inventory. Prefer live official source over a bundled reference and name any change from it.
+Re-check repository source before exact signatures, schemas, scripts, remappings, imports, or license claims; re-check product docs before availability, supported networks, mainnet readiness, API resources, or Beta limitations. Every current managed-product claim must cite the exact live official URL and state the verification date. Before listing Coordinator, Evaluation, or Reporting resources/capabilities or `as_of` support, fetch `https://docs.chain.link/ace/reference/apis.md` (and the matching OpenAPI spec for endpoints/fields), report only what it currently documents, and say which resource types support `as_of`; never generalize `as_of` to every endpoint. If that fetch fails, name the URL and do not invent resources or treat the failure as an empty inventory. Prefer live official source over a bundled reference and name any change from it.
 
 ## Product Docs
 
@@ -17,6 +17,10 @@ Re-check repository source before exact signatures, schemas, scripts, remappings
 | Architecture | `https://docs.chain.link/ace/concepts/architecture.md` |
 | Reporting | `https://docs.chain.link/ace/concepts/reporting.md` |
 | APIs (Coordinator, Evaluation MVP, Reporting) | `https://docs.chain.link/ace/reference/apis.md` |
+| Coordinator OpenAPI | `https://docs.chain.link/api/ace/coordinator/openapi.json` |
+| Evaluation OpenAPI (MVP) | `https://docs.chain.link/api/ace/evaluation/openapi.json` |
+| Reporting OpenAPI | `https://docs.chain.link/api/ace/reporting/openapi.json` |
+| Offchain permits guide | `https://docs.chain.link/ace/guides/policy-manager/offchain-policies/request-offchain-permits.md` |
 | SecureMintPolicy | `https://docs.chain.link/ace/reference/policy-library/secure-mint-policy.md` |
 
 ## Repository Docs

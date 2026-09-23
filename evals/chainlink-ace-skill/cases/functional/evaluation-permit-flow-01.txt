@@ -1,0 +1,1 @@
+Our ERC-20 transfer() is protected by an ACE managed offchain wallet-risk policy on the Platform. Write me the backend code (Node or curl) that gets a permit from the Evaluation API and then sends the transfer. How do I know when it's safe to send, and what should I do if the call times out or comes back rejected? I can paste our API key here if it helps.
