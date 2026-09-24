@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink ACE core contracts and managed Platform developer onboarding, compliance architecture, product scope, and reference guidance
-  version: "0.0.8"
+  version: "0.0.9"
 ---
 
 # Chainlink ACE Skill
@@ -39,6 +39,7 @@ For any request that does not match this skill's positive trigger sentence, rout
 | policy choice/behavior/configuration, runtime parameters, setter/view functions, pre-built tradeoffs | [policy-library.md](references/policy-library.md) |
 | CCID, registries, credential types/sources/requirements, KYC/AML/accreditation, issuer, Credential Data Validator, expiry/revocation/privacy, identity validator | [cross-chain-identity.md](references/cross-chain-identity.md) |
 | Platform/private Beta, UI/API/access, Coordinator/Evaluation/Reporting API, Reporting/Policy/Identity Manager, auditor/audit trail, networks/mainnet readiness, registration/indexing, Foundry-only visibility, limitations, attestation-only credentials, custom fraud scores | [platform-and-beta.md](references/platform-and-beta.md) |
+| call/code against Coordinator/Evaluation/Reporting API: which API, base URL, auth, endpoints, request/response fields, pagination, errors, curl/SDK | [api-usage.md](references/api-usage.md) |
 | current facts; source/interface names/locations; repository/package docs/scripts; token implementations; license; API resources/docs paths | [official-sources.md](references/official-sources.md) |
 
 For implementation start with onchain, then policy management/library or identity. Policy recommendations include a chain, default, order, and extracted parameters. Separate OSS Credential Data Validators from possibly attestation-only managed Beta.
@@ -52,7 +53,7 @@ Do not assume this skill is the only capability available.
 | OSS/self-deployed | `smartcontractkit/chainlink-ace`: BUSL-1.1 `@chainlink/ace`, Foundry/pnpm/Solidity; `packages/policy-management`, `packages/cross-chain-identity`, `packages/tokens`. Policy Management is standalone; identity depends on it. EVM self-deployment and custom components remain subject to commercial licensing, counsel, audit, and operator responsibility. |
 | Managed Platform | `docs.chain.link/ace`: Policy, Identity, and Reporting Manager UI/APIs. Access, Beta, networks/mainnet, indexing, signing/upgrades, custom-policy UI, credentials, Coordinator control plane, and Reporting read-only plane are product-scoped/freshness-sensitive. Never infer managed support from OSS or apply Beta limits to OSS. |
 
-Managed APIs are Coordinator (control plane), Evaluation (MVP offchain permits), and Reporting (read-only). Reporting currently documents Transactions, Policies, Targets, Identities, Permits, and Registry usage, with `as_of` only where the APIs page lists it. Re-check [platform-and-beta.md](references/platform-and-beta.md) and `https://docs.chain.link/ace/reference/apis.md`. Coordinator manages resources; it is not the auditor evidence API.
+Managed APIs are Coordinator (control plane), Evaluation (MVP offchain permits), and Reporting (read-only evidence); Coordinator is not the auditor evidence API. Endpoints, fields, and pagination: [api-usage.md](references/api-usage.md), verified against the OpenAPI specs it lists; re-fetch the spec before relying on one. Generate API code and run only read-only calls; never handle the API key, and treat Coordinator writes and `POST /evaluate` as user-run artifacts behind the preflight.
 
 ## Boundary and Preflight
 

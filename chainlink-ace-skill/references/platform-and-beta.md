@@ -8,7 +8,7 @@ Current product sources:
 - Overview: `https://docs.chain.link/ace.md`
 - Beta: `https://docs.chain.link/ace/beta-scope.md`
 - Networks: `https://docs.chain.link/ace/supported-networks.md`
-- APIs (Coordinator, Evaluation MVP, Reporting): `https://docs.chain.link/ace/reference/apis.md`
+- APIs (Coordinator, Evaluation MVP, Reporting): `https://docs.chain.link/ace/reference/apis.md`; endpoint-level usage: [api-usage.md](api-usage.md)
 - Reporting concept: `https://docs.chain.link/ace/concepts/reporting.md`
 
 Before answering, fetch and cite the exact live official page for every current managed claim—including resources, `as_of`, availability, networks, mainnet, and Beta limits—and state when it was verified. Make network feasibility conditional on the current supported-network list and ask for the target chain when it changes the answer.

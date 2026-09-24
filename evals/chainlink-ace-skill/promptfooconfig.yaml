@@ -87,6 +87,19 @@ tests:
     assert: *functional_asserts
 
   - vars:
+      case_file: cases/functional/evaluation-permit-flow-01.txt
+      workflow: platform-api-usage
+      requires_live_source: "yes"
+      reference_files:
+        - references/api-usage.md
+        - references/platform-and-beta.md
+    metadata:
+      workflow: platform-api-usage
+      category: functional
+      smoke: true
+    assert: *functional_asserts
+
+  - vars:
       case_file: cases/functional/coordinator-vs-reporting-01.txt
       workflow: platform-apis
       requires_live_source: "yes"
