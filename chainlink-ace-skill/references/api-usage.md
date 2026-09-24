@@ -64,7 +64,7 @@ The system policy engine (`type: "system"`) is reserved for registry protection;
 
 | Method/path | Body or result |
 | --- | --- |
-| `POST /evaluate` | req: `caller_address`, `subject`, `function_signature` (canonical, e.g. `transfer(address,uint256)`), `parameters` (object), `chain_selector` (string), `unique_evaluation_id`; optional `permit_parameters` (0x 32-byte ABI words, in the protection's `extractor_output_ids` order; `transfer` = `[from, to, amount]`) → `{permit_id, status}` |
+| `POST /evaluate` | req: `caller_address` (wallet that will send the tx), `subject` (protected target contract, not the caller), `function_signature` (canonical, e.g. `transfer(address,uint256)`), `parameters` (object), `chain_selector` (string), `unique_evaluation_id`; optional `permit_parameters` (0x 32-byte ABI words, in the protection's `extractor_output_ids` order; `transfer` = `[from, to, amount]`) → `{permit_id, status}` |
 | `GET /evaluate/{permitId}` | `{permit_id, status, reason, workflow_execution_id, expires_at}` |
 
 Status: `evaluating` → `approving` → `ready`; terminal `ready | rejected | error`. Submit the protected tx only at `ready`, from `caller_address`, with args that extract to the same `permit_parameters` (no permit bytes are added). `rejected`: no permit; read `reason`, do not retry blindly. `error`: after fixing, wait ≥60 s and use a new `unique_evaluation_id`. `unique_evaluation_id` is the idempotency key: retry a lost response with the same ID; never reuse it for a different intent. Poll ~5 s. `expires_at` is currently normally `null`. Encode words with an ABI library, not string concatenation. Errors: `{error, message}`; `404` if the permit belongs to another org.
@@ -115,7 +115,7 @@ curl -s -X POST https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
 # 3. Evaluate -> poll -> submit (MVP; POST is user-run)
 B=https://ace.api.chain.link/v1/evaluation
 PID=$(curl -s -X POST $B/evaluate -H "Authorization: Apikey $ACE_API_KEY" -H "Content-Type: application/json" \
-  -d '{"caller_address":"<FROM>","subject":"<FROM>","function_signature":"transfer(address,uint256)",
+  -d '{"caller_address":"<FROM>","subject":"<TARGET_CONTRACT>","function_signature":"transfer(address,uint256)",
        "parameters":{"to":"<TO>","amount":"<AMOUNT>"},"permit_parameters":["<FROM_WORD>","<TO_WORD>","<AMOUNT_WORD>"],
        "chain_selector":"<CHAIN_SELECTOR>","unique_evaluation_id":"<STABLE_UUID>"}' | jq -r .permit_id)
 while :; do S=$(curl -s $B/evaluate/$PID -H "Authorization: Apikey $ACE_API_KEY" | jq -r .status)
