@@ -68,3 +68,13 @@ Deploy PolicyEngine, the protected contract, and policies behind proxies where r
 - Audit policies, extractors, mappers, and state-mutating `postRun()` hooks. External policy calls add denial-of-service, gas, and consistency risks.
 - Direct `IPolicyProtected` implementations must correctly own storage, context clearing, attach/detach, and ERC-165.
 - Test complete order/default/outcome behavior, not only each policy in isolation.
+
+## CCIP Pool Hooks
+
+CCIP 2.0 token pools can call an `IPolicyEngine` through their pool hook. In Chainlink's example hook, `AdvancedPoolHooks` (`@chainlink/contracts-ccip/contracts/pools/AdvancedPoolHooks.sol`), the hooks contract is the protected target: `setPolicyEngine(engine)` calls `attach()`, and `preflightCheck` (outbound) and `postflightCheck` (inbound) each call `run(Payload{selector: msg.sig, sender: <calling pool>, data, context})`.
+
+- Extractor: `AdvancedPoolHooksExtractor` (`@chainlink/contracts-ccip/contracts/pools/extractors/AdvancedPoolHooksExtractor.sol`), registered for both hook selectors. Keys are `keccak256` of `from`, `to`, `amount`, `remote_chain_selector`, `token`, `requested_finality`; preflight adds `amount_post_fee`; postflight adds `source_pool_address`, `source_pool_data`, `source_denominated_amount`. Follow the source, not the stale API-reference page's `PARAM_*` strings.
+- Prefer outbound (preflight) policies: a rejection there reverts the send. A postflight rejection leaves the message unexecutable after tokens left the source chain.
+- Managed Platform support for pool hooks is freshness-sensitive; check current Platform docs before asserting it.
+- Pool deployment, attaching hooks, custom hooks, dest gas, and CCIP config belong to chainlink-ccip-skill.
+

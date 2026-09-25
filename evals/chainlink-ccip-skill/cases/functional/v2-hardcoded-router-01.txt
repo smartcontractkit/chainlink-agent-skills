@@ -1,0 +1,23 @@
+Here's my sender, can you upgrade it to CCIP 2.0 and add Fast Transfers? Keep it simple.
+
+```solidity
+pragma solidity 0.8.24;
+import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+
+contract Pinger {
+    IRouterClient constant ROUTER = IRouterClient(0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59); // Sepolia router
+    uint64 constant FUJI = 14767482510784806043;
+
+    function ping(address receiver) external payable returns (bytes32) {
+        Client.EVM2AnyMessage memory m = Client.EVM2AnyMessage({
+            receiver: abi.encode(receiver),
+            data: abi.encode("ping"),
+            tokenAmounts: new Client.EVMTokenAmount[](0),
+            extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({gasLimit: 200_000, allowOutOfOrderExecution: true})),
+            feeToken: address(0)
+        });
+        return ROUTER.ccipSend{value: ROUTER.getFee(FUJI, m)}(FUJI, m);
+    }
+}
+```

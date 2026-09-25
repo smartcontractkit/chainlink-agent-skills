@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink ACE core contracts and managed Platform developer onboarding, compliance architecture, product scope, and reference guidance
-  version: "0.0.9"
+  version: "0.0.10"
 ---
 
 # Chainlink ACE Skill
@@ -36,6 +36,7 @@ For any request that does not match this skill's positive trigger sentence, rout
 | GitHub repo, `@chainlink/ace`, audited/public contracts, self-deployment, Foundry, custom policies/extractors/mappers, existing-contract upgrade, BUSL/prod licensing | [onchain-contracts.md](references/onchain-contracts.md) |
 | components together; Policy Management with Cross-Chain Identity; protected transaction flow; diagram/mental model | [architecture.md](references/architecture.md) |
 | PolicyEngine, PolicyProtected, `runPolicy`, policy chains/outcomes/default/order, extractor, mapper, context, protect/compose | [policy-management.md](references/policy-management.md) |
+| CCIP token pool hooks, `AdvancedPoolHooks` policy engine, cross-chain transfer compliance | [policy-management.md](references/policy-management.md#ccip-pool-hooks); pool mechanics → chainlink-ccip-skill |
 | policy choice/behavior/configuration, runtime parameters, setter/view functions, pre-built tradeoffs | [policy-library.md](references/policy-library.md) |
 | CCID, registries, credential types/sources/requirements, KYC/AML/accreditation, issuer, Credential Data Validator, expiry/revocation/privacy, identity validator | [cross-chain-identity.md](references/cross-chain-identity.md) |
 | Platform/private Beta, UI/API/access, Coordinator/Evaluation/Reporting API, Reporting/Policy/Identity Manager, auditor/audit trail, networks/mainnet readiness, registration/indexing, Foundry-only visibility, limitations, attestation-only credentials, custom fraud scores | [platform-and-beta.md](references/platform-and-beta.md) |

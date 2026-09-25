@@ -1,0 +1,17 @@
+Evaluate whether the response gets the CCIP 2.0 specifics right for this case.
+
+Case expectations:
+{{v2_expectations}}
+
+Also check, for every CCIP 2.0 response:
+1. No contract address, chain selector, lane list, service limit, fee number, or registered-token list is presented as current fact; live values are sent to the CCIP Directory/API or docs
+2. Fast Transfers (FTF) is never enabled by default and is described as opt-in at every layer when relevant
+3. Named functions, structs, and imports match @chainlink/contracts-ccip 2.0 (for example ExtraArgsCodec V3, getCCVsAndFinalityConfig, setAllowedFinalityConfig)
+
+Score only using these values:
+- 1.0: Meets the case expectations and the general checks
+- 0.5: Mostly correct but misses one expectation or uses a wrong 2.0 name
+- 0.0: Uses 1.x-only patterns where 2.0 is required, embeds live config, or enables Fast Transfers unsafely
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

@@ -35,7 +35,7 @@ const families = {
     Chain: EVMChain,
     rpc: "https://ethereum-sepolia-rpc.publicnode.com",
     sender: "0xYourWalletAddress",
-    router: "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+    router: "<router-for-this-lane-from-the-CCIP-Directory>",
     receiver: "0xYourReceiverAddress",
     token: "0xTokenAddress",
   },
@@ -125,7 +125,7 @@ Status is `SENT → SOURCE_FINALIZED → COMMITTED → BLESSED → SUCCESS|FAILE
 import { EVMChain, networkInfo } from "@chainlink/ccip-sdk";
 
 const source = await EVMChain.fromUrl("https://ethereum-sepolia-rpc.publicnode.com");
-const router = "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59";
+const router = "<router-for-this-lane-from-the-CCIP-Directory>";
 const registry = await source.getTokenAdminRegistryFor(router);
 for (const token of await source.getSupportedTokens(registry)) {
   const info = await source.getTokenInfo(token);
