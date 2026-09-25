@@ -39,6 +39,14 @@ skills:
       - prompt: "Explain CCIP lane configuration and how to check if a route is connected."
       - prompt: "How do I create and register a Chainlink Cross-Chain Token (CCT) for cross-chain compatibility?"
 
+  - id: chainlink-nop-skill
+    path: chainlink-nop-skill
+    test_cases:
+      - prompt: "Run /chainlink-nop-skill setup for one node. Collect node_api_url, api_key_ref, and api_secret_ref in one three-field connection form, then write config.yaml. Accept only env:NAME or file:/absolute/path secret references, never credential values."
+      - prompt: "Using config.yaml, diagnose this one node with broad authenticated GET reads, including config, jobs, bridges, and transactions. Never send a mutation, and investigate until a conclusion, source exhaustion, a real blocker, or I stop you."
+      - prompt: "Using config.yaml, diagnose why this one CRE node's workflow executions are failing. Keep the investigation node-local and GET-only, and continue until a conclusion, source exhaustion, a real blocker, or I stop you."
+      - prompt: "Using /chainlink-nop-skill, write a Solidity CCIP sender contract for Ethereum Sepolia and Base Sepolia."
+
   - id: chainlink-data-feeds-skill
     path: chainlink-data-feeds-skill
     test_cases:

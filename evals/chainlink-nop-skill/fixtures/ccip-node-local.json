@@ -1,0 +1,30 @@
+{
+  "scenario_id": "ccip-node-local",
+  "node": "node-alpha",
+  "evidence": [
+    {
+      "kind": "observed",
+      "fact": "The CCIP job reached node-local P2P, OCR key, relayer, and bootstrapper setup without a returned setup error."
+    },
+    {
+      "kind": "observed",
+      "fact": "The node repeatedly emitted the home-chain contract-reader retry warning while creating and binding the reader."
+    },
+    {
+      "kind": "boundary",
+      "fact": "Registry capability checks, OCR config reads, and local oracle deployment are downstream launcher work; this replay contains no evidence that deployment was reached."
+    }
+  ],
+  "expected": {
+    "classification": "node-local",
+    "conclusion": "The supplied evidence supports a node-local CCIP home-chain reader setup failure.",
+    "uncertainty": "The retry warning does not prove an RPC root cause.",
+    "stop_reason": "evidence-backed conclusion",
+    "unsupported_claims": [
+      "message or lane finality",
+      "destination execution",
+      "receiver behavior",
+      "quorum, congestion, or gas cause"
+    ]
+  }
+}
