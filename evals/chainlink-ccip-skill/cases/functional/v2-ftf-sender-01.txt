@@ -1,0 +1,1 @@
+Write me a Foundry sender contract for CCIP 2.0 that sends a token plus a small payload from Ethereum Sepolia to Avalanche Fuji using Fast Transfers. I don't want to wait for full finality on Sepolia, about 5 block confirmations is fine. Pay fees in LINK.

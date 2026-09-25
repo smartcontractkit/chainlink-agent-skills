@@ -1,6 +1,6 @@
 # CCIP Solidity Examples
 
-Contract-first floor for CCIP v1.6.x EVM. Verify against current official tutorials when fetch is available.
+Contract-first floor for CCIP 2.0 EVM (`@chainlink/contracts-ccip` 2.0). Verify against current official tutorials when fetch is available. extraArgs, Fast Transfers, and receiver finality rules: [CCIP 2.0](ccip-v2.md).
 
 ## Imports
 
@@ -8,10 +8,12 @@ Contract-first floor for CCIP v1.6.x EVM. Verify against current official tutori
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
+import {FinalityCodec} from "@chainlink/contracts-ccip/contracts/libraries/FinalityCodec.sol";
 import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import {IERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/utils/SafeERC20.sol";
+import {EnumerableMap} from "@openzeppelin/contracts@5.3.0/utils/structs/EnumerableMap.sol";
 ```
 
 ## Concrete senders
@@ -24,9 +26,10 @@ pragma solidity 0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/utils/SafeERC20.sol";
 
 contract DataSender is OwnerIsCreator {
     using SafeERC20 for IERC20;
@@ -43,6 +46,9 @@ contract DataSender is OwnerIsCreator {
     IRouterClient public immutable s_router;
     IERC20 public immutable s_linkToken;
     mapping(uint64 => bool) public allowlistedDestinationChains;
+    // 0 = wait for full finality (default). A nonzero value requests Fast Transfers (FTF) and
+    // only succeeds if the pool, CCVs, executor, and destination receiver all allow that depth.
+    mapping(uint64 => uint16) public blockConfirmations;
 
     constructor(address _router, address _link) {
         if (_router == address(0) || _link == address(0)) revert ZeroAddress();
@@ -62,18 +68,29 @@ contract DataSender is OwnerIsCreator {
         allowlistedDestinationChains[_destinationChainSelector] = _allowed;
     }
 
+    function setBlockConfirmations(uint64 _destinationChainSelector, uint16 _blockConfirmations) external onlyOwner {
+        blockConfirmations[_destinationChainSelector] = _blockConfirmations;
+    }
+
+    // CCIP 2.0 GenericExtraArgsV3; ExtraArgsCodec uses a packed encoding, so never abi.encode the struct.
+    function _extraArgs(uint64 _destinationChainSelector, uint32 _gasLimit) internal view returns (bytes memory) {
+        return ExtraArgsCodec._getBasicEncodedExtraArgsV3BlockDepth(
+            _gasLimit, blockConfirmations[_destinationChainSelector]
+        );
+    }
+
     function quoteFee(uint64 destinationChainSelector, address receiver, string calldata text)
         external view returns (uint256)
     {
         if (!s_router.isChainSupported(destinationChainSelector))
             revert DestinationChainNotSupported(destinationChainSelector);
-        return s_router.getFee(destinationChainSelector, _dataMessage(receiver, text));
+        return s_router.getFee(destinationChainSelector, _dataMessage(destinationChainSelector, receiver, text));
     }
 
     function sendMessage(uint64 destinationChainSelector, address receiver, string calldata text)
         external onlyOwner onlyAllowedDestination(destinationChainSelector) returns (bytes32 messageId)
     {
-        Client.EVM2AnyMessage memory evm2AnyMessage = _dataMessage(receiver, text);
+        Client.EVM2AnyMessage memory evm2AnyMessage = _dataMessage(destinationChainSelector, receiver, text);
         uint256 fees;
         (messageId, fees) = _quoteAndSend(destinationChainSelector, evm2AnyMessage);
         emit MessageSent(messageId, destinationChainSelector, receiver, text, address(s_linkToken), fees);
@@ -90,7 +107,7 @@ contract DataSender is OwnerIsCreator {
         messageId = s_router.ccipSend(_destinationChainSelector, evm2AnyMessage);
     }
 
-    function _dataMessage(address receiver, string memory text)
+    function _dataMessage(uint64 destinationChainSelector, address receiver, string memory text)
         internal view returns (Client.EVM2AnyMessage memory)
     {
         if (receiver == address(0)) revert ZeroAddress();
@@ -98,9 +115,7 @@ contract DataSender is OwnerIsCreator {
             receiver: abi.encode(receiver),
             data: abi.encode(text),
             tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({
-                gasLimit: 200_000, allowOutOfOrderExecution: true
-            })),
+            extraArgs: _extraArgs(destinationChainSelector, 200_000),
             feeToken: address(s_linkToken)
         });
     }
@@ -127,9 +142,7 @@ contract TokenSender is DataSender {
             receiver: abi.encode(receiver),
             data: "",
             tokenAmounts: tokenAmounts,
-            extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({
-                gasLimit: 0, allowOutOfOrderExecution: true
-            })),
+            extraArgs: _extraArgs(destinationChainSelector, 0),
             feeToken: address(s_linkToken)
         });
         uint256 fees = s_router.getFee(destinationChainSelector, evm2AnyMessage);
@@ -181,9 +194,8 @@ contract TokenDataSender is DataSender {
             receiver: abi.encode(receiver),
             data: data,
             tokenAmounts: tokenAmounts,
-            extraArgs: Client._argsToBytes(Client.GenericExtraArgsV2({
-                gasLimit: 200_000, allowOutOfOrderExecution: true
-            })),
+            // Room for DefensiveTokenReceiver to persist a failed message; size with gas tests.
+            extraArgs: _extraArgs(destinationChainSelector, 400_000),
             feeToken: address(s_linkToken)
         });
         uint256 fees = s_router.getFee(destinationChainSelector, evm2AnyMessage);
@@ -217,25 +229,26 @@ contract TokenReceiver is OwnerIsCreator {
 }
 ```
 
-## Data receiver
+## Receiver base
+
+Every receiver below inherits `AllowlistedReceiver`: the pair-bound source-selector-and-sender allowlist plus the CCIP 2.0 finality hook. `CCIPReceiver` 2.0 already defaults to full finality; the override keeps that default and admits Fast Transfers only for an allowlisted pair on a source chain the owner opted in, at or above that chain's minimum depth. Never return a nonzero finality config for every chain or sender.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
-import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {FinalityCodec} from "@chainlink/contracts-ccip/contracts/libraries/FinalityCodec.sol";
 import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
 
-contract DataReceiver is CCIPReceiver, OwnerIsCreator {
+abstract contract AllowlistedReceiver is CCIPReceiver, OwnerIsCreator {
     error SourceSenderNotAllowed(uint64 sourceChainSelector, address sender);
     error ZeroAddress();
-    event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector,
-        address sender, string text);
 
     // Pair-bound: an allowed sender is scoped to one source chain, not global.
     mapping(uint64 => mapping(address => bool)) public allowlistedSourceSenders;
-    string private s_lastReceivedText;
+    // Per source chain; bytes4(0) = full finality only (default).
+    mapping(uint64 => bytes4) public allowedFinalityConfig;
 
     constructor(address _router) CCIPReceiver(_router) {
         if (_router == address(0)) revert ZeroAddress();
@@ -244,10 +257,52 @@ contract DataReceiver is CCIPReceiver, OwnerIsCreator {
     function allowlistSourceSender(uint64 _sourceChainSelector, address _sender, bool _allowed) external onlyOwner {
         allowlistedSourceSenders[_sourceChainSelector][_sender] = _allowed;
     }
+
+    // 0 = full finality only; N = also accept Fast Transfers that waited at least N source blocks.
+    // Do not raise N while Fast Transfers from that chain are in flight: they would fail on execution.
+    function setMinBlockConfirmations(uint64 _sourceChainSelector, uint16 _minBlockConfirmations) external onlyOwner {
+        allowedFinalityConfig[_sourceChainSelector] = FinalityCodec._encodeBlockDepth(_minBlockConfirmations);
+    }
+
+    // Read by the OffRamp before execution; empty CCV lists mean the lane defaults.
+    function getCCVsAndFinalityConfig(uint64 sourceChainSelector, bytes calldata sender)
+        external view virtual override
+        returns (address[] memory requiredCCVs, address[] memory optionalCCVs, uint8 optionalThreshold, bytes4 finality)
+    {
+        finality = FinalityCodec.WAIT_FOR_FINALITY_FLAG;
+        if (sender.length == 32 && allowlistedSourceSenders[sourceChainSelector][abi.decode(sender, (address))]) {
+            finality = allowedFinalityConfig[sourceChainSelector];
+        }
+        return (requiredCCVs, optionalCCVs, 0, finality);
+    }
+
+    function _requireAllowlisted(uint64 _sourceChainSelector, bytes memory _sender) internal view returns (address sender) {
+        sender = abi.decode(_sender, (address));
+        if (!allowlistedSourceSenders[_sourceChainSelector][sender])
+            revert SourceSenderNotAllowed(_sourceChainSelector, sender);
+    }
+}
+```
+
+## Data receiver
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {AllowlistedReceiver} from "./AllowlistedReceiver.sol";
+
+contract DataReceiver is AllowlistedReceiver {
+    event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector,
+        address sender, string text);
+
+    string private s_lastReceivedText;
+
+    constructor(address _router) AllowlistedReceiver(_router) {}
+
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
-        address sender = abi.decode(any2EvmMessage.sender, (address));
-        if (!allowlistedSourceSenders[any2EvmMessage.sourceChainSelector][sender])
-            revert SourceSenderNotAllowed(any2EvmMessage.sourceChainSelector, sender);
+        address sender = _requireAllowlisted(any2EvmMessage.sourceChainSelector, any2EvmMessage.sender);
         s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
         emit MessageReceived(any2EvmMessage.messageId, any2EvmMessage.sourceChainSelector, sender, s_lastReceivedText);
     }
@@ -265,13 +320,10 @@ A plain, auditable token-plus-data receiver for non-Foundry requests that do not
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+import {AllowlistedReceiver} from "./AllowlistedReceiver.sol";
 
-contract TokenDataReceiver is CCIPReceiver, OwnerIsCreator {
-    error SourceSenderNotAllowed(uint64 sourceChainSelector, address sender);
-    error ZeroAddress();
+contract TokenDataReceiver is AllowlistedReceiver {
     error NoTokensReceived();
     error TokenNotAllowed(address token);
     error ZeroTokenAmount(address token);
@@ -279,19 +331,11 @@ contract TokenDataReceiver is CCIPReceiver, OwnerIsCreator {
     event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainSelector,
         address sender, address token, uint256 amount, bytes data);
 
-    // Pair-bound: an allowed sender is scoped to one source chain, not global.
-    mapping(uint64 => mapping(address => bool)) public allowlistedSourceSenders;
     mapping(address => bool) public allowlistedTokens;
     mapping(address => uint256) public receivedTotals;
     bytes public lastData;
 
-    constructor(address _router) CCIPReceiver(_router) {
-        if (_router == address(0)) revert ZeroAddress();
-    }
-
-    function allowlistSourceSender(uint64 _sourceChainSelector, address _sender, bool _allowed) external onlyOwner {
-        allowlistedSourceSenders[_sourceChainSelector][_sender] = _allowed;
-    }
+    constructor(address _router) AllowlistedReceiver(_router) {}
 
     function allowlistToken(address _token, bool _allowed) external onlyOwner {
         if (_token == address(0)) revert ZeroAddress();
@@ -299,9 +343,7 @@ contract TokenDataReceiver is CCIPReceiver, OwnerIsCreator {
     }
 
     function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
-        address sender = abi.decode(any2EvmMessage.sender, (address));
-        if (!allowlistedSourceSenders[any2EvmMessage.sourceChainSelector][sender])
-            revert SourceSenderNotAllowed(any2EvmMessage.sourceChainSelector, sender);
+        address sender = _requireAllowlisted(any2EvmMessage.sourceChainSelector, any2EvmMessage.sender);
         if (any2EvmMessage.destTokenAmounts.length == 0) revert NoTokensReceived();
 
         lastData = any2EvmMessage.data;
@@ -331,19 +373,16 @@ Every generated Foundry token-plus-data deliverable must use this complete activ
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import {AllowlistedReceiver} from "./AllowlistedReceiver.sol";
+import {IERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts@5.3.0/token/ERC20/utils/SafeERC20.sol";
+import {EnumerableMap} from "@openzeppelin/contracts@5.3.0/utils/structs/EnumerableMap.sol";
 
-contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
+contract DefensiveTokenReceiver is AllowlistedReceiver {
     using EnumerableMap for EnumerableMap.Bytes32ToUintMap;
     using SafeERC20 for IERC20;
 
-    error SourceSenderNotAllowed(uint64 sourceChainSelector, address sender);
-    error ZeroAddress();
     error OnlySelf();
     error MessageNotFailed(bytes32 messageId);
     error NoTokensReceived();
@@ -356,24 +395,16 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
     event MessageFailed(bytes32 indexed messageId, bytes reason);
     event MessageRecovered(bytes32 indexed messageId);
 
-    // Pair-bound: an allowed sender is scoped to one source chain, not global.
-    mapping(uint64 => mapping(address => bool)) public allowlistedSourceSenders;
     mapping(address => bool) public allowlistedTokens;
     mapping(bytes32 => Client.Any2EVMMessage) public s_messageContents;
     mapping(bytes32 => bytes) public s_failureReasons;
     mapping(address => uint256) public s_receivedTotals;
     EnumerableMap.Bytes32ToUintMap internal s_failedMessages;
 
-    constructor(address _router) CCIPReceiver(_router) {
-        if (_router == address(0)) revert ZeroAddress();
-    }
+    constructor(address _router) AllowlistedReceiver(_router) {}
     modifier onlySelf() {
         if (msg.sender != address(this)) revert OnlySelf();
         _;
-    }
-
-    function allowlistSourceSender(uint64 _sourceChainSelector, address _sender, bool _allowed) external onlyOwner {
-        allowlistedSourceSenders[_sourceChainSelector][_sender] = _allowed;
     }
 
     function allowlistToken(address _token, bool _allowed) external onlyOwner {
@@ -381,14 +412,13 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
         allowlistedTokens[_token] = _allowed;
     }
 
-    function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
-        address sender = abi.decode(any2EvmMessage.sender, (address));
-        if (!allowlistedSourceSenders[any2EvmMessage.sourceChainSelector][sender])
-            revert SourceSenderNotAllowed(any2EvmMessage.sourceChainSelector, sender);
+    // Override the external entry point (calldata) so the failed message can be copied to storage.
+    function ccipReceive(Client.Any2EVMMessage calldata any2EvmMessage) external override onlyRouter {
+        _requireAllowlisted(any2EvmMessage.sourceChainSelector, any2EvmMessage.sender);
 
         if (any2EvmMessage.destTokenAmounts.length == 0) revert NoTokensReceived();
         for (uint256 i; i < any2EvmMessage.destTokenAmounts.length; ++i) {
-            Client.EVMTokenAmount memory received = any2EvmMessage.destTokenAmounts[i];
+            Client.EVMTokenAmount calldata received = any2EvmMessage.destTokenAmounts[i];
             if (!allowlistedTokens[received.token]) revert TokenNotAllowed(received.token);
             if (received.amount == 0) revert ZeroTokenAmount(received.token);
         }
@@ -405,11 +435,16 @@ contract DefensiveTokenReceiver is CCIPReceiver, OwnerIsCreator {
     }
 
     function processMessage(Client.Any2EVMMessage calldata any2EvmMessage) external onlySelf {
+        _ccipReceive(any2EvmMessage);
+    }
+
+    // Business logic; may revert without blocking token delivery.
+    function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
         address beneficiary = abi.decode(any2EvmMessage.data, (address));
         if (beneficiary == address(0)) revert ZeroAddress();
 
         for (uint256 i; i < any2EvmMessage.destTokenAmounts.length; ++i) {
-            Client.EVMTokenAmount calldata received = any2EvmMessage.destTokenAmounts[i];
+            Client.EVMTokenAmount memory received = any2EvmMessage.destTokenAmounts[i];
             s_receivedTotals[received.token] += received.amount;
             IERC20(received.token).safeTransfer(beneficiary, received.amount);
             emit MessageReceived(

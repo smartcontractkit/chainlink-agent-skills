@@ -1,0 +1,1 @@
+Our token's BurnMintTokenPool (2.0) is deployed on Ethereum Sepolia and Arbitrum Sepolia and the token is registered. I own both pools. How do I turn on Fast Transfers so holders can bridge without waiting for full finality? Do I need to change the token contract?

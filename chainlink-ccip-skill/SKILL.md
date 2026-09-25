@@ -1,11 +1,11 @@
 ---
 name: chainlink-ccip-skill
-description: "Handle Chainlink CCIP requests including read-only route, token, message-status, and lane lookups; fee-estimation guidance; user-run cross-chain transfer and messaging artifacts; sender and receiver contract development; and CCT setup guidance. The skill never signs or broadcasts transactions. Use whenever the user mentions CCIP, Chainlink cross-chain messaging, CCIP token transfers, CCTs, or CCIP monitoring."
+description: "Handle Chainlink CCIP requests including read-only route, token, message-status, and lane lookups; fee-estimation guidance; user-run cross-chain transfer and messaging artifacts; CCIP 2.0 sender and receiver contract development, including extraArgs V3 and Fast Transfers (FTF); and CCT token pool setup guidance. The skill never signs or broadcasts transactions. Use whenever the user mentions CCIP, Chainlink cross-chain messaging, CCIP token transfers, CCTs, CCIP token pools, Fast Transfers, or CCIP monitoring."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit
 metadata:
-  version: "0.0.9"
+  version: "0.0.10"
 ---
 
 # Chainlink CCIP Skill
@@ -24,7 +24,8 @@ For any request outside this skill's scope, answer wholly within the owning capa
 | Route connectivity, network classification, supported tokens | [Discovery](references/ccip-discovery.md) |
 | Lookup/monitoring, lifecycle, performance, failed-message diagnosis | [Monitoring](references/ccip-monitoring.md) |
 | Solidity sender/receiver, token/programmable transfer, imports/setup | [Contracts](references/ccip-contracts.md), then [code](references/ccip-solidity-examples.md) |
-| Create/register CCT, pools, rate limits, add networks | [CCT](references/ccip-cct.md) |
+| CCIP 2.0: extraArgs V3, Fast Transfers (FTF)/finality, V2 receiver, CCVs, router per lane, pre-2.0 lanes | [CCIP 2.0](references/ccip-v2.md) |
+| Create/register CCT, pools, rate limits, add networks, pool Fast Transfers, pool hooks/policy engine, v1→v2 pools, pool tests | [CCT](references/ccip-cct.md) |
 | Chainlink Local, simulation/tests, forked EVM | [Local](references/chainlink-local.md) |
 | Solana/SVM, Aptos, Sui, TON, Canton, any non-EVM family | [Non-EVM](references/ccip-non-evm.md); never use EVM patterns |
 | Current facts/source selection/tool behavior | [Sources](references/official-sources.md) |
@@ -75,4 +76,5 @@ Review this carefully and execute it only from your own wallet-controlled enviro
 - Quote fees before send preparation; preserve transfer-token/fee approvals and `ccipSend` ordering in the chosen pattern. Every generic EVM sender must also require `IRouterClient.isChainSupported(selector)` before `getFee` or `ccipSend`; a nonzero selector or owner allowlist is not a substitute.
 - `CCIPReceiver` authenticates its router; all security-first examples also reject zero router and LINK constructor inputs and zero token, recipient, or amount recovery inputs. Validate the source-selector-and-sender pair together (never an independent global sender list). Every token-plus-data receiver rejects an empty token list, zero amounts, and non-allowlisted tokens, and accounts for every received token entry rather than silently using only index zero. These allowlist and full-accounting controls are mandatory safety checks, not speculative complexity. Outside generated Foundry token-plus-data deliverables, a small/auditable answer may stay direct with no self-call, try/catch, or recovery. Every generated Foundry token-plus-data deliverable must instead use the complete active defensive receiver from [Solidity examples](references/ccip-solidity-examples.md), never the small or passive receiver and never an abridged substitute: preserve `CCIPReceiver` router authentication, pair-bound source/sender and token authorization, concrete try/catch, the entire failed `Client.Any2EVMMessage` plus reason/state and read access, owner-only recovery with unknown/resolved rejection, exact all-token recovery, and failure/recovery events.
 - Normal monitoring reports status and failure details only; never mention manual-execution readiness, execution inputs, or `manual-exec` unless current message data first confirms a failed message ready for remediation.
+- EVM defaults to CCIP 2.0: `ExtraArgsCodec` V3, full finality unless the user asks for Fast Transfers (opt-in at sender, pool, CCVs, executor, and receiver), router always a parameter resolved per lane. Never embed addresses, selectors, lanes, limits, fees, or registered tokens.
 - Use chain-native non-EVM tooling. Sui is manual-exec-only; TON lacks pool/registry queries; Canton requires `--canton-config` and `--indexer` for CCV verification.

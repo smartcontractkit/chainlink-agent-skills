@@ -1,0 +1,1 @@
+I'm writing the destination receiver for our CCIP 2.0 app. It should accept Fast Transfers from Base Sepolia only if the message waited at least 10 block confirmations, and require full finality from every other source chain. Show me the receiver contract.

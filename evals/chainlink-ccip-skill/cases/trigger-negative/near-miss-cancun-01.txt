@@ -1,0 +1,1 @@
+my foundry tests against a mainnet fork of Uniswap v4 keep failing with `EvmError: NotActivated`. foundry.toml has evm_version = "paris". what's going on and how do i fix it?

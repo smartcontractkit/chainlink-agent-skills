@@ -20,6 +20,8 @@ Conservative defaults:
 - tokens plus data sent to an EOA deliver only the tokens;
 - token-only delivery uses empty data, `gasLimit: 0`, zero-address/zero-amount checks, correct allowance when the transfer token is also the fee token, and an EOA or passive token-holding contract with no `CCIPReceiver`, `_ccipReceive`, callback allowlists, or callback claims; use this passive shape only when the user explicitly requests token-only/no-callback delivery;
 - an explicit data, programmable-transfer, secure/secured receiver, defensive receiver, or callback request must retain its payload, nonzero destination gas, and active `CCIPReceiver` callback path;
+- router and LINK are constructor arguments, never hard-coded; a CCIP 2.0 lane can use a different router than older lanes on the same chain, so resolve it per lane ([CCIP 2.0](ccip-v2.md#router-and-lane-version)); if the user pasted a hard-coded router or selector, replace it with a parameter and say why;
+- extraArgs use `ExtraArgsCodec` V3 with full finality by default; Fast Transfers (FTF) only on explicit request, as an owner-set per-lane opt-in on the sender and a per-source-chain, allowlisted-sender opt-in on the receiver; say that the pool, CCVs, and executor must also allow the depth;
 - avoid dynamic configuration, hidden control flow, and unnecessary abstraction.
 
 For testnet transfers, default to faucet/tutorial **CCIP-BnM** (burn-and-mint) unless the user chooses another token. Verify the route and token first.
@@ -42,7 +44,7 @@ For any mainnet deployment, configuration, admin, approval, or send artifact, pr
 5. Fund the sender with testnet LINK.
 6. The user calls `sendMessage`.
 
-Tutorials: arbitrary data `https://docs.chain.link/ccip/tutorials/evm/send-arbitrary-data.md`; tokens `https://docs.chain.link/ccip/tutorials/evm/transfer-tokens-from-contract.md`; programmable `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers.md`; defensive `https://docs.chain.link/ccip/tutorials/evm/programmable-token-transfers-defensive.md`; best practices `https://docs.chain.link/ccip/concepts/best-practices/evm.md`; `CCIPReceiver` `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/ccip-receiver.md`; `IRouterClient` `https://docs.chain.link/ccip/api-reference/evm/v1.6.1/i-router-client.md`.
+Tutorials: arbitrary data `https://docs.chain.link/ccip/evm/tutorials/application-developers/send-arbitrary-data.md`; tokens `https://docs.chain.link/ccip/evm/tutorials/application-developers/transfer-tokens-from-contract.md`; programmable `https://docs.chain.link/ccip/evm/tutorials/application-developers/programmable-token-transfers.md`; defensive `https://docs.chain.link/ccip/evm/tutorials/application-developers/programmable-token-transfers-defensive.md`; best practices `https://docs.chain.link/ccip/evm/concepts/best-practices.md`; `CCIPReceiver` `https://docs.chain.link/ccip/evm/api-reference/v2.0.0/ccip-receiver.md`; `IRouterClient` `https://docs.chain.link/ccip/evm/api-reference/v2.0.0/i-router-client.md`. The API-reference pages use `chainlink-ccip/...` import paths; use the npm `@chainlink/contracts-ccip/contracts/...` paths below.
 
 ## Project setup
 
@@ -59,7 +61,7 @@ forge install smartcontractkit/chainlink-evm@contracts-v<version>
 @chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/
 ```
 
-Inspect installed CCIP imports before selecting OpenZeppelin versions: `CCIPReceiver` imports `IERC165`, and its version can differ from other dependencies. `forge install` always targets the default `lib/openzeppelin-contracts/` directory, so installing two OpenZeppelin versions back to back silently overwrites the first at that same path; install and rename one version at a time so each remapping points at the path that actually exists on disk:
+Inspect installed CCIP imports before selecting OpenZeppelin versions: `CCIPReceiver` and pools 2.0 import `@openzeppelin/contracts@5.3.0/`; Chainlink Local's `CCIPLocalSimulator` also imports `@openzeppelin/contracts@4.8.3/`. `forge install` always targets the default `lib/openzeppelin-contracts/` directory, so installing two OpenZeppelin versions back to back silently overwrites the first at that same path; install and rename one version at a time so each remapping points at the path that actually exists on disk:
 
 ```bash
 forge install OpenZeppelin/openzeppelin-contracts@v4.8.3 --no-commit
@@ -73,7 +75,7 @@ mv lib/openzeppelin-contracts lib/openzeppelin-contracts-5.3.0
 @openzeppelin/contracts@5.3.0/=lib/openzeppelin-contracts-5.3.0/contracts/
 ```
 
-`CCIPReceiver` may instead require `5.0.2`; grep `lib/chainlink-ccip/` for `@openzeppelin`, install and rename that exact release the same way, and give it its own remapping pointed at its own renamed directory. ACE projects may also need:
+Older `CCIPReceiver` releases (1.6) import `5.0.2` instead; grep `lib/chainlink-ccip/` for `@openzeppelin`, install and rename that exact release the same way, and give it its own remapping pointed at its own renamed directory. Set `evm_version = "cancun"` in `foundry.toml` (Hardhat `evmVersion: "cancun"`) for any fork or script against deployed CCIP 2.0 contracts; `paris` fails with `EvmError: NotActivated`. Enable the optimizer; if added event fields or locals cause `Stack too deep`, set `via_ir = true` rather than dropping safety checks. ACE projects may also need:
 
 ```text
 @chainlink/policy-management/=lib/chainlink-ace/packages/policy-management/src/

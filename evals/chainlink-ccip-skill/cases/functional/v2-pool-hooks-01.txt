@@ -1,0 +1,1 @@
+We issue a regulated stablecoin as a CCIP cross-chain token and compliance wants a KYC / sanctions check on every cross-chain transfer, both outbound and inbound. With CCIP 2.0 can I plug a policy engine into the token pool? How would I wire it up on testnet?

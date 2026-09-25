@@ -86,6 +86,31 @@ x-assertions:
       provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
       metric: clarification
       value: file://rubrics/clarification.txt
+  functional_v2_asserts: &functional_v2_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: correctness
+      value: file://rubrics/correctness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: completeness
+      value: file://rubrics/completeness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: safety
+      value: file://rubrics/safety.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: freshness
+      value: file://rubrics/freshness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+      metric: clarification
+      value: file://rubrics/clarification.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: ccip-v2
+      value: file://rubrics/ccip-v2.txt
 
 prompts:
   - id: file://prompts/baseline.js
@@ -1108,4 +1133,125 @@ tests:
       workflow: tool-first
       category: trigger-negative
       requiresApproval: no
+    assert: *trigger_negative_asserts
+  - description: functional / contract-first / v2-ftf-sender-01
+    vars:
+      case_file: cases/functional/v2-ftf-sender-01.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-v2.md
+        - references/ccip-solidity-examples.md
+      v2_expectations: "Complete Foundry token-plus-data sender using ExtraArgsCodec V3 with a 5-block Fast Transfers request (not GenericExtraArgsV2), router and LINK as constructor parameters, getFee before ccipSend, isChainSupported check, LINK fees; states the pool, CCVs, executor, and destination receiver must also allow the depth; points to the Directory for router/selector values."
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: functional / contract-first / v2-receiver-finality-01
+    vars:
+      case_file: cases/functional/v2-receiver-finality-01.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-v2.md
+        - references/ccip-solidity-examples.md
+      v2_expectations: "CCIPReceiver-based receiver overriding getCCVsAndFinalityConfig(uint64 sourceChainSelector, bytes sender): FinalityCodec._encodeBlockDepth(10) only for the configured source chain (and allowlisted sender), WAIT_FOR_FINALITY_FLAG for every other chain or sender; source selector configured by the owner, not hard-coded as current; keeps router auth and pair-bound allowlist; explains reorg/duplicate risk and that a too-strict config makes in-flight messages fail."
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: functional / cct / v2-cct-enable-ftf-01
+    vars:
+      case_file: cases/functional/v2-cct-enable-ftf-01.txt
+      workflow: cct
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/ccip-v2.md
+        - references/official-sources.md
+      v2_expectations: "Pool owner calls setAllowedFinalityConfig(FinalityCodec._encodeBlockDepth(n)) on each source pool as separate user-run testnet steps; token contract unchanged; optional FTF rate-limit bucket and fastFinality fee fields named only; senders, CCVs, executor, and receivers must also allow the depth; wallet footer; no addresses or fee numbers."
+    metadata:
+      workflow: cct
+      category: functional
+      requiresApproval: yes
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: functional / chainlink-local / v2-fork-cancun-01
+    vars:
+      case_file: cases/functional/v2-fork-cancun-01.txt
+      workflow: chainlink-local
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+      reference_files:
+        - references/chainlink-local.md
+        - references/ccip-v2.md
+        - references/ccip-solidity-examples.md
+      v2_expectations: "Runnable Foundry fork test with Chainlink Local V3 CCIPLocalSimulatorFork: sets evm_version to cancun and explains paris fails with EvmError: NotActivated; makePersistent; router from getCCIPV2RouterAddress or set from the Directory/API; asserts destination state after switchChainAndRouteMessage; RPC URLs via env placeholders; no broadcast."
+    metadata:
+      workflow: chainlink-local
+      category: functional
+      requiresApproval: no
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: functional / contract-first / v2-hardcoded-router-01
+    vars:
+      case_file: cases/functional/v2-hardcoded-router-01.txt
+      workflow: contract-first
+      expected_trigger: "yes"
+      requires_live_source: "no"
+      requires_approval: "no"
+      reference_files:
+        - references/ccip-contracts.md
+        - references/ccip-v2.md
+        - references/ccip-solidity-examples.md
+      v2_expectations: "Removes the hard-coded router and selector, takes the router as a constructor parameter, and explains a CCIP 2.0 lane can use a different router than older lanes on the same chain so it must be resolved per lane from the Directory/API; replaces GenericExtraArgsV2 with ExtraArgsCodec V3 and an opt-in block-confirmation request; notes the receiver and lane must allow Fast Transfers."
+    metadata:
+      workflow: contract-first
+      category: functional
+      requiresApproval: no
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: functional / cct / v2-pool-hooks-01
+    vars:
+      case_file: cases/functional/v2-pool-hooks-01.txt
+      workflow: cct
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "yes"
+      reference_files:
+        - references/ccip-cct.md
+        - references/official-sources.md
+      v2_expectations: "Explains AdvancedPoolHooks: preflightCheck (outbound) and postflightCheck (inbound), policy engine via setPolicyEngine running both directions, authorize the pool with applyAuthorizedCallerUpdates then attach with updateAdvancedPoolHooks as user-run testnet steps; treats AdvancedPoolHooks as Chainlink's example hook (a custom IAdvancedPoolHooks is an option); names Chainlink ACE as one policy-engine option and routes ACE setup to the ACE skill without documenting the ACE Platform flow; no addresses."
+    metadata:
+      workflow: cct
+      category: functional
+      requiresApproval: yes
+      smoke: true
+    assert: *functional_v2_asserts
+  - description: trigger-negative / near-miss / near-miss-cancun-01
+    vars:
+      case_file: cases/trigger-negative/near-miss-cancun-01.txt
+      workflow: chainlink-local
+      expected_trigger: "no"
+      requires_live_source: "no"
+      requires_approval: "no"
+      reference_files: []
+    metadata:
+      workflow: chainlink-local
+      category: trigger-negative
+      requiresApproval: no
+      smoke: true
     assert: *trigger_negative_asserts
