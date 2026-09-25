@@ -11,6 +11,7 @@ Workflow definitions:
 - platform-beta: managed ACE Platform private/Beta scope, mainnet/testnet readiness, product limitations, and OSS self-deploy separation
 - platform-reporting: Reporting API, audit evidence, Transactions, Policies, Targets, Identities, Permits, Registry usage, point-in-time state, and onchain reconciliation
 - platform-apis: Coordinator API vs Evaluation API (MVP) vs Reporting API, write/control-plane management vs offchain evaluation vs read-only evidence queries
+- platform-api-usage: calling or generating code for the Coordinator, Evaluation (MVP), or Reporting API: base URLs, auth without handling the key, required fields, evaluate/poll/submit flow, pagination, and errors
 - platform-identity: managed-platform credential modes vs OSS Cross-Chain Identity credential validators
 - platform-visibility: whether self-deployed/Foundry contracts are visible in ACE Platform, registration, provisioning, and indexing boundaries
 
