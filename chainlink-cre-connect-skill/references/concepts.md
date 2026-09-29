@@ -53,7 +53,11 @@ A channel cannot be archived while it has active watchers; archive its watchers 
 ## Sources
 
 - `https://docs.chain.link/crec.md`
-- `https://docs.chain.link/crec/getting-started.md`
+- `https://docs.chain.link/crec/getting-started/prerequisites.md`
+- `https://docs.chain.link/crec/getting-started/sdk-installation.md`
+- `https://docs.chain.link/crec/getting-started/authentication.md`
+- `https://docs.chain.link/crec/getting-started/quickstart-watch-events.md`
+- `https://docs.chain.link/crec/getting-started/quickstart-send-operation.md`
 - `https://docs.chain.link/crec/concepts/architecture.md`
 - `https://docs.chain.link/crec/concepts/channels.md`
 - `https://docs.chain.link/crec/supported-networks.md`

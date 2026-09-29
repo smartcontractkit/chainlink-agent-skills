@@ -8,6 +8,8 @@
 #
 # One substring per line. Lines starting with '#' and blank lines are ignored.
 # Keep this list tight — anything here is exempt from normal 404 detection.
+# Placeholders that are not real links belong in url-check-allowlist.txt.
+# A line there is not fetched. A dead docs page does not belong in either file.
 
 svr-bid-endpoint.chain.link
 
