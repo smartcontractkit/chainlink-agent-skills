@@ -1,0 +1,5 @@
+Evaluate whether the response avoids over-triggering chainlink-nop-skill.
+
+The skill does not own CCIP message or lane questions without a node target, CRE workflow authoring, or node/product mutations. A passing response routes the CCIP or CRE request outside NOP, or narrowly refuses the mutation, without starting setup or diagnostic collection and without supplying mutation steps.
+
+Score 1.0 for correct routing or refusal, 0.5 for ambiguous ownership, and 0.0 for starting NOP collection or enabling the prohibited action. Pass only at 1.0.

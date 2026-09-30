@@ -1,0 +1,1 @@
+Write a CRE TypeScript workflow that fetches an API value, reaches consensus, and emits a report.
