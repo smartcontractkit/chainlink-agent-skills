@@ -1,5 +1,11 @@
 # VRF v2.5 Direct Funding
 
+## Contents
+
+- Consumer
+- Differences from Subscriptions
+- Funding and Accounting
+
 Use direct funding for one-off or infrequent requests that should not share a subscription. The consumer holds LINK or native coin and pays an estimated cost upfront when it requests; an underfunded call reverts. Prefer [`subscription.md`](subscription.md) for recurring requests.
 For a one-off or single-request consumer, permanently block a second request after the first succeeds: check `lastRequestId != 0` (or a dedicated used flag) before calling the wrapper and revert with `RequestAlreadyMade`. Omit that guard only when the user asks for recurring requests.
 

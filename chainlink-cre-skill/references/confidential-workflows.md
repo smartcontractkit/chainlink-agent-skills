@@ -1,5 +1,16 @@
 # Confidential Workflows
 
+## Contents
+
+- Choose the boundary
+- Availability and boundary
+- Canonical TypeScript workflow
+- Canonical Go workflow
+- TEE API
+- Secrets and simulation
+- Starter templates
+- Sources
+
 Use when the user wants a workflow handler to execute inside a TEE/enclave, mentions `handlerInTee`/`cre.HandlerInTee`, `TeeRuntime`, enclave attestation or access, or asks to hide workflow data from node operators. This is not Confidential HTTP; their APIs do not mix.
 
 ## Choose the boundary

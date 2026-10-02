@@ -1,5 +1,11 @@
 # VRF v2.5 Supported Networks
 
+## Contents
+
+- Mainnet Networks
+- Testnet Networks
+- Key Hash Selection
+
 **Always verify addresses and key hashes against the live docs before deploying.** If any value here conflicts with https://docs.chain.link/vrf/v2-5/supported-networks.md, treat the docs as authoritative.
 
 **Max Gas Limit:** 2,500,000

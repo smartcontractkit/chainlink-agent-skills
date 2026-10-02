@@ -4,7 +4,7 @@ description: "Help developers integrate Chainlink Data Feeds into smart contract
 license: MIT
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.6"
+  version: "0.0.7"
 ---
 
 # Chainlink Data Feeds Skill
@@ -20,7 +20,7 @@ metadata:
 | Feed categories/selection, SmartData/RWA, rates/volatility, tokenized equity | [types](references/feed-types.md) |
 | Solana, StarkNet, Aptos, Tron, Move, Cairo, Anchor, TronBox | [multi-chain](references/multi-chain.md) |
 | L2 sequencer, deprecation, monitoring, registry, responsibilities, data sources, self-managed feeds | [operations](references/feed-operations.md) |
-| Live addresses/schedules/parameters; interface/signature mismatch, proxy/aggregator source, GitHub example | [official sources](references/official-sources.md) |
+| Live addresses/schedules/parameters; interface/signature mismatch, proxy/aggregator source, GitHub example | [official sources](references/official-sources.md), then [docs index](assets/data-feeds-docs-index.md) for facts the curated references do not have |
 
 Do not load references speculatively. Default EVM requests to price feeds; ask only when routing depends on missing context.
 Do not assume this skill is the only capability available.

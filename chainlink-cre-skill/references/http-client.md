@@ -1,5 +1,15 @@
 # HTTP Client
 
+## Contents
+
+- Choose a pattern
+- Canonical TypeScript GET
+- Aggregation and node mode
+- POST, bytes, and caching
+- Reports over HTTP
+- Confidential HTTP
+- Sources
+
 Use for outbound HTTP, node mode, report submission over HTTP, or Confidential HTTP. HTTP *triggers* are in [triggers.md](triggers.md); whole-handler TEE execution is in [confidential-workflows.md](confidential-workflows.md).
 
 ## Choose a pattern

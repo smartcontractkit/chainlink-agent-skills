@@ -1,5 +1,12 @@
 # Chainlink Local
 
+## Contents
+
+- Setup
+- Full Solidity no-fork floor (Foundry and Hardhat 3)
+- Hardhat JS/TS mapping
+- Fork and scope
+
 Use only for Chainlink CCIP EVM local simulation/tests or forked environments. Within an already-activated CCIP skill, a local simulator test request in an established Hardhat or Foundry repository is sufficient CCIP intent: do not ask which Chainlink product; activate Chainlink Local's no-fork CCIP simulator (`CCIPLocalSimulator`) and use that established framework. Otherwise, bare ambiguous Chainlink Local mentions remain subject to the main ownership gate. Always name CCIP and the no-fork `CCIPLocalSimulator`. Preserve the repository's established or explicitly requested framework exactly: Hardhat stays Hardhat and Foundry stays Foundry; otherwise default to Foundry. Hardhat 3 runs Solidity (`.t.sol`, forge-std) tests natively; that is the default for Hardhat 3 repositories, and JS/TS tests are only for repositories whose tests are already JS/TS or on explicit request. When the user requests coverage, tests, or files, output the actual runnable artifacts in that framework—not a plan, mapping, completion summary, or example from the other framework. For an existing or referenced repository/contract, inspect the actual source before writing its test; if the source is not accessible or pasted, ask for its contract path/source and test path instead of inventing contract names, constructors, methods, events, getters, or allowlist APIs. Answer no-fork-vs-fork questions directly.
 
 Official guides: overview `https://docs.chain.link/chainlink-local.md`; Foundry no-fork `https://docs.chain.link/chainlink-local/build/ccip/foundry/local-simulator.md`; Foundry fork `.../foundry/local-simulator-fork.md`; Hardhat no-fork `.../hardhat/local-simulator.md`; Hardhat fork `.../hardhat/local-simulator-fork.md`. Types: `CCIPLocalSimulator`, `CCIPLocalSimulatorFork`, and the JS fork interface for Hardhat.

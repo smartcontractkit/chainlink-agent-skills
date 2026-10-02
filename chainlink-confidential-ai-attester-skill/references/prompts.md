@@ -1,5 +1,13 @@
 # Chainlink Confidential AI — Prompt Templates
 
+## Contents
+
+- Undercollateralized DeFi Lending
+- Accredited Investor (SEC Rule 501)
+- KYC/AML Check
+- Proof of Reserves
+- Handling LLM Refusals
+
 When answering a prompt-design request, emit the requested `system_prompt`, user `prompt`, and exact JSON schema in full; never substitute a summary.
 
 Prompts need two layers:

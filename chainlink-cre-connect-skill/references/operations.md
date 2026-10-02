@@ -1,5 +1,16 @@
 # Operations, Signing, and Smart Accounts
 
+## Contents
+
+- Operation Model
+- Lifecycle
+- EIP-712 Authorization
+- Signers
+- Smart Accounts
+- Gas and Asset Boundaries
+- Submission Preflight
+- Sources
+
 Read this file for outbound writes, EIP-712 authorization, Smart Accounts, gas sponsorship, lifecycle handling, and safe submission design.
 
 ## Operation Model

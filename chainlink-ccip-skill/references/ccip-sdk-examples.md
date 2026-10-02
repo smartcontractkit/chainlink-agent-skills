@@ -1,5 +1,13 @@
 # CCIP SDK Examples
 
+## Contents
+
+- Package and guide map
+- Construction and unsigned send
+- Read integrations
+- Errors and sequence
+- Starters
+
 Single owner for `@chainlink/ccip-sdk` EVM/Solana/Aptos construction and `generateUnsignedSendMessage`. Verify exports/signatures at `https://docs.chain.link/ccip/tools/llms.txt` or `https://docs.chain.link/ccip/tools/sdk/`; signing and broadcasting stay outside agent tools.
 
 ## Package and guide map
