@@ -1,5 +1,13 @@
 # CCIP API
 
+## Contents
+
+- Access
+- Endpoints and schemas
+- Status
+- Errors and retry
+- Canonical reads
+
 Default live, read-only surface for message status/search, lane inventory/latency, chain configuration, verifiers, and intent status. It needs no RPC, wallet, or credentials except gated intent endpoints. Fetch `https://docs.chain.link/ccip/tools/llms.txt` for current parameters.
 
 ## Access

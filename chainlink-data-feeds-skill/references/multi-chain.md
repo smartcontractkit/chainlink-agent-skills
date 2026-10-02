@@ -1,5 +1,15 @@
 # Multi-Chain Data Feeds (Solana, Aptos, StarkNet, Tron)
 
+## Contents
+
+- Trigger Conditions
+- Chain Selection
+- Solana
+- Aptos
+- StarkNet
+- Tron
+- Freshness Rules
+
 ## Trigger Conditions
 
 Read this file when:

@@ -1,5 +1,14 @@
 # SVR Feeds (Smart Value Recapture)
 
+## Contents
+
+- Trigger Conditions
+- SVR Architecture
+- Protocol Integration
+- Searcher Onboarding — Ethereum (MEV-Share)
+- Searcher Onboarding — Atlas (Base, Arbitrum, BNB Chain)
+- Freshness Rules
+
 ## Trigger Conditions
 
 Read this file when:

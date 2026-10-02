@@ -1,5 +1,13 @@
 # Onchain Verification
 
+## Contents
+
+- EVM
+- Chainlink Local Simulator
+- Solana
+- Stellar
+- Review Checklist
+
 Use this for EVM, Solana, or Stellar verification code/review and Chainlink Local simulation. The safety and non-custodial protocol live in [SKILL.md](../SKILL.md): code, review, local tests, and user-run artifacts are allowed; the agent refuses mainnet writes.
 
 Always fetch current verifier deployments and requirements from the chain tutorial. Validate the matching schema, freshness/expiration, market status, ripcord, and application risk signals before consuming value.

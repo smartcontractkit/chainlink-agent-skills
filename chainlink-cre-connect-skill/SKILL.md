@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE Connect private-beta integration guidance for verifiable inbound events and gas-less outbound operations
-  version: "0.0.1"
+  version: "0.0.2"
 ---
 
 # Chainlink CRE Connect Skill

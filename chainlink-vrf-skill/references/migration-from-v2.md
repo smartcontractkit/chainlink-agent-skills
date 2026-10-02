@@ -1,5 +1,13 @@
 # Migrating VRF V1/V2 to v2.5
 
+## Contents
+
+- Before/After Matrix
+- Subscription Conversion
+- Direct-Funding Conversion
+- Address and State Migration
+- Compile-Error Map
+
 V2 coordinators are being deprecated, V1/V2 contracts do not work with v2.5 coordinator addresses, and every detected legacy pattern must be converted before emitting code. Output v2.5 only.
 
 Official guide: https://docs.chain.link/vrf/v2-5/migration-from-v2.md

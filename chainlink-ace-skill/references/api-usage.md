@@ -1,5 +1,14 @@
 # ACE API Usage
 
+## Contents
+
+- Which API When
+- Auth and Key Handling
+- Coordinator API (`/v1`)
+- Evaluation API (`/v1/evaluation`, MVP)
+- Reporting API (`/v1/reporting`, read-only)
+- Sketches
+
 Read to call or generate code for the managed ACE Coordinator, Evaluation (MVP), or Reporting APIs: choosing an API, auth, endpoints, request/response shapes, pagination, errors, and curl/SDK sketches. Scope, Beta limits, and audit guardrails: [platform-and-beta.md](platform-and-beta.md).
 
 **Verified against** the official OpenAPI specs Coordinator `0.1.0`, Reporting `1.0.0`, Evaluation `0.1.0`, and `https://docs.chain.link/ace/reference/apis.md`. Specs are Beta and change: re-fetch the relevant spec before relying on a path, field, or enum, say when you verified it, and name any drift from this file. Only use endpoints and fields present in the spec; do not extrapolate from the UI or OSS contracts.

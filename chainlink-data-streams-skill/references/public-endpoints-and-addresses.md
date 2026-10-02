@@ -1,5 +1,9 @@
 # Public Endpoints And Addresses
 
+## Contents
+
+- API Endpoint Defaults
+
 Public offline defaults for endpoint domains and supported-network verifier proxy/program IDs. Keep all values configurable. Before production use or a current-address claim, re-check:
 
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api.md`

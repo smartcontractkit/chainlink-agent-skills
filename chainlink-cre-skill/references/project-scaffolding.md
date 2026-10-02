@@ -1,5 +1,16 @@
 # Project Scaffolding
 
+## Contents
+
+- Execution vs. answer artifacts
+- Prerequisites
+- Non-interactive initialization
+- Templates
+- After initialization
+- Generated configuration
+- QuickJS/WASM fit
+- Sources
+
 Read this file before creating any CRE project. Use `cre init`; never hand-write a project tree, config, or starter files unless the command is unavailable or fails. For generated file meanings and SDK patterns, see [workflow-patterns.md](workflow-patterns.md).
 
 ## Execution vs. answer artifacts

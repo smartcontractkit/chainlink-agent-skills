@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit
 metadata:
-  version: "0.0.10"
+  version: "0.0.11"
 ---
 
 # Chainlink CCIP Skill
