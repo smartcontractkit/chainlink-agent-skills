@@ -1,5 +1,13 @@
 # Triggers
 
+## Contents
+
+- Cron
+- HTTP trigger
+- EVM log trigger
+- Composition
+- Sources
+
 CRE supports cron, HTTP, and EVM-log triggers. [workflow-patterns.md](workflow-patterns.md) owns Runner/handler scaffolding; this file supplies trigger-specific registration, payloads, and constraints.
 
 | Category | TypeScript trigger/config | Callback shape |

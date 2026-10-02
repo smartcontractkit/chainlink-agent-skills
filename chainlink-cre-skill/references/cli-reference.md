@@ -1,5 +1,17 @@
 # CLI Reference
 
+## Contents
+
+- Non-interactive rules
+- Global flags
+- Authentication and account
+- Registry
+- Project and templates
+- Simulation
+- Workflow lifecycle
+- Secrets
+- Sources
+
 Use for exact CRE commands and flags. [project-scaffolding.md](project-scaffolding.md) owns the `cre init` flag table; [simulation.md](simulation.md) owns simulate behavior; [operations.md](operations.md) owns side-effect approvals.
 
 ## Non-interactive rules

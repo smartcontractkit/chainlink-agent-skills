@@ -1,5 +1,15 @@
 # Workflow Patterns
 
+## Contents
+
+- Canonical handler model
+- Generated configuration
+- Secret APIs
+- DON Time and randomness
+- Capability completion
+- Generation checks
+- Sources
+
 Use for the trigger/callback model, generated configuration, secrets, DON Time, randomness, and handler composition. Capability-specific examples live in their references.
 
 ## Canonical handler model

@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink VRF v2.5 developer assistance and reference
-  version: "0.0.6"
+  version: "0.0.7"
 ---
 
 # Chainlink VRF Skill

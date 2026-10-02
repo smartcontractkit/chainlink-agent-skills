@@ -1,5 +1,11 @@
 # Report Schemas
 
+## Contents
+
+- Types and Base Fields
+- Local Catalog
+- Decoding Rules
+
 Use this for schema choice, fields, decoding, or deprecation. Published schemas are stable, but availability changes. This offline catalog comes from `github.com/smartcontractkit/data-streams-sdk/go@v1.2.4` (decoders v1–v13); language SDK support may differ, so check current package docs before claiming automatic decoding. Re-check current availability, deprecation, package versions, and entitlements at:
 
 - `https://docs.chain.link/data-streams/reference/report-schema-overview.md`

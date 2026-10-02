@@ -1,5 +1,16 @@
 # Feed Operations
 
+## Contents
+
+- Trigger Conditions
+- L2 Sequencer Uptime Feed
+- Feed Deprecation
+- Contract Registry
+- Developer Responsibilities
+- Data Sources
+- Self-Managed Feeds
+- Freshness Rules
+
 Use this file for operational concerns around Chainlink Data Feeds: L2 sequencer checks, feed deprecation, contract registry verification, developer responsibilities, data sourcing, and self-managed feeds.
 
 ## Trigger Conditions

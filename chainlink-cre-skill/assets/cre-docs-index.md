@@ -1,5 +1,21 @@
 # CRE Documentation URL Index
 
+## Contents
+
+- Overview
+- Account and organization
+- Capabilities and concepts
+- Getting started
+- Operations guides
+- Workflow guides: secrets and time
+- Workflow guides: confidential HTTP
+- Workflow guides: EVM
+- Workflow guides: HTTP
+- Workflow guides: triggers
+- CLI reference
+- Project, migration, and SDK reference
+- Releases, networks, support, templates, and demos
+
 URL-only map of every indexed CRE destination. Fetch only the smallest relevant official page.
 
 ## Overview

@@ -1,5 +1,11 @@
 # CCT Workflow
 
+## Contents
+
+- Decision and source map
+- Auditable sequence
+- CCIP 2.0 pools
+
 Use only to create or register a Cross-Chain Token (CCT), configure pools/rate limits, or add networks. Generic sender/receiver, discovery, and monitoring use their dedicated references.
 
 ## Decision and source map

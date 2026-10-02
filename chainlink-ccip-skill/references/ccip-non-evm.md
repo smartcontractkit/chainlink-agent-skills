@@ -1,5 +1,15 @@
 # CCIP Non-EVM Chains
 
+## Contents
+
+- Support matrix
+- SDK ownership and family deltas
+- Wallet boundary
+- CLI
+- Family architecture
+- Solana CCT and tutorials
+- Testnets and limits
+
 Owner for Solana/SVM, Aptos, Sui, TON, and Canton architecture, support limits, CLI, and tutorials. Never apply Solidity, Foundry/Hardhat, OpenZeppelin, or Chainlink Local. Chain-native contract tooling is Anchor/Rust for Solana and Move for Aptos/Sui.
 
 ## Support matrix

@@ -1,5 +1,15 @@
 # CCIP Solidity Examples
 
+## Contents
+
+- Imports
+- Concrete senders
+- Receiver base
+- Data receiver
+- Small programmable receiver
+- Defensive programmable token receiver
+- Required tests for generated examples
+
 Contract-first floor for CCIP 2.0 EVM (`@chainlink/contracts-ccip` 2.0). Verify against current official tutorials when fetch is available. extraArgs, Fast Transfers, and receiver finality rules: [CCIP 2.0](ccip-v2.md).
 
 ## Imports

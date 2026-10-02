@@ -1,5 +1,16 @@
 # VRF v2.5 Subscription Method
 
+## Contents
+
+- Setup
+- Request and Callback Excerpt
+- Paid Raffle Requirements
+- Required Imports and Constructor Shape
+- Dependencies
+- Request Parameters
+- Subscription Methods
+- Lifecycle and Security
+
 Use subscriptions for recurring requests: fund one account with LINK or native coin, authorize consumer contracts, and pay the measured gas cost after each fulfillment. For a complete compiling consumer, deploy script, and mock test, use [`templates/starter-kit`](../templates/starter-kit/README.md); do not rebuild that project from this excerpt.
 
 Official guide: https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number.md
