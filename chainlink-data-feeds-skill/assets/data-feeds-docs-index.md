@@ -1,5 +1,21 @@
 # Data Feeds Documentation Delta Cache
 
+## Contents
+
+- Contract and aggregator inspection
+- ENS feed discovery
+- Feed selection and market-data quality
+- Registry and deprecation deltas
+- MVR proxy administration and client deltas
+- SmartData, Proof of Reserve, and self-managed deltas
+- Solana deltas
+- Aptos deltas
+- Starknet deltas
+- SVR searcher protocol deltas
+- Tokenized equity deltas
+- Tron deltas
+- Source retention ledger
+
 Topic-indexed facts absent from the curated references, which remain the workflow and safety owners. Treat addresses, versions, endpoints, network lists, and parameters as cached; verify the linked official source.
 
 ## Contract and aggregator inspection

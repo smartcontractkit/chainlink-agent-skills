@@ -1,5 +1,12 @@
 # Frontend and Storage
 
+## Contents
+
+- Charts
+- Latest-Report Dashboards
+- SQLite
+- Timestamp Lookback
+
 Use this for real-time UI, candlesticks, local report history, or SQLite. Keep every credential in backend environment variables: SDK stream → decode/optionally verify → optionally store raw+decoded report → publish sanitized data by WebSocket/SSE/HTTP → render. Browsers receive sanitized data only; never connect them to Streams directly.
 
 ## Charts

@@ -1,5 +1,22 @@
 # VRF v2.5 Security and Best Practices
 
+## Contents
+
+- 1. Match Every Fulfillment by `requestId`
+- 2. Choose Confirmations from Value at Risk
+- 3. Forbid Rerolls
+- 4. Freeze Outcome-Changing Inputs Before Requesting
+- 5. Make `fulfillRandomWords` Non-reverting
+- 6. Preserve Coordinator Authentication
+- 7. Avoid ERC-4337 Accounts for Subscription Management
+- 8. Maintain a Balance Buffer
+- 9. Never Substitute Block Data
+- 10. Measure and Buffer `callbackGasLimit`
+- Paid Raffle Safety Contract
+- Unbiased Winner Indices
+- Focused Raffle Tests
+- Official Dependency and Mock Coordinator API
+
 Apply all ten guardrails. They protect different failure modes and are not optional substitutes for one another.
 
 ## 1. Match Every Fulfillment by `requestId`

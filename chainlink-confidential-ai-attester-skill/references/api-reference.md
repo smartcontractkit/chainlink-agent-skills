@@ -1,5 +1,15 @@
 # Chainlink Confidential AI — API Reference
 
+## Contents
+
+- Service URL and authentication
+- POST /v1/inference
+- GET /v1/inference/{id}
+- Verification Boundary
+- GET /v1/models
+- Available Models
+- Error Codes
+
 ## Service URL and authentication
 
 Set the service URL in an environment variable before using it in commands or code; never inline the service base:

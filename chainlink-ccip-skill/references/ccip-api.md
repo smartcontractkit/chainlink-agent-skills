@@ -1,5 +1,13 @@
 # CCIP API
 
+## Contents
+
+- Access
+- Endpoints
+- Status
+- Errors and retry
+- Canonical reads
+
 Default live, read-only surface for messages, lanes, chains, verifiers, cross-chain token records, and intents. It needs no RPC or wallet. Intent routes may require a caller key. Fetch `https://docs.chain.link/ccip/tools/llms.txt` for current parameters, then trust the served OpenAPI when that file and the docs hub disagree.
 
 The contract is the OpenAPI document served at `https://api.ccip.chain.link/docs` (info.version `2.13.0` on 2026-10-05). It lists 14 routes. `llms.txt` lists the same 14 routes and omits the `/v2` prefix. The docs hub at `https://docs.chain.link/ccip/tools/api/` labels version `2.0.0`, and its quick reference names only five actions. Its sample path `/v2/message/{id}` is not a route.

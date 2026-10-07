@@ -1,5 +1,15 @@
 # EVM Client
 
+## Contents
+
+- TypeScript reads
+- Block numbers
+- Write/report flow
+- Go clients and bindings
+- Consumer contract requirements
+- Type mapping
+- Sources
+
 Use for EVM reads/writes, Go bindings, reports, consumer contracts, or forwarders. [workflow-patterns.md](workflow-patterns.md) owns handler scaffolding: when the user asks for a workflow, include its complete trigger, handler, `initWorkflow`/`InitWorkflow`, and TS `main`/`Runner` or Go `main`/WASM runner. [chain-selectors.md](chain-selectors.md) is the sole embedded owner of selector names and forwarder addresses.
 
 ## TypeScript reads

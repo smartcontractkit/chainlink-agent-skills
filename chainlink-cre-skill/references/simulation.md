@@ -1,5 +1,14 @@
 # Simulation
 
+## Contents
+
+- Canonical command and flags
+- Receiver-free handler-0 simulation
+- Behavior by trigger
+- Broadcast writes
+- Focused failures
+- Sources
+
 Always read this file before any `cre workflow simulate`. Run from the project root containing `project.yaml`.
 
 ## Canonical command and flags
