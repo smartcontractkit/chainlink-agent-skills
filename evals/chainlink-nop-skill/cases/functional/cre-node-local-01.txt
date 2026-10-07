@@ -1,0 +1,1 @@
+Classify the attached synthetic CRE evidence for node-alpha. Report the registry, local-membership/routing, and local-capability lifecycle facts; separate evidence from inference; and continue to the supported conclusion. Do not claim a dashboard, external endpoint, workflow execution, consensus, or secret root cause, and do not propose a node mutation.
