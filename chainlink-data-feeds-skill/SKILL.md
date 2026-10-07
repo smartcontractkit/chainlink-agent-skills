@@ -4,7 +4,7 @@ description: "Help developers integrate Chainlink Data Feeds into smart contract
 license: MIT
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.7"
+  version: "0.0.8"
 ---
 
 # Chainlink Data Feeds Skill
@@ -41,11 +41,13 @@ For a configuration-focused SVR protocol integration or migration, give concise 
 
 ## Freshness policy
 
-1. Use embedded references first.
-2. Fetch the smallest official URL for a live gap.
-3. If insufficient, use Context7.
-4. Never improvise live facts or patterns.
-5. If unverified, say so and name the URL.
+1. Use this skill's references first.
+2. If [official-sources.md](references/official-sources.md) names the page, fetch that page's `.md` URL.
+3. If it does not, fetch `https://docs.chain.link/data-feeds/llms.txt`, pick one page, and fetch that page's `.md` URL.
+4. Fetch `https://docs.chain.link/data-feeds/llms-full.txt` only when the question is broad and no one page covers it.
+5. Use Context7 only when the `.md` fetch fails, the page is empty, or the page has under 1,000 useful characters and does not answer. Ask for the missing fact only.
+6. Stop when the page answers. Fetch at most three pages. Prefer the `.md` URL. Use `Accept: text/markdown` on the normal page URL only when the tool cannot open the `.md` URL and can set that header.
+7. Never improvise live facts or patterns. If a value is unverified, say so and name the URL.
 
 ## Invariants
 

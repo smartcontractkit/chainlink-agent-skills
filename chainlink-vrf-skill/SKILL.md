@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink VRF v2.5 developer assistance and reference
-  version: "0.0.7"
+  version: "0.0.8"
 ---
 
 # Chainlink VRF Skill
@@ -69,11 +69,13 @@ These are the canonical generated-code and answer-output invariants.
 
 ## Freshness Policy
 
-1. Use embedded references first.
-2. If a required live detail is missing, fetch the smallest official source.
-3. Try its `.md` URL first; use Context7 if unavailable or under 1,000 useful characters.
-4. Never improvise a missing VRF value/pattern; say when live verification fails.
-5. Name the exact official URL; normally use 0–1 fetches, never more than 3.
+1. Use this skill's references first.
+2. If [official-sources.md](references/official-sources.md) names the page, fetch that page's `.md` URL.
+3. If it does not, fetch `https://docs.chain.link/vrf/llms.txt`, pick one page, and fetch that page's `.md` URL.
+4. Stay on one `.md` page. Do not fetch a VRF full-text file.
+5. Use Context7 only when the `.md` fetch fails, the page is empty, or the page has under 1,000 useful characters and does not answer. Ask for the missing fact only.
+6. Stop when the page answers. Fetch at most three pages. Prefer the `.md` URL. Use `Accept: text/markdown` on the normal page URL only when the tool cannot open the `.md` URL and can set that header.
+7. Never improvise a missing VRF value or pattern. Say when live verification fails, and name the exact official URL.
 
 ## Working Invariants
 

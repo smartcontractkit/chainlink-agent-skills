@@ -6,7 +6,7 @@ compatibility: Designed for AI agents that implement https://agentskills.io/spec
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.25"
+  version: "0.0.26"
 ---
 
 # Chainlink CRE Skill
@@ -76,8 +76,11 @@ Before running commands, load [project-scaffolding.md](references/project-scaffo
 
 ## Freshness
 
-1. Use embedded references first.
-2. For a missing/live fact, fetch the smallest official page listed in `official-sources.md` or the URL index.
-3. If official pages do not answer it, query Context7 for the exact SDK/CLI detail.
-4. Cite verified live constants; otherwise mark them for pre-deployment verification.
-5. Never invent addresses, chain selectors, forwarders, flags, supported networks, signatures, or contract requirements.
+1. Use this skill's references first.
+2. If [official-sources.md](references/official-sources.md) names the page, fetch that page's `.md` URL.
+3. If it does not, fetch `https://docs.chain.link/cre/llms.txt`, pick one page, and fetch that page's `.md` URL.
+4. Fetch full text only when the question is broad and no one page covers it. Match Go or TypeScript to the user: `https://docs.chain.link/cre/go/llms-full.txt` or `https://docs.chain.link/cre/ts/llms-full.txt`.
+5. Use Context7 only when the `.md` fetch fails, the page is empty, or the page has under 1,000 useful characters and does not answer. Ask for the missing fact only.
+6. Stop when the page answers. Fetch at most three pages. Prefer the `.md` URL. Use `Accept: text/markdown` on the normal page URL only when the tool cannot open the `.md` URL and can set that header.
+7. Cite verified live constants; otherwise mark them for pre-deployment verification.
+8. Never invent addresses, chain selectors, forwarders, flags, supported networks, signatures, or contract requirements.

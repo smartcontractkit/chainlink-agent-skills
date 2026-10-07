@@ -1,15 +1,18 @@
 # Official Sources
 
-Use this map for current endpoints, feeds, schemas/deprecation, SDK APIs, verifier deployments, or supported networks. Follow [SKILL.md](../SKILL.md)'s five-line freshness policy: live source beats cached assumptions; distinguish stable concepts from deployment data and cite the exact source checked.
+Use this map for current endpoints, feeds, schemas/deprecation, SDK APIs, verifier deployments, or supported networks. Follow the Freshness Policy in [SKILL.md](../SKILL.md): live source beats cached assumptions; distinguish stable concepts from deployment data and cite the exact source checked.
 
 ## Source Map
 
 ### Concepts and architecture
 
-- `https://docs.chain.link/data-streams.md`
-- `https://docs.chain.link/data-streams/llms-full.txt`
+- Normal overview fetch: `https://docs.chain.link/data-streams.md`
+- Architecture: `https://docs.chain.link/data-streams/architecture.md`
+- Responsibilities: `https://docs.chain.link/data-streams/developer-responsibilities.md`
+- Data sources: `https://docs.chain.link/data-streams/data-sources.md`
+- Wide question only, when no single page covers it: `https://docs.chain.link/data-streams/llms-full.txt`
 
-Use for architecture, Standard API vs Streams Trade, responsibilities/best practices, and tutorial/API/schema pointers—not alone for current SDK methods, deprecation, or verifier addresses.
+Use `data-streams.md` for a normal overview fetch. Use one named page above for that single topic. Open `llms-full.txt` only when the question is wide and no single page covers it. Do not use these pages alone for current SDK methods, deprecation, or verifier addresses.
 
 ### Access and authentication
 
@@ -76,4 +79,4 @@ Redirect to Chainlink; do not infer or summarize private billing details.
 
 ## Selection
 
-Start with authentication for access/auth; schema overview then SDK for decoding; REST or WebSocket interface plus SDK for retrieval/HA; chain tutorial plus current deployment data for verification; Candlestick docs for charts. Use local endpoint/address tables only as fallbacks. If retrieval fails, name the URL and use embedded references only as a floor; Context7 (`@upstash/context7-mcp`) is the fallback fetcher.
+Start with authentication for access/auth; schema overview then SDK for decoding; REST or WebSocket interface plus SDK for retrieval/HA; chain tutorial plus current deployment data for verification; Candlestick docs for charts. Use local endpoint/address tables only as fallbacks. If retrieval fails, name the URL and use embedded references only as a floor, then follow the Freshness Policy in [SKILL.md](../SKILL.md).
