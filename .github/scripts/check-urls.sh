@@ -11,6 +11,13 @@ set -uo pipefail
 # Run from the repo root, in a normal shell with internet access. A full scan
 # of all skills takes ~30-60s; scope to one skill (faster) while iterating.
 #
+# Lists:
+#   .github/url-check-allowlist.txt
+#     Placeholders and other non-links. Matching URLs are not fetched.
+#   .github/url-check-endpoints.txt
+#     API hosts that do not serve a page. Any HTTP status passes.
+#     Only a connection failure fails.
+#
 # Env:
 #   PARALLEL   number of concurrent checks (default 8)
 #   TIMEOUT    per-request timeout in seconds (default 10)
@@ -33,6 +40,36 @@ if [ -f "$endpoints_file" ]; then
   ENDPOINT_PATTERNS="$(grep -vE '^[[:space:]]*(#|$)' "$endpoints_file" || true)"
 fi
 export ENDPOINT_PATTERNS
+
+# Not fetched at all. Use this for placeholders, not for a dead docs page.
+allowlist_file="$script_dir/../url-check-allowlist.txt"
+ALLOWLIST_PATTERNS=""
+if [ -f "$allowlist_file" ]; then
+  ALLOWLIST_PATTERNS="$(grep -vE '^[[:space:]]*(#|$)' "$allowlist_file" || true)"
+fi
+
+url_host() {
+  local host="${1#*://}"
+  host="${host%%[/?#]*}"
+  host="${host##*@}"
+  case "$host" in
+    \[*) ;;
+    *) host="${host%%:*}" ;;
+  esac
+  printf '%s' "$host"
+}
+
+url_is_allowlisted() {
+  local url="$1" pat
+  [ -n "${ALLOWLIST_PATTERNS:-}" ] || return 1
+  while IFS= read -r pat; do
+    [ -z "$pat" ] && continue
+    case "$url" in
+      *"$pat"*) return 0 ;;
+    esac
+  done <<< "$ALLOWLIST_PATTERNS"
+  return 1
+}
 
 # Colors (disabled when not a TTY)
 if [ -t 1 ]; then
@@ -83,11 +120,23 @@ locations="$work_dir/locations"   # url<TAB>file:line
 for f in "${md_files[@]}"; do
   grep -noE 'https?://[^][:space:]()<>"`'"'"'\\]+' "$f" 2>/dev/null \
   | while IFS=: read -r lineno url; do
-      # Trim trailing punctuation that commonly clings to URLs in prose.
-      url="${url%%[.,;:]}"
+      # Trim every trailing punctuation mark. One mark is not enough:
+      # the placeholder "https://..." would be checked as "https://..".
+      while [ -n "$url" ]; do
+        last="${url: -1}"
+        case "$last" in
+          "."|","|";"|":") url="${url%?}" ;;
+          *) break ;;
+        esac
+      done
       case "$url" in
         *localhost*|*127.0.0.1*|*example.com*|*YOUR_*|*'{'*|*'$'*) continue ;;
       esac
+      host="$(url_host "$url")"
+      case "$host" in
+        ""|.*) continue ;;
+      esac
+      url_is_allowlisted "$url" && continue
       printf '%s\t%s:%s\n' "$url" "$f" "$lineno" >> "$locations"
     done
 done

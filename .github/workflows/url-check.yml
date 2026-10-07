@@ -1,9 +1,8 @@
 name: URL Check
 
-# Advisory only: this workflow surfaces broken links in skill docs but never
-# blocks a merge. The check step is allowed to fail (continue-on-error), so the
-# job always reports success; broken URLs show up as inline annotations and in
-# the job summary. Do NOT add this job to required status checks.
+# The job fails when check-urls.sh reports a broken URL.
+# HTTP 401, 403, 405, and 429 stay warnings: the host answered.
+# To block a merge, the repository rules must require this check.
 
 on:
   pull_request:
@@ -12,6 +11,8 @@ on:
       - '*-skill/**'
       - '.github/workflows/url-check.yml'
       - '.github/scripts/check-urls.sh'
+      - '.github/url-check-endpoints.txt'
+      - '.github/url-check-allowlist.txt'
   workflow_dispatch:
 
 permissions:
@@ -25,7 +26,6 @@ jobs:
 
       - name: Check URLs in skill docs
         id: urlcheck
-        continue-on-error: true
         run: bash .github/scripts/check-urls.sh | tee "$RUNNER_TEMP/url-report.txt"
 
       - name: Publish report to job summary
@@ -34,9 +34,9 @@ jobs:
           {
             echo '## URL check'
             if [ "${{ steps.urlcheck.outcome }}" = "success" ]; then
-              echo 'All URLs reachable. ✅'
+              echo 'All checked URLs are reachable.'
             else
-              echo 'Broken URLs found (advisory — does not block merge). ⚠️'
+              echo 'Broken URLs found. This check failed.'
             fi
             echo
             echo '```'

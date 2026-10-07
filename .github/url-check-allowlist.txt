@@ -1,0 +1,15 @@
+# URLs that check-urls.sh must not fetch.
+#
+# A skill URL that contains one of these substrings is skipped. It cannot
+# fail CI. Use this for placeholders that are not real links.
+#
+# Do not put a dead documentation page here. Replace the URL.
+# Live API hosts that answer but do not serve a browser page belong in
+# url-check-endpoints.txt. Those are still connected to. Only a connection
+# failure fails there.
+#
+# One substring per line. Lines starting with '#' and blank lines are ignored.
+# Keep this list tight.
+
+# Sample code uses this reserved host as a URL-parser base. It is not a link.
+.invalid
