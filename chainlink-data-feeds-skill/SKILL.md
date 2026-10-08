@@ -1,10 +1,10 @@
 ---
 name: chainlink-data-feeds-skill
-description: "Help developers integrate Chainlink Data Feeds into smart contracts and applications. Use for price feed integration, feed address lookup, consumer contract generation, multi-chain data feeds (EVM, Solana, Aptos, StarkNet, Tron), MVR bundle feeds, SVR/OEV feeds, feed monitoring, historical data, L2 sequencer checks, rates/volatility feeds, SmartData/RWA feeds, or debugging feed integrations. Trigger on any mention of Chainlink price feeds, oracle data, AggregatorV3Interface, latestRoundData, or feed addresses."
+description: "Helps developers read Chainlink price feeds with AggregatorV3Interface and latestRoundData. This is not a Data Streams report. REST and WebSocket report streams go to chainlink-data-streams-skill. It applies to price feed integration, feed address lookup, consumer contracts, multi-chain feeds, MVR bundle feeds, SVR and OEV feeds, feed monitoring, historical data, L2 sequencer checks, rates and volatility feeds, and SmartData and RWA feeds."
 license: MIT
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.7"
+  version: "0.0.8"
 ---
 
 # Chainlink Data Feeds Skill

@@ -1,12 +1,12 @@
 ---
 name: chainlink-cre-skill
-description: "Handle CRE (Chainlink Runtime Environment) work: Go/TypeScript workflows, CRE CLI/SDK, triggers (CRON, HTTP, EVM log), HTTP, Confidential HTTP and EVM Read/Write capabilities, Confidential Workflows that run handlers inside a TEE/enclave, secrets, simulation, deployment, and monitoring. Use this skill whenever the user mentions CRE, Chainlink workflows, workflow simulate or deploy, automation with Chainlink, or wants workflow logic to run confidentially in an enclave so node operators cannot see the data it computes over, even if they never say 'CRE'"
+description: "Handles CRE (Chainlink Runtime Environment) Go and TypeScript workflows, the CRE CLI, simulate, and deploy. Sends CRE Connect watchers, gas-less Smart Accounts, and dta.v2 to chainlink-cre-connect-skill. Sends private-document LLM inference to chainlink-confidential-ai-attester-skill. Keeps enclave workflow logic with no document on this skill. It applies to CRON, HTTP, and EVM-log triggers, HTTP and EVM read/write, secrets, and monitoring, even when the user never says CRE."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE developer onboarding, assistance and reference
-  version: "0.0.25"
+  version: "0.0.26"
 ---
 
 # Chainlink CRE Skill

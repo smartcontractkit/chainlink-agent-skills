@@ -1,0 +1,76 @@
+# Description-only routing cases.
+# expect: every name must appear in the reply.
+# reject: every name must be absent.
+# ace-on-ccip-pool passes only when both names are present.
+
+- id: cre-enclave-no-document
+  prompt: "Keep this workflow private inside an enclave. No document."
+  expect:
+    - chainlink-cre-skill
+  reject:
+    - chainlink-confidential-ai-attester-skill
+
+- id: confidential-pdf
+  prompt: "Run an LLM over this private PDF and return attested JSON."
+  expect:
+    - chainlink-confidential-ai-attester-skill
+  reject:
+    - chainlink-cre-skill
+
+- id: cre-connect-gasless
+  prompt: "Watch a contract and submit a gas-less Smart Account operation."
+  expect:
+    - chainlink-cre-connect-skill
+  reject:
+    - chainlink-cre-skill
+
+- id: cre-typescript-simulate
+  prompt: "Write and simulate a TypeScript CRE workflow."
+  expect:
+    - chainlink-cre-skill
+  reject:
+    - chainlink-cre-connect-skill
+
+- id: nop-one-node-job
+  prompt: "Why is this one node's job failing? Read-only."
+  expect:
+    - chainlink-nop-skill
+  reject:
+    - chainlink-cre-skill
+    - chainlink-ccip-skill
+
+- id: ccip-sender
+  prompt: "Write a CCIP sender."
+  expect:
+    - chainlink-ccip-skill
+  reject:
+    - chainlink-nop-skill
+
+- id: feeds-latest-round
+  prompt: "Read ETH/USD with latestRoundData."
+  expect:
+    - chainlink-data-feeds-skill
+  reject:
+    - chainlink-data-streams-skill
+    - chainlink-vrf-skill
+
+- id: streams-websocket
+  prompt: "Stream a Data Streams report over WebSocket."
+  expect:
+    - chainlink-data-streams-skill
+  reject:
+    - chainlink-data-feeds-skill
+
+- id: ace-on-ccip-pool
+  prompt: "Add an ACE policy on a CCIP token pool."
+  expect:
+    - chainlink-ace-skill
+    - chainlink-ccip-skill
+  reject: []
+
+- id: vrf-consumer
+  prompt: "Write a VRFConsumerBaseV2Plus consumer that calls requestRandomWords."
+  expect:
+    - chainlink-vrf-skill
+  reject:
+    - chainlink-data-feeds-skill

@@ -1,11 +1,11 @@
 ---
 name: chainlink-nop-skill
-description: "Set up and diagnose one Chainlink node with authenticated GET-only API access. Use for /chainlink-nop-skill setup or node-operator requests; route product-only CCIP/CRE elsewhere."
+description: "Diagnoses one Chainlink node with the Node API. It reads jobs and bridges with GET-only calls. It sends a CCIP sender to chainlink-ccip-skill and a CRE workflow to chainlink-cre-skill. It applies to /chainlink-nop-skill, one node, Node API, jobs, bridges, and GET-only checks. This skill stays one node and read-only."
 license: MIT
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Read-only Chainlink node operator diagnosis
-  version: "0.0.1-alpha"
+  version: "0.0.2"
 ---
 
 # Chainlink Node Operator Skill

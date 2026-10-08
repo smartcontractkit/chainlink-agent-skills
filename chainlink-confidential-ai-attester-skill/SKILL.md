@@ -1,11 +1,11 @@
 ---
 name: chainlink-confidential-ai-attester-skill
-description: "What it does: Chainlink Confidential AI Attester (alpha) runs an LLM inside AWS Nitro Enclave/TEE over private documents and returns the model result; raw documents do not leave TEE. When to use: trigger on private inference, attested AI, TEE inference, confidential AI, or sensitive-document analysis, including lending, accredited-investor, KYC/AML, and proof-of-reserves. Key capabilities: submit document resources, choose model, request structured JSON, poll completion, and use the result without exposing source documents onchain. Do not use for generic TEE/enclave work without document inference; use CRE Confidential Workflows for confidential Chainlink workflow logic. Do not trigger on generic confidentiality/TEE/enclave requests that involve no document upload or private inference — a user who wants a Chainlink workflow's own logic or data kept confidential from node operators, with no document analysis involved, wants CRE Confidential Workflows, which chainlink-cre-skill covers."
+description: "Runs LLM inference over a private document inside a TEE, returns an attested result, and keeps the raw document in the TEE. No document upload means chainlink-cre-skill. It applies to private inference, attested AI, confidential AI, and sensitive-document analysis, including lending, accredited-investor, KYC/AML, and proof-of-reserves checks."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
-  version: "0.0.4"
+  version: "0.0.5"
 ---
 
 # Chainlink Confidential AI Attester

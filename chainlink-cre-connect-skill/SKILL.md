@@ -1,12 +1,12 @@
 ---
 name: chainlink-cre-connect-skill
-description: "Handle Chainlink CRE Connect (CREC), the private-beta client product for CRE Connect watchers, DON/OCR-signed verifiable events, event verification, confidence/finality, EIP-712-authorized gas-less CRE Connect operations, Chainlink-native Smart Accounts, and dta.v2. Use whenever a user mentions CRE Connect, CREC, CRE Connect watchers, DON/OCR-signed verifiable events, gas-less CRE Connect operations, Chainlink-native Smart Accounts, or dta.v2. Route requests to author, simulate, deploy, or operate ordinary CRE workflows to chainlink-cre-skill instead."
+description: "Handles Chainlink CRE Connect (CREC) watchers, DON-signed events, gas-less operations, Chainlink-native Smart Accounts, and dta.v2. Sends ordinary workflow authoring, simulation, and deployment to chainlink-cre-skill. It applies to CRE Connect, CREC, verifiable events, confidence and finality, EIP-712 gas-less operations, and dta.v2."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: CRE Connect private-beta integration guidance for verifiable inbound events and gas-less outbound operations
-  version: "0.0.2"
+  version: "0.0.3"
 ---
 
 # Chainlink CRE Connect Skill

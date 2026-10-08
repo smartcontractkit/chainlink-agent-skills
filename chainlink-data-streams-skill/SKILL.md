@@ -1,12 +1,12 @@
 ---
 name: chainlink-data-streams-skill
-description: "Help developers build with Chainlink Data Streams, including credentials guidance, report decoding, REST and WebSocket report retrieval with official Go/Rust/TypeScript SDKs, High Availability streaming, on-chain report verification, real-time frontend displays, report schema guidance, SQLite persistence, and timestamp lookback. Use this skill whenever the user mentions Chainlink Data Streams, Streams Direct, Data Streams reports, report schemas, report decoding, data-streams-sdk, or real-time low-latency market data from Chainlink."
+description: "Helps developers retrieve Chainlink Data Streams reports over REST and WebSocket, including report schemas. A price-feed consumer that uses AggregatorV3Interface or latestRoundData goes to chainlink-data-feeds-skill. Reports, REST, WebSocket, and report schemas stay here. It also applies to credentials, report decoding, official Go, Rust, and TypeScript SDKs, high-availability streaming, on-chain report verification, and timestamp lookback."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink Data Streams developer assistance and reference
-  version: "0.0.5"
+  version: "0.0.6"
   mcp-server: "@upstash/context7-mcp"
 ---
 
