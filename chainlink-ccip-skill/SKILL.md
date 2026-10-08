@@ -1,11 +1,11 @@
 ---
 name: chainlink-ccip-skill
-description: "Handle Chainlink CCIP requests including read-only route, token, message-status, and lane lookups; fee-estimation guidance; user-run cross-chain transfer and messaging artifacts; CCIP 2.0 sender and receiver contract development, including extraArgs V3 and Fast Transfers (FTF); and CCT token pool setup guidance. The skill never signs or broadcasts transactions. Use whenever the user mentions CCIP, Chainlink cross-chain messaging, CCIP token transfers, CCTs, CCIP token pools, Fast Transfers, or CCIP monitoring."
+description: "Handles Chainlink CCIP requests and never signs or broadcasts. It sends one-node GET diagnosis to chainlink-nop-skill. It sends ACE policy design to chainlink-ace-skill. Pool and message mechanics stay here. It applies to route, token, message-status, and lane lookups, fee estimates, cross-chain transfers and messaging, sender and receiver contracts, extraArgs V3, Fast Transfers, CCT token pools, and CCIP monitoring."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit
 metadata:
-  version: "0.0.12"
+  version: "0.0.13"
 ---
 
 # Chainlink CCIP Skill

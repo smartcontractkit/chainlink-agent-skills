@@ -1,12 +1,12 @@
 ---
 name: chainlink-ace-skill
-description: "Handle Chainlink ACE (Automated Compliance Engine) work using the public smartcontractkit/chainlink-ace repository and official docs.chain.link ACE Platform docs. Use for audited ACE core contracts, managed Platform/Beta scope, Coordinator API, Reporting API, Policy Management, PolicyEngine, PolicyProtected, policy chains, custom policies, extractors, mappers, Cross-Chain Identity (CCIDs), credential registries, KYC/AML credentials, sanctions screening, regulated tokens, ERC-20 and ERC-3643 compliance token examples, upgrade guidance, and BUSL licensing. Trigger on any mention of ACE, Automated Compliance Engine, chainlink-ace, Chainlink compliance, policy enforcement, ERC-3643, or onchain compliance rules, even if the user does not explicitly say 'ACE'."
+description: "Handles Chainlink ACE policy, PolicyEngine, and Cross-Chain Identity. CCIP token-pool mechanics go to chainlink-ccip-skill. A request can need both skills. This skill does not claim the pool. It applies to audited ACE core contracts, the managed Platform, Coordinator API, Reporting API, policy chains, custom policies, credentials, KYC and AML, sanctions screening, regulated tokens, and onchain compliance rules."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash
 metadata:
   purpose: Chainlink ACE core contracts and managed Platform developer onboarding, compliance architecture, product scope, and reference guidance
-  version: "0.0.11"
+  version: "0.0.12"
 ---
 
 # Chainlink ACE Skill
