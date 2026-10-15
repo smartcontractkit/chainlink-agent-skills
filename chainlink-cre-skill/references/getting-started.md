@@ -28,13 +28,13 @@ The user alone creates an account at `https://app.chain.link/cre/discover`: choo
 An agent may run:
 
 ```bash
-cre login
 cre whoami
+cre login
 ```
 
-`cre login` opens a browser where the user enters password and 2FA. Continue only after it returns or `cre whoami` confirms the session. `cre whoami` reports email, organization ID, and linked keys. End with `cre logout`.
+Run `cre whoami` first. If it fails authentication, ask the user whether to export `CRE_API_KEY` (below) or complete `cre login`; do not run `cre login` unprompted. `cre login` opens a browser where the user enters password and 2FA. Continue only after it returns or `cre whoami` confirms the session. `cre whoami` reports email, organization ID, and linked keys. End with `cre logout`.
 
-Deployment requires Early Access. After login, `cre account access` checks status and, when unavailable, interactively submits a use-case description. CI API-key authentication also requires approval; the user-controlled environment may supply `CRE_API_KEY`, but the agent never reads it.
+Deployment requires Early Access. After login, `cre account access` checks status and, when unavailable, interactively submits a use-case description. For unattended use, the user creates an API key in the CRE app (requires deploy access) and exports `CRE_API_KEY` in the environment that launches the agent; it replaces `cre login` for every command. The agent never reads, prints, or requests it. Keys are permissioned ([cli-reference.md](cli-reference.md)); on a permission error, name the missing permission instead of retrying or running `cre login`.
 
 ## Tutorial path
 
