@@ -100,6 +100,8 @@ Current project-setup references may also expose the explicit form `cre generate
 
 There is no generic simulation `--timeout`. Read [simulation.md](simulation.md) before running this command.
 
+`cre workflow limits export` prints the default limit JSON for the installed CLI. Pass that file, `default`, or `none` to `--limits`. Log-trigger caps from that JSON are in [triggers.md](triggers.md).
+
 ## Workflow lifecycle
 
 Every command below includes `--target`:
