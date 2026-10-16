@@ -78,6 +78,23 @@ evmClient.logTrigger({
 
 The SDK `Log`/`EVMLog` payload contains address, topics, data, block number, and transaction hash in protobuf-shaped fields; byte fields are `Uint8Array`. Low-level address/topic filters require the SDK's documented base64 encoding, and indexed values must be padded to 32 bytes; do not invent an encoder. Generated bindings are safer and expose per-event helpers such as `binding.logTriggerLargeTransfer()`.
 
+### Limits
+
+`cre workflow limits export` prints the limits for the installed CLI. That command is the source of truth when it disagrees with this file. The product list is https://docs.chain.link/cre/service-quotas.md. CLI v1.35.0 and that page agree on these caps:
+
+| Cap | Value |
+|---|---|
+| `LogTrigger.FilterAddressLimit` | 5 contract addresses on one log trigger |
+| `LogTrigger.FilterTopicsPerSlotLimit` | 10 values in one topic position |
+| `LogTrigger.EventRateLimit` | 10 events every 6 seconds |
+| `LogTrigger.EventSizeLimit` | 5 KB |
+| `TriggerSubscriptionLimit` | 10 triggers on one workflow |
+| `ChainRead.CallLimit` | 15 EVM reads in one execution |
+
+Re-run the export after a CLI upgrade. A watch of more than 5 contracts needs more than one log trigger. Split the addresses into groups of at most 5. Those triggers, plus any cron or HTTP trigger, must stay within 10 subscriptions. One cron leaves room for 9 log triggers.
+
+`cre workflow simulate --evm-tx-hash` loads one receipt log and does not apply `FilterAddressLimit` or `FilterTopicsPerSlotLimit`. A passing replay does not prove the filter fits. Count the addresses and topic values in the trigger config. See [simulation.md](simulation.md).
+
 Go prefers generated binding helpers for a single event on a single contract — resolve the chain selector by name (never invent one; look it up in [chain-selectors.md](chain-selectors.md)), bind the contract, and register the generated `LogTrigger<Event>Log` helper. The callback receives a decoded, type-safe payload, not a raw byte-oriented struct:
 
 Save this complete minimal ABI as `contracts/evm/src/MyToken.abi`, then generate the binding:
@@ -205,3 +222,5 @@ export async function main() {
 - https://docs.chain.link/cre/guides/workflow/using-triggers/evm-log-trigger-ts.md
 - https://docs.chain.link/cre/guides/workflow/using-triggers/evm-log-trigger-go.md
 - https://docs.chain.link/cre/reference/sdk/triggers/overview-go.md
+- https://docs.chain.link/cre/service-quotas.md
+- https://docs.chain.link/cre/guides/operations/understanding-limits.md
