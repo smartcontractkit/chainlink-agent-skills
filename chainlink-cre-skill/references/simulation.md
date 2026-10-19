@@ -83,7 +83,7 @@ Simulation compiles to WASM, loads the selected target, fires/accepts a local tr
 
 - **Cron:** fires once immediately; it does not wait for the schedule.
 - **HTTP:** interactive mode starts a local server on port 8080 and waits for a request; agents/CI should use `--http-payload`.
-- **EVM log:** may monitor configured RPC for a match; deterministic runs provide `--evm-tx-hash`, optional `--evm-event-index`, and a handler index.
+- **EVM log:** may monitor configured RPC for a match; deterministic runs provide `--evm-tx-hash`, optional `--evm-event-index`, and a handler index. The `--evm-tx-hash` path loads that one log from the receipt. It does not check `FilterAddressLimit` or `FilterTopicsPerSlotLimit`. Count those in the trigger config; the caps are in [triggers.md](triggers.md). The live listen path enforces the log event rate limit only.
 - **Multiple handlers:** interactive behavior varies by CLI; automation always selects one handler per run.
 
 | | Simulation | Deployment |
@@ -122,4 +122,5 @@ For HTTP interactive testing, a present human may run the simulator and send a J
 ## Sources
 
 - https://docs.chain.link/cre/guides/operations/simulating-workflows.md
+- https://docs.chain.link/cre/guides/operations/understanding-limits.md
 - https://docs.chain.link/cre/reference/cli/workflow.md

@@ -46,7 +46,7 @@ const readBalance = (runtime: Runtime<Config>, owner: Address): bigint => {
 }
 ```
 
-Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). Use the Block numbers table; TypeScript `-3n` is pending, not finalized.
+Use `viem` for ABI encoding/decoding. Solidity integers are `bigint`, never `number`. The Ethereum Sepolia selector name is `ethereum-testnet-sepolia`; resolve other named chains through [chain-selectors.md](chain-selectors.md). Use the Block numbers table. TypeScript `-3n` is finalized, the same tag Go uses.
 
 ### Multi-output reads: tuple-to-object decoding
 
@@ -86,17 +86,21 @@ const readLatestRoundData = (runtime: Runtime<Config>): RoundData => {
 
 ## Block numbers
 
-TypeScript `callContract` sentinels are not the Go sentinels. Do not copy a numeric literal from one language into the other.
+TypeScript and Go send the same block-number tags. Copy the number. Do not invent a separate TypeScript mapping.
 
-| Level | TypeScript | Go generated bindings | Go low-level `CallContract` / `BalanceAt` / `HeaderByNumber` |
+| Level | TypeScript | Go generated binding read | Go low-level `CallContract` / `BalanceAt` / `HeaderByNumber` |
 |---|---|---|---|
-| finalized | `LAST_FINALIZED_BLOCK_NUMBER` (opaque export; do not replace with a numeric literal) | `nil` or `big.NewInt(-3)` | `big.NewInt(-3)` |
-| latest | `-1n` | `big.NewInt(-2)` | `nil` or `big.NewInt(-2)` |
-| safe | `-2n` | — | — |
-| pending | `-3n` | — | — |
-| exact block | positive `bigint` | positive `*big.Int` | positive `*big.Int` |
+| finalized | `LAST_FINALIZED_BLOCK_NUMBER` or `blockNumber(-3n)` | `nil` (the generator uses `bindings.FinalizedBlockNumber`) or `big.NewInt(-3)` | `big.NewInt(-3)` |
+| latest | `LATEST_BLOCK_NUMBER` or `blockNumber(-2n)` | `big.NewInt(-2)` | `nil` (omitted field; default is latest) or `big.NewInt(-2)` |
+| exact height | `blockNumber(n)` for a positive `bigint` | positive `*big.Int` | positive `*big.Int` |
 
-Prefer finalized for high-value reads. Avoid pending in production. Finality timings are in [concepts.md](concepts.md).
+`@chainlink/cre-sdk` 1.23.0 encodes `LATEST_BLOCK_NUMBER` as absolute value 2 with sign `-1`, and `LAST_FINALIZED_BLOCK_NUMBER` as absolute value 3 with sign `-1`. `blockNumber` is `bigintToProtoBigInt`, so it encodes its argument unchanged: `blockNumber(-2n)` is latest and `blockNumber(-3n)` is finalized. Do not pass `-1n` for latest.
+
+Go `bindings.LatestBlockNumber`, `FinalizedBlockNumber`, `SafeBlockNumber`, and `PendingBlockNumber` are the go-ethereum RPC tags: `-2` latest, `-3` finalized, `-4` safe, `-1` pending. Official chain-read guidance accepts only latest and finalized. Do not send safe or pending on `callContract`, `balanceAt`, `headerByNumber`, or a generated binding read.
+
+A nil block number is not the same in both Go APIs. A generated binding read treats nil as finalized. A low-level call treats nil as latest. `0` is a block height, not a finalized alias.
+
+Prefer finalized for high-value reads. Finality timings are in [concepts.md](concepts.md).
 
 ## Write/report flow
 
@@ -153,7 +157,7 @@ Generated packages live under `contracts/evm/src/generated`. A constructor retur
 ```go
 binding, err := storage.NewStorage(client, common.HexToAddress(config.Address), nil)
 if err != nil { return nil, err }
-value, err := binding.Get(runtime, big.NewInt(-3)).Await() // generated-binding finalized; TypeScript `-3n` is pending
+value, err := binding.Get(runtime, big.NewInt(-3)).Await() // finalized; TypeScript uses LAST_FINALIZED_BLOCK_NUMBER or blockNumber(-3n)
 ```
 
 No-input ABI methods omit the input struct. Generated `WriteReportFrom<StructName>(runtime, data, gasConfig)` helpers are named for public/external ABI input structs and perform encoding, `GenerateReport`, and `WriteReport`.
@@ -233,4 +237,6 @@ This includes narrow metadata integers such as a decoded `uint8 decimals()`: kee
 - https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain.md
 - https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts.md
 - https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings.md
+- https://docs.chain.link/cre/reference/sdk/evm-client-ts.md
 - https://docs.chain.link/cre/reference/sdk/evm-client-go.md
+- https://docs.chain.link/cre/concepts/finality-ts.md

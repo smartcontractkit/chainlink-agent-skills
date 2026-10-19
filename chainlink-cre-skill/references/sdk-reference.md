@@ -91,9 +91,11 @@ There are no `EVMClientCapability`, `HTTPClientCapability`, or `EVMLogCapability
 ```typescript
 client.callContract(runtime, {
   call: encodeCallMsg({from,to,data}),
-  blockNumber?: bigint,
+  blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
 }): { result(): CallContractReply }
 ```
+
+`blockNumber` also accepts `LATEST_BLOCK_NUMBER` or `blockNumber(height)`. The wire tags match Go: `-3` finalized, `-2` latest. Do not pass `-1n` for latest. The full table is in [evm-client.md](evm-client.md).
 
 `CallContractReply.data` is `Uint8Array`; convert with `bytesToHex` before `viem.decodeFunctionResult`. The chain is fixed by the client constructor.
 
