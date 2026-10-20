@@ -115,6 +115,7 @@ This sends a real testnet transaction and requires a funded wallet available opa
 | `secret not found` | referenced environment variable is unavailable, or the CRE CLI v1.1.0 secret-name substring bug applies; see workflow patterns |
 | `workflow-path not found` | run from project root and check the generated `workflow.yaml` relative path |
 | `process`/`Buffer`/`crypto` undefined | Node API reached QuickJS; replace with CRE/typed-array/deterministic equivalents |
+| `{"validation":"url","code":"invalid_string","message":"Invalid url","path":["perplApi"]}` for a valid HTTPS URL | Zod 3.25.76 `.url()` calls the missing QuickJS `URL` global; `URLSearchParams` is also unavailable. Use a scoped `.regex()` or custom `.refine()` that needs neither global; see [concepts.md](concepts.md#zod-url-validation). Rerun the canonical simulation command with the same target/config. |
 | apparent hang | EVM log wait or slow RPC; provide tx hash, event index, handler index, and target |
 
 For HTTP interactive testing, a present human may run the simulator and send a JSON POST to `http://localhost:8080/trigger` from another terminal. Agents should prefer `--http-payload`.
