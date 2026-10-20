@@ -47,7 +47,9 @@ Use for exact CRE commands and flags. [project-scaffolding.md](project-scaffoldi
 
 The agent never reads key material. Account creation is browser-only.
 
-`CRE_API_KEY` (set by the user in the environment) replaces `cre login` for every authenticated command. API keys are permissioned per command; when a command is denied, report the missing permission from the error and have the user review the key's permissions in the CRE app. Do not guess permission names.
+`CRE_API_KEY` (set by the user in the environment) replaces `cre login` for every authenticated command except `cre secrets`. API keys are permissioned per command; when a command is denied, report the missing permission from the error and have the user review the key's permissions in the CRE app. Do not guess permission names.
+
+API keys are not supported for `cre secrets` operations, which require an interactive `cre login` session. With only `CRE_API_KEY`, the agent cannot run `cre secrets` commands; tell the user to complete `cre login` themselves (or run the secrets step themselves) instead of retrying.
 
 ## Registry
 
