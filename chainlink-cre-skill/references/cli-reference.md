@@ -47,6 +47,10 @@ Use for exact CRE commands and flags. [project-scaffolding.md](project-scaffoldi
 
 The agent never reads key material. Account creation is browser-only.
 
+`CRE_API_KEY` (set by the user in the environment) replaces `cre login` for every authenticated command except `cre secrets`. API keys are permissioned per command; when a command is denied, report the missing permission from the error and have the user review the key's permissions in the CRE app. Do not guess permission names.
+
+API keys are not supported for `cre secrets` operations, which require an interactive `cre login` session. With only `CRE_API_KEY`, the agent cannot run `cre secrets` commands; tell the user to complete `cre login` themselves (or run the secrets step themselves) instead of retrying.
+
 ## Registry
 
 Login is required. `cre registry list` reads the cached tenant context from `~/.cre/context.yaml` (populated by `cre login`) and prints each registry's label, ID, type, and onchain address when present. Use an ID from that output as `--deployment-registry` / `user-workflow.deployment-registry`. Do not invent IDs. The receiver-free local scaffold uses the supported literal `private`; registry-bound init, deploy, broadcast, and lifecycle use an authenticated ID from this command. There is no `--json` flag for this command.

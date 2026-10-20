@@ -6,7 +6,7 @@ Use for deploy, activate, update, pause, delete, secrets writes, monitoring, or 
 
 Default lifecycle: init → simulate → deploy (paused) → activate → pause/update/reactivate or delete. Agent execution is testnet-only: refuse mainnet deploy, activate, update, pause, delete, and secrets operations.
 
-Prerequisites: CRE Early Access (`cre account access`), browser-completed `cre login`, linked funded wallet (`cre account link-key --target <target>`), and uploaded Vault DON secrets when required. Deployment compiles WASM, uploads binary/config/secret references, registers with the DON, and starts paused.
+Prerequisites: CRE Early Access (`cre account access`), browser-completed `cre login` or a user-supplied `CRE_API_KEY`, linked funded wallet (`cre account link-key --target <target>`), and uploaded Vault DON secrets when required. Deployment compiles WASM, uploads binary/config/secret references, registers with the DON, and starts paused.
 
 ```bash
 cre workflow deploy <dir> --target <target>
