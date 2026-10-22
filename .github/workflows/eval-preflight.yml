@@ -1,0 +1,26 @@
+name: Eval Preflight
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  eval-preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - name: Validate all smoke selections and deterministic guards (no model calls)
+        run: |
+          node evals/lib/preflight.cjs
+          node --test evals/tests/*.test.cjs
+          ruby .github/scripts/validate-promptfoo-configs.rb references

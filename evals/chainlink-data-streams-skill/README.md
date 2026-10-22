@@ -5,8 +5,7 @@ Minimal Promptfoo smoke suite for `chainlink-data-streams-skill`.
 ## Quick Start
 
 ```bash
-cd evals/chainlink-data-streams-skill
-promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-data-streams-skill
 promptfoo view
 ```
 

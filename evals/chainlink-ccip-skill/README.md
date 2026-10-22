@@ -13,8 +13,7 @@ This directory supports both:
 
 ```bash
 npm install -g promptfoo
-cd evals/chainlink-ccip-skill
-promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-ccip-skill --tier full
 promptfoo view
 ```
 
@@ -32,7 +31,7 @@ Anthropic:
 
 ```bash
 export ANTHROPIC_API_KEY=sk-...
-promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-ccip-skill --tier full
 ```
 
 OpenAI:
@@ -42,7 +41,7 @@ export PROMPTFOO_BASELINE_PROVIDER='openai:gpt-5-mini'
 export PROMPTFOO_WITH_SKILL_PROVIDER='openai:gpt-5-mini'
 export PROMPTFOO_GRADER_PROVIDER='openai:gpt-5-mini'
 export OPENAI_API_KEY=sk-...
-promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-ccip-skill --tier full
 ```
 
 Google:
@@ -52,13 +51,13 @@ export PROMPTFOO_BASELINE_PROVIDER='google:gemini-2.5-pro'
 export PROMPTFOO_WITH_SKILL_PROVIDER='google:gemini-2.5-pro'
 export PROMPTFOO_GRADER_PROVIDER='google:gemini-2.5-pro'
 export GOOGLE_API_KEY=...
-promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-ccip-skill --tier full
 ```
 
-Run a subset:
+Run a subset from the repository root:
 
 ```bash
-promptfoo eval --filter-pattern "tool-first"
+node evals/run-promptfoo.cjs --skill chainlink-ccip-skill --tier full --workflow tool-first
 ```
 
 ## What Gets Evaluated
@@ -92,7 +91,7 @@ Workflow coverage:
 
 ## Reading Results
 
-After `promptfoo eval`, run:
+After the checked evaluation completes, run:
 
 ```bash
 promptfoo view
