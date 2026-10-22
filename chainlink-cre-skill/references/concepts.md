@@ -49,7 +49,25 @@ Compilation is TypeScript → JavaScript (Bun) → WASM (Javy embedding QuickJS)
 
 Unsupported Node APIs: `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, Node-specific `events`, `util`, and `buffer`. Use `Uint8Array`/`ArrayBuffer`, not `Buffer`.
 
-Pure-JS packages without native modules or Node imports may work. Known compatible: `zod`, `viem`. Known incompatible: `ethers` (Node crypto), `axios` (HTTP), `node-fetch`, `ws`, `dotenv`, and native/N-API modules. Inspect dependency imports and confirm in simulation; compatibility reference: `https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html`.
+Pure-JS packages without native modules or Node imports may work. Known compatible with API-level limits: `zod`, `viem`. A compatible package does not make every API it uses available. Known incompatible: `ethers` (Node crypto), `axios` (HTTP), `node-fetch`, `ws`, `dotenv`, and native/N-API modules. Inspect dependency imports and confirm in simulation; compatibility reference: `https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html`.
+
+### Zod URL validation
+
+CRE's QuickJS runtime does not provide the `URL` or `URLSearchParams` globals. Zod's basic schemas work, but Zod 3.25.76's `z.string().url()` calls `new URL(value)` inside a try/catch. Without `URL`, even a valid HTTPS URL fails with `"validation":"url"`, `"code":"invalid_string"`, and `"message":"Invalid url"`. A schema can pass in Bun/Node and still fail in `cre workflow simulate`.
+
+Use `.regex()` or a custom `.refine()` that does not call `URL`, `URLSearchParams`, or other unavailable globals. For example, this deliberately narrow check accepts an HTTPS hostname only:
+
+```typescript
+import { z } from 'zod'
+
+const configSchema = z.object({
+  perplApi: z.string().regex(/^https:\/\/[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*$/, {
+    message: 'Expected an HTTPS hostname without a port, path, query, or fragment',
+  }),
+})
+```
+
+This is a hostname-shape check, not full URL validation or a security boundary. It accepts `https://testnet.perpl.xyz` and rejects paths, ports, queries, fragments, and trailing slashes. Adapt the check to the app's allowed inputs, or use an explicit allowlist of trusted origins. Do not silently drop validation or replace `.url()` with a refine that still calls `new URL()`. Confirm the chosen schema in CRE simulation; a host-only test does not prove WASM compatibility. See [simulation.md](simulation.md) for the symptom and command.
 
 Response/capability code appears synchronous:
 
@@ -68,3 +86,5 @@ Use `runtime.log()` only for non-sensitive diagnostics. Compilation/schema failu
 - https://docs.chain.link/cre/concepts/non-determinism-ts.md
 - https://docs.chain.link/cre/concepts/non-determinism-go.md
 - https://docs.chain.link/cre/concepts/typescript-wasm-runtime.md
+- https://unpkg.com/zod@3.25.76/v3/types.js
+- https://github.com/smartcontractkit/chainlink-agent-skills/issues/86 (CRE runtime reproduction; CLI v1.36.0, SDK 1.23.0, Zod 3.25.76)

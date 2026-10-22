@@ -56,6 +56,41 @@ feedback_no_offer_asserts: &feedback_no_offer_asserts
     value: file://rubrics/feedback-no-offer.txt
 
 tests:
+  # Regression: issue #86, Zod URL validation under QuickJS
+  - vars:
+      case_file: cases/functional/zod-url-validation-01.txt
+      reference_files:
+        - references/concepts.md
+        - references/simulation.md
+      workflow: concepts
+      requires_live_source: "no"
+    metadata:
+      workflow: concepts
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the answer explains that CRE QuickJS lacks URL and
+          URLSearchParams, and Zod 3.25.76 .url() catches the resulting error
+          and rejects valid URLs. It must keep validation with a scoped regex
+          or refine that uses neither missing global, accept the supplied
+          HTTPS hostname, reject ports/paths/queries/fragments/trailing slashes,
+          explain that this is not a full URL validator or security boundary,
+          and give cre workflow simulate <workflow-dir> with --target local-simulation
+          --non-interactive --trigger-index 0. Fail if it recommends new URL,
+          disabling validation, deployment/broadcast, or claims Bun/Node proves
+          CRE runtime compatibility.
   # ── Functional: Workflow Generation ──────────────────────────────────
   - vars:
       case_file: cases/functional/workflow-generation-01.txt

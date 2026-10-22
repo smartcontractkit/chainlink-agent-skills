@@ -175,7 +175,7 @@ Keep `.env`, WASM output, and dependency/build directories out of version contro
 
 ## QuickJS/WASM fit
 
-TypeScript compiles through Javy/QuickJS rather than Node.js. Use pure-JS packages only; `@chainlink/cre-sdk`, `zod`, and `viem` are compatible. `ethers`, `axios`, `node-fetch`, `ws`, `dotenv`, native/N-API modules, and packages importing Node built-ins are incompatible. No `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, Node `events`/`util`/`buffer`, timers, or Node `fetch`.
+TypeScript compiles through Javy/QuickJS rather than Node.js. Use pure-JS packages only; `@chainlink/cre-sdk`, `zod`, and `viem` are compatible with API-level limits. QuickJS has no `URL` or `URLSearchParams` globals, so Zod 3.25.76's `z.string().url()` rejects valid URLs. Use a scoped `.regex()` or `.refine()` without those globals; see [concepts.md](concepts.md#zod-url-validation). Verify schemas in CRE simulation, not only Bun/Node. `ethers`, `axios`, `node-fetch`, `ws`, `dotenv`, native/N-API modules, and packages importing Node built-ins are incompatible. No `fs`, `path`, `crypto`, `process`, `http`, `https`, `net`, `stream`, `child_process`, `os`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, `vm`, `zlib`, `readline`, Node `events`/`util`/`buffer`, timers, or Node `fetch`.
 
 Use `Uint8Array`/`ArrayBuffer` rather than `Buffer`, CRE HTTP capability APIs rather than Node networking, `runtime.getSecret({ id }).result().value` rather than `process.env`, and deterministic logic (or Go `runtime.Rand()`) rather than Node crypto randomness. [concepts.md](concepts.md) owns the runtime model and compatibility details.
 
