@@ -413,6 +413,183 @@ class NodeApiTest(unittest.TestCase):
         self.assertEqual(json.loads(completed.stdout)["data"]["id"], "build")
         self.assertEqual(completed.stderr, "")
 
+    def test_quoted_multiline_toml_and_url_credentials_are_redacted(self) -> None:
+        source = "\n".join(
+            (
+                '[Database]',
+                'URL = "postgresql://canary-url-user:canary-url-pass@db.example:5432/chainlink?sslmode=disable"',
+                'HTTPURL = "https://rpc.example/v1?api_key=canary-query-secret&chain=1"',
+                '"seedPhrase" = "canary-quoted-seed"',
+                "'mnemonic' = 'canary-quoted-mnemonic'",
+                'Password = """',
+                "canary-multiline-one",
+                "canary-multiline-two",
+                '"""',
+                "Secret = '''",
+                "canary-literal-secret",
+                "'''",
+                'Token = """canary-same-line-secret"""',
+                'Log.Level = "debug"',
+                'PublicKey = "0xpublic-keep"',
+                'seedNodes = "public-seed.example"',
+                "",
+            )
+        )
+        redacted = node_api.redact_toml(source)
+        for canary in (
+            "canary-url-user",
+            "canary-url-pass",
+            "canary-query-secret",
+            "canary-quoted-seed",
+            "canary-quoted-mnemonic",
+            "canary-multiline-one",
+            "canary-multiline-two",
+            "canary-literal-secret",
+            "canary-same-line-secret",
+        ):
+            self.assertNotIn(canary, redacted)
+        self.assertIn('URL = "postgresql://[REDACTED]@db.example:5432/chainlink?sslmode=disable"', redacted)
+        self.assertIn('HTTPURL = "https://rpc.example/v1?api_key=[REDACTED]&chain=1"', redacted)
+        self.assertIn('"seedPhrase" = "[REDACTED]"', redacted)
+        self.assertIn("'mnemonic' = \"[REDACTED]\"", redacted)
+        self.assertIn('Password = "[REDACTED]"', redacted)
+        self.assertIn('Token = "[REDACTED]"', redacted)
+        self.assertIn('Log.Level = "debug"', redacted)
+        self.assertIn('PublicKey = "0xpublic-keep"', redacted)
+        self.assertIn('seedNodes = "public-seed.example"', redacted)
+
+    def test_nested_json_seed_fields_and_url_values_are_redacted(self) -> None:
+        sanitized = node_api.sanitize(
+            {
+                "seedPhrase": "canary-json-seed",
+                "seed": "canary-bare-seed",
+                "nested": {
+                    "mnemonic": "canary-json-mnemonic",
+                    "publicKey": "0xpublic-keep",
+                    "status": "ready",
+                },
+                "endpoint": (
+                    "https://canary-json-user:canary-json-pass@rpc.example/path"
+                    "?token=canary-json-token&block=10"
+                ),
+            }
+        )
+        rendered = json.dumps(sanitized)
+        for canary in (
+            "canary-json-seed",
+            "canary-bare-seed",
+            "canary-json-mnemonic",
+            "canary-json-user",
+            "canary-json-pass",
+            "canary-json-token",
+        ):
+            self.assertNotIn(canary, rendered)
+        self.assertEqual(sanitized["seedPhrase"], node_api.REDACTED)
+        self.assertEqual(sanitized["seed"], node_api.REDACTED)
+        self.assertEqual(sanitized["nested"]["mnemonic"], node_api.REDACTED)
+        self.assertEqual(sanitized["nested"]["publicKey"], "0xpublic-keep")
+        self.assertEqual(sanitized["nested"]["status"], "ready")
+        self.assertEqual(
+            sanitized["endpoint"],
+            "https://[REDACTED]@rpc.example/path?token=[REDACTED]&block=10",
+        )
+
+    def test_cli_stdout_hides_redaction_canaries_and_keeps_diagnostics(self) -> None:
+        config = "\n".join(
+            (
+                'URL = "postgresql://canary-url-user:canary-url-pass@db.example:5432/chainlink?sslmode=disable"',
+                'HTTPURL = "https://rpc.example/v1?api-key=canary-query-secret&chain=1"',
+                '"seedPhrase" = "canary-quoted-seed"',
+                "'mnemonic' = 'canary-quoted-mnemonic'",
+                'Password = """',
+                "canary-multiline-one",
+                "canary-multiline-two",
+                '"""',
+                'Log.Level = "debug"',
+                'PublicKey = "0xpublic-keep"',
+            )
+        )
+        self.set_router(
+            lambda path: (
+                200,
+                {
+                    "data": {
+                        "seedPhrase": "canary-json-seed",
+                        "nested": {
+                            "mnemonic": "canary-json-mnemonic",
+                            "publicKey": "0xpublic-keep",
+                            "status": "ready",
+                        },
+                        "endpoint": (
+                            "https://canary-json-user:canary-json-pass@rpc.example/path"
+                            "?token=canary-json-token&block=10"
+                        ),
+                        "config": config,
+                    },
+                    "meta": {"count": 1},
+                },
+                "application/json",
+            )
+        )
+        env_path = self.env_file(
+            CHAINLINK_API_URL=self.origin,
+            CHAINLINK_API_KEY="canary-request-key",
+            CHAINLINK_API_SECRET="canary-request-secret",
+        )
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(Path(node_api.__file__).resolve()),
+                "--config",
+                str(self.directory / "absent.yaml"),
+                "--env-file",
+                str(env_path),
+                "get",
+                "/v2/config/v2",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        combined = completed.stdout + completed.stderr
+        canaries = (
+            "canary-url-user",
+            "canary-url-pass",
+            "canary-query-secret",
+            "canary-quoted-seed",
+            "canary-quoted-mnemonic",
+            "canary-multiline-one",
+            "canary-multiline-two",
+            "canary-json-seed",
+            "canary-json-mnemonic",
+            "canary-json-user",
+            "canary-json-pass",
+            "canary-json-token",
+            "canary-request-key",
+            "canary-request-secret",
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stderr, "")
+        for canary in canaries:
+            self.assertNotIn(canary, combined)
+        body = json.loads(completed.stdout)
+        self.assertEqual(body["data"]["seedPhrase"], node_api.REDACTED)
+        self.assertEqual(body["data"]["nested"]["mnemonic"], node_api.REDACTED)
+        self.assertEqual(body["data"]["nested"]["publicKey"], "0xpublic-keep")
+        self.assertEqual(body["data"]["nested"]["status"], "ready")
+        self.assertEqual(
+            body["data"]["endpoint"],
+            "https://[REDACTED]@rpc.example/path?token=[REDACTED]&block=10",
+        )
+        redacted_config = body["data"]["config"]
+        self.assertIn("db.example", redacted_config)
+        self.assertIn("sslmode=disable", redacted_config)
+        self.assertIn("api-key=[REDACTED]", redacted_config)
+        self.assertIn("chain=1", redacted_config)
+        self.assertIn('Log.Level = "debug"', redacted_config)
+        self.assertIn('PublicKey = "0xpublic-keep"', redacted_config)
+
 
 if __name__ == "__main__":
     unittest.main()
