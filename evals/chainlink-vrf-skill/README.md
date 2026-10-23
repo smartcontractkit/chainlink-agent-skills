@@ -1,6 +1,6 @@
 # Chainlink VRF Skill Evals
 
-Evaluation suite for `chainlink-vrf-skill`. 10 cases total; 9 are smoke-tagged and run in CI.
+Evaluation suite for `chainlink-vrf-skill`. 11 cases total; 9 are smoke-tagged. CI validates selection without model calls.
 
 ## Running Evals
 
@@ -14,10 +14,12 @@ Run agent evals for chainlink-vrf-skill
 
 ### With API keys (promptfoo)
 
+Run from the repository root:
+
 ```bash
-source ../../.env
-npx promptfoo eval --filter-metadata "smoke=true"   # smoke tier (9 cases)
-npx promptfoo eval                                    # full suite (10 cases)
+source .env
+node evals/run-promptfoo.cjs --skill chainlink-vrf-skill
+node evals/run-promptfoo.cjs --skill chainlink-vrf-skill --tier full
 npx promptfoo view
 ```
 
