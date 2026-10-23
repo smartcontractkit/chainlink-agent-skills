@@ -12,11 +12,11 @@ jobs:
   eval-preflight:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: '22'
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@26e5b7d197ebf60545ee9667bcbace0be11ccaec # v1.334.0
         with:
           ruby-version: '3.3'
       - name: Validate all smoke selections and deterministic guards (no model calls)
@@ -24,3 +24,10 @@ jobs:
           node evals/lib/preflight.cjs
           node --test evals/tests/*.test.cjs
           ruby .github/scripts/validate-promptfoo-configs.rb references
+      - name: Install pinned Promptfoo for local-provider integration
+        run: npm install --prefix "$RUNNER_TEMP/promptfoo" --no-audit --no-fund promptfoo@0.125.0
+      - name: Verify Promptfoo text and trusted-action evidence parity (no model calls)
+        env:
+          PROMPTFOO_DISABLE_TELEMETRY: '1'
+          PROMPTFOO_DISABLE_UPDATE_CHECK: '1'
+        run: PROMPTFOO_MODULE="$RUNNER_TEMP/promptfoo/node_modules/promptfoo" node --test evals/tests/promptfoo-integration.cjs
