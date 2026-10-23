@@ -82,7 +82,7 @@ Do not print, quote, or pass the env file through model-visible text. Its values
 
 `get` reads a specific root-relative path. Use it when the snapshot summary is not enough to explain a job, transaction, bridge, config, run, chain, node, or another relevant built-in GET resource. Add `--all-pages` only when the full collection matters. The client follows same-origin next links, stops when no next cursor exists or a cursor repeats, never repeats a next URL, and has no arbitrary overall page budget.
 
-Successful output is JSON on stdout. Errors are written to stderr and exit nonzero. Response objects are recursively sanitized: credential-like keys and secret-like TOML assignments are redacted while useful diagnostic fields remain. Sanitization does not make indiscriminate copying appropriate; report only evidence needed for the conclusion. The client never performs a mutation or prints request credentials.
+Successful output is JSON on stdout. Errors are written to stderr and exit nonzero. Response objects are recursively sanitized. The client redacts credential-like keys, including seed and mnemonic fields, quoted and multiline secret TOML values, URL user information, and credential query parameters. Public keys, ordinary diagnostic fields, and non-secret URL parts remain. Sanitization does not make indiscriminate copying appropriate; report only evidence needed for the conclusion. The client never performs a mutation or prints request credentials.
 
 ### Raw/manual GET fallback
 
