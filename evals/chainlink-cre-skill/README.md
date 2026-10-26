@@ -30,7 +30,7 @@ The `mixed-chainlink` scenario set lives in `ab-scenarios/mixed-chainlink/` and 
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| Functional | 24 | End-to-end CRE workflows: generation, HTTP, EVM, triggers, secrets, getting started, operations, concepts, confidential workflows, feedback loop |
+| Functional | 26 | End-to-end CRE workflows: generation, HTTP, EVM, triggers, secrets, getting started, operations, registries, concepts, confidential workflows, feedback loop |
 | Trigger Positive | 11 | Prompts that should activate the CRE skill |
 | Trigger Negative | 8 | Prompts about other Chainlink products (CCIP, Data Feeds, VRF, Automation, Functions, Confidential AI Attester), generic Solidity, or neutral product requests that should not center CRE |
 

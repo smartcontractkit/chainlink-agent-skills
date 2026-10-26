@@ -8,6 +8,7 @@ Use only when embedded references lack a live or version-sensitive fact. Find ev
 |---|---|
 | Docs home, account, install | `https://docs.chain.link/cre.md`; `/cre/account.md`; `/cre/getting-started/cli-installation.md` |
 | CLI commands and flags | `/cre/reference/cli.md` and its `/reference/cli/*` pages |
+| Registry choice, onchain vs private, deploy access | `/cre/guides/operations/deploying-workflows.md`; `/cre/guides/operations/deploying-to-onchain-registry.md`; `/cre/guides/operations/deploying-to-private-registry-ts.md` |
 | TypeScript/Go SDK signatures | `/cre/reference/sdk/overview-ts.md`, `/overview-go.md`, then the capability-specific SDK page |
 | Project configuration | `/cre/reference/project-configuration-ts.md` or `-go.md` |
 | Supported networks | `/cre/supported-networks-ts.md` or `-go.md` |

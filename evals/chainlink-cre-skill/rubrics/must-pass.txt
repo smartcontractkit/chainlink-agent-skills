@@ -28,6 +28,8 @@ Workflow-specific must-pass checks:
 - **operations**: Correct lifecycle order (deploy -> activate); mentions simulation before deployment
 - **concepts**: Accurately describes consensus model; correct execution mode distinctions (DON vs Node)
 - **confidential-workflows**: Registers the handler with `handlerInTee` / `cre.HandlerInTee` plus a TEE constraint; fetches secrets with `getSecret` / `GetSecret` inside the enclave; makes enclave HTTP calls with the standard HTTP client passing the `TeeRuntime` (Go: `SendRequestInTee`); crosses back with `usingTheDons()` / `UsingTheDons()` before generating reports or writing on-chain, carrying only derived non-sensitive values; keeps in-enclave logging out of production code; states that deployment requires private-beta enrollment while simulation does not
+- **registry**: Sets `deployment-registry` per target under `user-workflow` in every generated or edited `workflow.yaml`, never invents a registry ID, states that lifecycle commands route by the selected target's registry, and does not require a linked wallet, `CRE_ETH_PRIVATE_KEY`, RPC URL, or gas for a private-registry target
+- **registry-delete**: Describes `cre workflow delete` as removing all versions matching the workflow name and owner, permanent, resolved through the target's registry
 
 Score:
 - 1.0: No must-pass violations (PASS)

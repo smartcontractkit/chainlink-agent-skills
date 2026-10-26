@@ -59,6 +59,13 @@ Login is required. `cre registry list` reads the cached tenant context from `~/.
 cre registry list
 ```
 
+| Registry | Definition | Deploy/lifecycle needs |
+|---|---|---|
+| onchain | Registered by Ethereum Mainnet transaction | login, linked funded wallet, RPC URL in `project.yaml`, gas |
+| `private` / off-chain | Chainlink-hosted registry; owner is the organization address | login or `CRE_API_KEY`, no wallet, no RPC URL, no gas |
+
+`deployment-registry` is per target, and every lifecycle command routes to the registry of the `--target` in use. Expand with [registries.md](registries.md) for auth models, quotas, and registry-specific secrets.
+
 ## Project and templates
 
 ```bash
@@ -117,14 +124,17 @@ cre workflow pause <dir> --target <target>
 cre workflow update <dir> --target <target>
 cre workflow delete <dir> --target <target>
 cre workflow show <dir> --target <target>
+cre workflow get <dir> --target <target>
 cre workflow list --target <target> --output json
+cre workflow list --target <target> --registry private
 cre workflow supported-chains --target <target> --output json
 ```
 
-- Deploy prerequisites: login, linked/funded wallet, Early Access, and uploaded secrets when used.
+- Deploy prerequisites follow the target's `user-workflow.deployment-registry`: the onchain registry needs login, a linked funded wallet, an RPC URL, Early Access, and uploaded secrets when used; the private registry needs login or `CRE_API_KEY` and no wallet, RPC URL, or gas.
 - Deploy registers a paused workflow; activate starts it.
-- Delete is permanent.
-- `workflow list` also accepts `--include-deleted`.
+- Delete is permanent and removes **all versions matching the workflow name and owner**. The private registry prompts the operator to type the workflow name; `--yes` skips the prompt and `--unsigned` returns a raw transaction instead of sending it.
+- `workflow list` also accepts `--include-deleted` and `--registry <id>`.
+- `workflow get` prints deployment health and the latest execution, resolving against the target's configured `deployment-registry`; `--all-registries` resolves across all of them, and it accepts `--output json`.
 - `supported-chains` returns tenant chains and mock forwarders.
 
 Refuse mainnet writes and apply [operations.md](operations.md)'s testnet preflight and second confirmations.
@@ -148,3 +158,4 @@ Create uploads; update replaces; delete removes; list shows namespaces. Follow s
 - https://docs.chain.link/cre/reference/cli/registry.md
 - https://docs.chain.link/cre/reference/cli/workflow.md
 - https://docs.chain.link/cre/reference/cli/secrets.md
+- https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-ts.md

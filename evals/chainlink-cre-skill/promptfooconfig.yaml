@@ -300,6 +300,76 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  # Regression: private registry omitted from scaffolding/lifecycle references
+  - vars:
+      case_file: cases/functional/registry-scaffolding-01.txt
+      reference_files:
+        - references/registries.md
+        - references/project-scaffolding.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the scaffold's workflow.yaml sets
+          `deployment-registry: "private"` under user-workflow for the target the
+          delete command uses, and the delete command includes --target. It must
+          state that a private-registry delete needs no linked wallet,
+          CRE_ETH_PRIVATE_KEY, RPC URL, or gas, and that deletion is permanent.
+          Fail if deployment-registry is omitted from the YAML, if the answer
+          requires a wallet key or RPC URL for the delete, or if it invents a
+          registry ID instead of pointing to `cre registry list`.
+
+  - vars:
+      case_file: cases/functional/registry-lifecycle-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if all four answers are correct: (1) no wallet, no
+          CRE_ETH_PRIVATE_KEY, no RPC URL, and no gas for a private-registry
+          delete; (2) `deployment-registry` under `user-workflow` in
+          workflow.yaml, set per target; (3) delete removes every version
+          matching the workflow name and owner, so previously deleted versions
+          are not separately affected but name reuse is the risk; (4) the CLI
+          prompts the operator to type the workflow name, `--yes` skips it, and
+          `cre workflow list --include-deleted` shows deleted workflows.
+          Fail if it says one version is deleted, requires a wallet for the
+          private registry, or claims delete cannot be undone but is reversible.
+
   # ── Functional: Concepts ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/concepts-01.txt

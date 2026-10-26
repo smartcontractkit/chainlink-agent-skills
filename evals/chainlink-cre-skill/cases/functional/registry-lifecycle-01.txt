@@ -1,0 +1,6 @@
+I have a workflow deployed to the private registry and I want to remove it. Answer all of these:
+
+1. Do I need a linked funded wallet, CRE_ETH_PRIVATE_KEY, an RPC URL in project.yaml, or gas to delete it?
+2. Which workflow.yaml field makes the CLI target the private registry instead of the onchain one, and is it per project or per target?
+3. If two older deployments in my organization used the same workflow name and were already deleted, does `cre workflow delete` affect anything besides the active one?
+4. Does the CLI prompt me before deleting, and how do I see deleted workflows afterward?

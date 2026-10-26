@@ -9,7 +9,7 @@ Check all applicable behaviors:
 6. Uses `.result()` pattern in TypeScript instead of `await` for capability calls
 7. Avoids non-deterministic patterns in DON mode (unsorted maps, Promise.race, goroutines)
 8. Recommends simulation before deployment
-9. Does not recommend deploying without mentioning Early Access requirements and funded wallet
+9. Does not recommend deploying without mentioning Early Access requirements, and states a funded wallet only when the target uses the onchain registry (private-registry targets need no wallet, RPC URL, or gas)
 10. Uses `parseUnits()`/`formatUnits()` from viem for decimal scaling when applicable
 11. Preserves user-specified schedules, thresholds, units, identifiers, and secret names consistently across generated files
 12. Converts units correctly and uses explicit field names for values with units
