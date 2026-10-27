@@ -12,21 +12,22 @@ Prerequisites depend on the target's registry, which `workflow.yaml` sets per ta
 - Onchain registry only: a linked funded wallet (`cre account link-key --target <target>`) and an RPC URL in `project.yaml`; the CLI consumes the key from `CRE_ETH_PRIVATE_KEY`.
 - Private registry: no linked key, no `CRE_ETH_PRIVATE_KEY`, no RPC URL, and no gas. Deploy is authorized by the login session and the organization must have the private registry enabled (`cre registry list`).
 
-Never state the onchain prerequisites for a private-registry target, and never infer the registry: if the target does not declare one, stop and verify. Deployment compiles WASM, uploads binary/config/secret references, registers with the registry, and starts paused on the onchain registry — a private-registry deploy is registered active immediately.
+Never state the onchain prerequisites for a private-registry target, and never infer the registry from a workflow's existing registration: a target that omits `deployment-registry` resolves to the public onchain registry, so confirm that is intended before any lifecycle command. Deployment compiles WASM, uploads binary/config/secret references, registers with the registry, and starts paused on the onchain registry — a private-registry deploy is registered active immediately.
 
 ```bash
 cre workflow deploy <dir> --target <target>
 cre workflow activate <dir> --target <target>
 cre workflow pause <dir> --target <target>
-cre workflow update <dir> --target <target>
 cre workflow delete <dir> --target <target>
-cre secrets create <dir> --target <target>
-cre secrets update <dir> --target <target>
-cre secrets delete <dir> --target <target>
+cre secrets create <secrets-file> --target <target>
+cre secrets update <secrets-file> --target <target>
+cre secrets delete <secrets-file> --target <target>
 cre secrets list --target <target>
 ```
 
-Every accepted command includes `--target`, and every lifecycle command routes to the registry declared by that target's `user-workflow.deployment-registry` — never assume the onchain registry. Simulate before deploy and again before an update; simulation defaults to non-broadcast. Deletion is permanent and removes **every version matching the workflow name and owner**, so confirm the name and owner before deleting; pause retains the deployment but stops triggers (missed triggers are not queued); deleted workflows are only visible with `cre workflow list --include-deleted`. The private registry prompts the operator to type the workflow name before deleting, and `--yes` skips that prompt. A typical update simulates the candidate, pauses, updates secrets if needed, updates code/config, then reactivates.
+There is no `cre workflow update` command: update by running `cre workflow deploy` again with the same workflow name and target. The new deployment replaces the previous one in that registry with no CLI rollback, keeps its active/paused status, and gets a new workflow ID (a hash of binary and config), so consumers that pin the ID need the new value. Private-registry secrets commands add `--secrets-auth=browser` (the default is `onchain`); see [registries.md](registries.md).
+
+Every accepted command includes `--target`, and every lifecycle command routes to the registry declared by that target's `user-workflow.deployment-registry`; an omitted key means the public onchain registry. Simulate before deploy and again before an update; simulation defaults to non-broadcast. Deletion is permanent and removes **every version matching the workflow name and owner**, so confirm the name and owner before deleting; pause retains the deployment but stops triggers (missed triggers are not queued); deleted workflows are only visible with `cre workflow list --include-deleted`. The private registry prompts the operator to type the workflow name before deleting, and `--yes` skips that prompt. A typical update simulates the candidate, pauses, updates secrets if needed, updates code/config, then reactivates.
 
 ## Approval protocol
 
@@ -60,7 +61,7 @@ MY_API_KEY_REF=op://my-vault/my-item/api-key
 ```
 
 ```bash
-cre secrets create <dir> --target <target>
+cre secrets create <secrets-file> --target <target>
 op read op://my-vault/my-item/api-key | some-store set MY_API_KEY --stdin
 cre login
 ```
@@ -82,19 +83,18 @@ Also unsafe: reading keystores/wallet files, asking the user to paste a secret, 
 ## Monitoring and status
 
 ```bash
-cre workflow show <dir> --target <target>
 cre workflow get <dir> --target <target>
 cre workflow list --target <target> --output json
 cre workflow list --target <target> --registry private
 ```
 
-`show` includes workflow name/ID, status, deployment time, and owner — the linked wallet key on the onchain registry, the organization owner address on the private registry. `get` prints the owner for a workflow configured in `workflow.yaml`. Runtime logs (`runtime.log()` / `runtime.Logger().Info()`) and execution history/metrics are available through the CRE dashboard; never log secrets or confidential payloads.
+`get` shows deployment health and recent execution for the workflow configured in `workflow.yaml`, resolved through the target's `deployment-registry`. `list --output json` includes each workflow's status and `ownerAddress` — the linked wallet on the onchain registry, the organization owner address on the private registry. Runtime logs (`runtime.log()` / `runtime.Logger().Info()`) and execution history/metrics are available through the CRE dashboard; never log secrets or confidential payloads.
 
 ## Multisig and quotas
 
 The organization owner configures multisig. `cre account link-key` links its address; lifecycle actions produce/enter the multisig approval flow and may take longer because multiple approvals are required.
 
-Quotas cover deployed workflows, binary size, linked keys (currently two per organization), secrets, trigger frequency, memory/execution, and concurrency. Fetch current limits from `https://docs.chain.link/cre/service-quotas.md` rather than guessing. Private-registry workflows count against a separate registry quota (three per organization by default); see [registries.md](registries.md).
+Quotas cover deployed workflows, binary size, linked onchain keys (currently one per organization, three workflows per key), secrets, trigger frequency, memory/execution, and concurrency. Fetch current limits from `https://docs.chain.link/cre/service-quotas.md` rather than guessing. Private-registry workflows count against a separate registry quota (three per organization by default); see [registries.md](registries.md).
 
 ## Sources
 

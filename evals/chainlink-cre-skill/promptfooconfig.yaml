@@ -370,6 +370,45 @@ tests:
           Fail if it says one version is deleted, requires a wallet for the
           private registry, or claims delete cannot be undone but is reversible.
 
+  - vars:
+      case_file: cases/functional/registry-private-deploy-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if all four answers are correct: (1) `cre secrets create`
+          with a secrets YAML file, `--target`, and `--secrets-auth=browser`,
+          needing no wallet, gas, or `workflow-owner-address`; (2) the
+          organization owner address (Organization address in the CRE platform,
+          `ownerAddress` in `cre workflow list --registry private --output json`,
+          or deploy output) passed to `setExpectedAuthor()`, not a linked wallet;
+          (3) redeploy with `cre workflow deploy` under the same workflow name
+          and target, and the workflow ID changes because it hashes binary and
+          config; (4) no — the private registry is a control-plane choice and
+          does not make execution confidential; confidential execution needs
+          Confidential Workflows. Fail if it uses `cre workflow update`, requires
+          a linked wallet or `CRE_ETH_PRIVATE_KEY`, says the workflow ID is
+          unchanged, or implies private means confidential.
+
   # ── Functional: Concepts ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/concepts-01.txt
@@ -535,6 +574,15 @@ tests:
         - references/operations.md
         - references/simulation.md
       workflow: operations
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/registry-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+      workflow: registry
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 

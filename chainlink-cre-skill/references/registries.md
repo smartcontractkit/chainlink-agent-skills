@@ -50,25 +50,26 @@ production:
 
 Rules:
 
-- `deployment-registry` is required for registry-bound deploy, activate, pause, update, and delete. Omitting it does not mean "whatever the workflow already uses"; treat an unknown registry as a verification gap, not an invite to guess.
+- `deployment-registry` is optional in the CLI: when omitted, the target resolves to the public onchain registry (`onchain:ethereum-mainnet`), not to "whatever the workflow already uses". Set it explicitly in every generated or edited target, and treat an unknown registry as a verification gap, not an invite to guess.
 - One `workflow.yaml` may mix registries: target A onchain, target B private.
 - `init`, `deploy`, broadcast, and every lifecycle command route by the `--target` selected at call time.
-- Existing deployed workflows cannot be moved between registries; deploy the workflow again under the other registry.
+- The docs describe no migration of an existing deployment between registries. Do not promise one; deploying under another registry is a separate registration with that registry's owner.
 
 ## Onchain registry
 
 - Prerequisites: CRE Early Access (`cre account access`), browser `cre login` or a user-supplied `CRE_API_KEY`, a linked funded wallet (`cre account link-key --target <target>`), an RPC URL for each chain in `project.yaml`, and uploaded Vault DON secrets when used.
 - The CLI consumes the wallet key from `CRE_ETH_PRIVATE_KEY`; the agent never reads it.
 - The workflow owner is the linked wallet, which is also the address consumer contracts must authorize for onchain writes.
-- `cre account unlink-key` deletes the workflows associated with that key.
+- `cre account unlink-key` irreversibly deletes all workflows registered under that address.
 
 ## Private registry
 
-- Prerequisites: CRE CLI v1.15.0+, an authenticated session, and a private registry enabled for the organization (`cre registry list` shows an entry with `Type: off-chain`).
+- Prerequisites: CRE CLI v1.15.0+, an authenticated session (`cre login` or `CRE_API_KEY`), `cre whoami` showing Deploy Access `Enabled`, and a private registry enabled for the organization (`cre registry list` shows an entry with `Type: off-chain`).
 - No linked wallet key, no `CRE_ETH_PRIVATE_KEY`, no RPC URL in `project.yaml`, and no gas.
 - Registered workflows are active immediately after deploy.
-- The workflow owner is the organization owner address, which matches **Organization address** in the CRE platform and the `ownerAddress` field of `cre workflow list --registry private --output json`.
-- Consumer contracts that accept onchain writes from this workflow authorize the organization owner address, not a linked key.
+- The workflow owner is the organization owner address, which the CLI labels "(derived)". It matches **Organization address** in the CRE platform and the `ownerAddress` field of `cre workflow list --registry private --output json`.
+- Consumer contracts that accept onchain writes from this workflow authorize the organization owner address, not a linked key — for example, pass it to `setExpectedAuthor()` on a `ReceiverTemplate` consumer.
+- CI needs only `CRE_API_KEY` (no private key or RPC URL): `cre workflow deploy <dir> --target <target> --yes --non-interactive`.
 - Private registry is beta; default quota is three workflows per organization.
 
 ## Lifecycle per registry
@@ -78,25 +79,27 @@ Deploy registers a paused workflow on the onchain registry, which then needs act
 Deletion specifics:
 
 - `cre workflow delete` deletes **all workflow versions matching the given name and owner address**, not a single version. Re-using a workflow name therefore risks removing records the caller did not intend; confirm the name and owner before deleting, and prefer `cre workflow list --include-deleted` to see prior versions of that name.
-- On the private registry the CLI shows the workflow details and prompts the operator to type the workflow name; `--yes` skips that prompt and `--unsigned` returns a raw transaction instead of sending it.
+- On the private registry the CLI shows the workflow details and prompts the operator to type the workflow name; `--yes` skips that prompt. `--unsigned` (return a raw transaction for multisig signing) applies only to the onchain registry; the private registry has no transaction.
 - Deleted workflows stay hidden from `cre workflow list` unless `--include-deleted` is passed.
 
 Registry routing applies to every lifecycle command:
 
 ```bash
+cre workflow deploy <dir> --target <target>     # also updates: same name redeploys
 cre workflow activate <dir> --target <target>
 cre workflow pause <dir> --target <target>
-cre workflow update <dir> --target <target>
 cre workflow delete <dir> --target <target>
 ```
+
+There is no `cre workflow update`. Redeploying the same name replaces the previous deployment in that registry, keeps its active/paused status, and produces a new workflow ID.
 
 ## Secrets per registry
 
 Onchain registry secrets are authorized through the linked wallet key. Private registry secrets are authorized through a browser OAuth (PKCE) flow, so add `--secrets-auth=browser`:
 
 ```bash
-cre secrets create <workflow-dir> --target <target> --secrets-auth=browser
-cre secrets update <workflow-dir> --target <target> --secrets-auth=browser
+cre secrets create <secrets-file> --target <target> --secrets-auth=browser
+cre secrets update <secrets-file> --target <target> --secrets-auth=browser
 cre secrets list --target <target> --secrets-auth=browser
 ```
 
@@ -117,11 +120,11 @@ If a lifecycle command behaves as though a wallet is missing, or the workflow is
 
 ## Quotas and access
 
-Registry quotas cover deployed workflows per organization (private registry defaults to three), binary size, linked keys, secrets, trigger frequency, and concurrency. Private registry access is a beta enrollment separate from general deploy access. Fetch current limits from `https://docs.chain.link/cre/service-quotas.md` rather than guessing.
+Registry quotas cover deployed workflows per organization (private registry defaults to three; onchain allows one linked key with three workflows per key), binary size, secrets, trigger frequency, and concurrency, and may change before general availability. Private registry is beta: request access through the deploy access process (`cre account access`) or a Chainlink contact, then confirm with `cre registry list`. Fetch current limits from `https://docs.chain.link/cre/service-quotas.md` rather than guessing.
 
 ## Not a confidentiality boundary
 
-The private registry is a private, centralized control plane for workflow management. It does not make workflow execution confidential: the binary and logic remain DON-visible, and only values concluded through TEE execution are confidential. For confidential execution use [confidential-workflows.md](confidential-workflows.md).
+The private registry is a private, centralized control plane for workflow management. It does not make workflow execution confidential: a private-registry workflow still runs on the public DON and uses the same public HTTP trigger gateway. Confidential execution works with either registry; for it use [confidential-workflows.md](confidential-workflows.md).
 
 ## Sources
 

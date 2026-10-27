@@ -121,9 +121,7 @@ Every command below includes `--target`:
 cre workflow deploy <dir> --target <target>
 cre workflow activate <dir> --target <target>
 cre workflow pause <dir> --target <target>
-cre workflow update <dir> --target <target>
 cre workflow delete <dir> --target <target>
-cre workflow show <dir> --target <target>
 cre workflow get <dir> --target <target>
 cre workflow list --target <target> --output json
 cre workflow list --target <target> --registry private
@@ -131,8 +129,9 @@ cre workflow supported-chains --target <target> --output json
 ```
 
 - Deploy prerequisites follow the target's `user-workflow.deployment-registry`: the onchain registry needs login, a linked funded wallet, an RPC URL, Early Access, and uploaded secrets when used; the private registry needs login or `CRE_API_KEY` and no wallet, RPC URL, or gas.
-- Deploy registers a paused workflow; activate starts it.
-- Delete is permanent and removes **all versions matching the workflow name and owner**. The private registry prompts the operator to type the workflow name; `--yes` skips the prompt and `--unsigned` returns a raw transaction instead of sending it.
+- On the onchain registry deploy registers a paused workflow and activate starts it; a private-registry deploy is active immediately.
+- There is no `workflow update` or `workflow show` subcommand (v1.39.0). Update by redeploying the same workflow name to the same target; status is kept and the workflow ID changes.
+- Delete is permanent and removes **all versions matching the workflow name and owner**. The private registry prompts the operator to type the workflow name; `--yes` skips the prompt. `--unsigned` (raw transaction for multisig) applies only to the onchain registry.
 - `workflow list` also accepts `--include-deleted` and `--registry <id>`.
 - `workflow get` prints deployment health and the latest execution, resolving against the target's configured `deployment-registry`; `--all-registries` resolves across all of them, and it accepts `--output json`.
 - `supported-chains` returns tenant chains and mock forwarders.
@@ -144,13 +143,13 @@ Refuse mainnet writes and apply [operations.md](operations.md)'s testnet preflig
 All secret commands require a target. The CLI consumes values declared by `secrets.yaml` from its environment without the agent reading them.
 
 ```bash
-cre secrets create <workflow-dir> --target <target>
-cre secrets update <workflow-dir> --target <target>
-cre secrets delete <workflow-dir> --target <target>
+cre secrets create <secrets-file> --target <target>
+cre secrets update <secrets-file> --target <target>
+cre secrets delete <secrets-file> --target <target>
 cre secrets list --target <target>
 ```
 
-Create uploads; update replaces; delete removes; list shows namespaces. Follow secret custody and approvals in [operations.md](operations.md).
+Each takes a secrets YAML file path, not a workflow directory. Create uploads; update replaces; delete removes; list shows namespaces. `--secrets-auth` defaults to `onchain` (wallet key); private-registry targets pass `--secrets-auth=browser`. Follow secret custody and approvals in [operations.md](operations.md).
 
 ## Sources
 

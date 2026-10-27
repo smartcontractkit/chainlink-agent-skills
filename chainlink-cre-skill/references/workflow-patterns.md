@@ -114,7 +114,7 @@ production:
     secrets-path: ../secrets.yaml
 ```
 
-`deployment-registry` is required per target and decides where deploy, activate, pause, update, and delete resolve; targets in one file may use different registries. It is never optional and never inferred from the workflow's existing registration — read [registries.md](registries.md) before writing it, and never guess an ID.
+`deployment-registry` is set per target and decides where deploy (including redeploy-to-update), activate, pause, and delete resolve; targets in one file may use different registries. When omitted, the CLI uses the public onchain registry, so always write it explicitly and never infer it from the workflow's existing registration — read [registries.md](registries.md) before writing it, and never guess an ID.
 
 Preserve target names and the meaning of all user-specified schedules, plus all units, decimals, selectors, addresses, resource IDs, and secret names across code/config/docs/simulation. Normalize every five-field cron schedule to the equivalent six-field CRE form by prepending `0`, or reject it clearly if normalization is unsafe; this applies equally to target config JSON and workflow records. A target config JSON block must be strictly valid JSON: never put a `//` or `#` comment inside the fenced block — label the file's path in the prose sentence that introduces it — and it must include every field the declared TypeScript `Config` type or Go `Config` struct reads (a config that omits a field the handler uses, such as `schedule`, is not a runnable workflow). When more than one target shares an invariant, that field's value must match across every target's config file, not only the one shown first.
 

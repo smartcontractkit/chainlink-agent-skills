@@ -1,0 +1,1 @@
+Our Chainlink workflows are registered off-chain in the private registry. Do I need an ETH wallet and gas to pause one of them?

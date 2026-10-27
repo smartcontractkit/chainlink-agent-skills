@@ -124,7 +124,7 @@ Repeat `--rpc-url chain-name=url` when a template requires RPC configuration. Th
 
 Interactive `cre init` is for a present human only.
 
-The generated `workflow.yaml` carries `deployment-registry` per target. Editing or hand-writing a target keeps that key mandatory: a target used only for lifecycle commands such as `cre workflow delete` still resolves through its registry. Onchain targets need a linked funded wallet and an RPC URL; private-registry targets need neither. See [registries.md](registries.md).
+The generated `workflow.yaml` carries `deployment-registry` per target. Keep it explicit when editing or hand-writing a target: a target used only for lifecycle commands such as `cre workflow delete` still resolves through its registry, and an omitted key silently means the public onchain registry. Onchain targets need a linked funded wallet and an RPC URL; private-registry targets need neither. See [registries.md](registries.md).
 
 ## Templates
 
