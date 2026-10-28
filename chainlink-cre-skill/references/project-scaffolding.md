@@ -124,6 +124,8 @@ Repeat `--rpc-url chain-name=url` when a template requires RPC configuration. Th
 
 Interactive `cre init` is for a present human only.
 
+The generated `workflow.yaml` carries `deployment-registry` per target. Keep it explicit when editing or hand-writing a target: a target used only for lifecycle commands such as `cre workflow delete` still resolves through its registry, and an omitted key silently means the public onchain registry. Onchain targets need a linked funded wallet and an RPC URL; private-registry targets need neither. See [registries.md](registries.md).
+
 ## Templates
 
 Built in and available offline:
@@ -140,7 +142,7 @@ Discover current registered templates with `cre templates list --json`; `--refre
 
 For every non-hello-world workflow, replace or remove the generic template's default README, tutorial comments, sample handler/config/secrets, and unused dependencies before the first simulation. Never simulate the untouched template or present that run as validation of the requested workflow, and do not leave hello-world material beside the custom workflow.
 
-If an answer mentions `--broadcast`, deployment, update, or activation, it must explicitly state the prerequisites: CRE Early Access, browser-completed login, a linked funded wallet for the target, uploaded Vault DON secrets when used, and a successful non-broadcast simulation.
+If an answer mentions `--broadcast`, deployment, update, or activation, it must explicitly state the registry-appropriate prerequisites: CRE Early Access, browser-completed login (or `CRE_API_KEY`), uploaded Vault DON secrets when used, and a successful non-broadcast simulation — plus a linked funded wallet and RPC URL only for an onchain-registry target. State that a private-registry target needs no wallet, RPC URL, or gas.
 
 ## After initialization
 
@@ -165,7 +167,7 @@ The block above is one automated shell sequence: capture `project_root` immediat
 Do not replace generated files with guessed examples or vague “generated files” placeholders; when the user asks for the full structure, show the concrete tree produced by `cre init`. Preserve the selected target across:
 
 - root `project.yaml`: shared target/RPC configuration
-- workflow `workflow.yaml`: workflow name, entry/config/secrets paths per target
+- workflow `workflow.yaml`: workflow name, `deployment-registry`, entry/config/secrets paths per target
 - target config JSON: runtime values (`runtime.config` in TypeScript; handler config parameter in Go)
 - root `secrets.yaml`: secret IDs mapped to environment-variable names, never secret values
 

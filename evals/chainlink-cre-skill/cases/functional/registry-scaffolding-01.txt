@@ -1,0 +1,3 @@
+A customer has six CRE workflows already running in their organization. They are private workflows, meaning they are registered in the off-chain workflow registry, not on-chain, and they have no local scaffolding left — no project.yaml, no workflow.yaml. They need to permanently shut all six down with the CRE CLI.
+
+Produce the minimum project scaffolding and the exact commands they need, using the CLI's delete command with --target production. Be explicit about what the customer must have set up before running it.

@@ -1,0 +1,6 @@
+My organization just got private registry access and I'm moving a TypeScript CRE workflow there from my laptop. It writes to a consumer contract that extends ReceiverTemplate. Answer all of these:
+
+1. How do I upload the workflow's secrets for the private registry target? Do I still need my wallet or workflow-owner-address?
+2. Which address should the consumer contract trust as the workflow author, and where do I find it?
+3. How do I ship a code change later? Will the workflow ID stay the same?
+4. Does deploying to the private registry keep my workflow logic and data hidden from the DON?

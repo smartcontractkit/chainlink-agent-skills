@@ -300,6 +300,115 @@ tests:
       requires_live_source: "no"
     assert: *functional_asserts
 
+  # Regression: private registry omitted from scaffolding/lifecycle references
+  - vars:
+      case_file: cases/functional/registry-scaffolding-01.txt
+      reference_files:
+        - references/registries.md
+        - references/project-scaffolding.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the scaffold's workflow.yaml sets
+          `deployment-registry: "private"` under user-workflow for the target the
+          delete command uses, and the delete command includes --target. It must
+          state that a private-registry delete needs no linked wallet,
+          CRE_ETH_PRIVATE_KEY, RPC URL, or gas, and that deletion is permanent.
+          Fail if deployment-registry is omitted from the YAML, if the answer
+          requires a wallet key or RPC URL for the delete, or if it invents a
+          registry ID instead of pointing to `cre registry list`.
+
+  - vars:
+      case_file: cases/functional/registry-lifecycle-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if all four answers are correct: (1) no wallet, no
+          CRE_ETH_PRIVATE_KEY, no RPC URL, and no gas for a private-registry
+          delete; (2) `deployment-registry` under `user-workflow` in
+          workflow.yaml, set per target; (3) delete removes every version
+          matching the workflow name and owner, so previously deleted versions
+          are not separately affected but name reuse is the risk; (4) the CLI
+          prompts the operator to type the workflow name, `--yes` skips it, and
+          `cre workflow list --include-deleted` shows deleted workflows.
+          Fail if it says one version is deleted, requires a wallet for the
+          private registry, or claims delete cannot be undone but is reversible.
+
+  - vars:
+      case_file: cases/functional/registry-private-deploy-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+        - references/cli-reference.md
+      workflow: registry
+      requires_live_source: "no"
+    metadata:
+      workflow: registry
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if all four answers are correct: (1) `cre secrets create`
+          with a secrets YAML file, `--target`, and `--secrets-auth=browser`,
+          needing no wallet, gas, or `workflow-owner-address`; (2) the
+          organization owner address (Organization address in the CRE platform,
+          `ownerAddress` in `cre workflow list --registry private --output json`,
+          or deploy output) passed to `setExpectedAuthor()`, not a linked wallet;
+          (3) redeploy with `cre workflow deploy` under the same workflow name
+          and target, and the workflow ID changes because it hashes binary and
+          config; (4) no — the private registry is a control-plane choice and
+          does not make execution confidential; confidential execution needs
+          Confidential Workflows. Fail if it uses `cre workflow update`, requires
+          a linked wallet or `CRE_ETH_PRIVATE_KEY`, says the workflow ID is
+          unchanged, or implies private means confidential.
+
   # ── Functional: Concepts ────────────────────────────────────────────
   - vars:
       case_file: cases/functional/concepts-01.txt
@@ -465,6 +574,15 @@ tests:
         - references/operations.md
         - references/simulation.md
       workflow: operations
+      expected_trigger: "yes"
+    assert: *trigger_positive_asserts
+
+  - vars:
+      case_file: cases/trigger-positive/registry-01.txt
+      reference_files:
+        - references/registries.md
+        - references/operations.md
+      workflow: registry
       expected_trigger: "yes"
     assert: *trigger_positive_asserts
 
