@@ -22,9 +22,9 @@ The skill itself is agent-agnostic. However, Promptfoo still needs an execution 
 
 Defaults:
 
-- baseline provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
-- with-skill provider: `anthropic:messages:claude-sonnet-4-20250514` unless overridden
-- grader provider: `openai:gpt-5-mini` unless overridden
+- baseline provider: `anthropic:messages:claude-sonnet-5-5` unless overridden
+- with-skill provider: `anthropic:messages:claude-sonnet-5-5` unless overridden
+- grader provider: `openai:gpt-6.1-sol` unless overridden
 
 Examples:
 
@@ -38,9 +38,9 @@ promptfoo eval
 OpenAI:
 
 ```bash
-export PROMPTFOO_BASELINE_PROVIDER='openai:gpt-5-mini'
-export PROMPTFOO_WITH_SKILL_PROVIDER='openai:gpt-5-mini'
-export PROMPTFOO_GRADER_PROVIDER='openai:gpt-5-mini'
+export PROMPTFOO_BASELINE_PROVIDER='openai:gpt-6.1-sol'
+export PROMPTFOO_WITH_SKILL_PROVIDER='openai:gpt-6.1-sol'
+export PROMPTFOO_GRADER_PROVIDER='openai:gpt-6.1-sol'
 export OPENAI_API_KEY=sk-...
 promptfoo eval
 ```
