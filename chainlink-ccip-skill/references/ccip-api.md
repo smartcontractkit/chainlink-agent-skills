@@ -10,7 +10,7 @@
 
 Default live, read-only surface for messages, lanes, chains, verifiers, cross-chain token records, and intents. It needs no RPC or wallet. Intent routes may require a caller key. Fetch `https://docs.chain.link/ccip/tools/llms.txt` for current parameters, then trust the served OpenAPI when that file and the docs hub disagree.
 
-The contract is the OpenAPI document served at `https://api.ccip.chain.link/docs` (info.version `2.13.0` on 2026-10-05). It lists 14 routes. `llms.txt` lists the same 14 routes and omits the `/v2` prefix. The docs hub at `https://docs.chain.link/ccip/tools/api/` labels version `2.0.0`, and its quick reference names only five actions. Its sample path `/v2/message/{id}` is not a route.
+The contract is the OpenAPI document served at `https://api.ccip.chain.link/docs` (info.version `2.14.0` on 2026-10-30). It lists 14 routes. `llms.txt` lists the same 14 routes and omits the `/v2` prefix. The docs hub at `https://docs.chain.link/ccip/tools/api/` labels version `2.0.0`, and its quick reference names only five actions. Its sample path `/v2/message/{id}` is not a route.
 
 ## Access
 
@@ -77,7 +77,7 @@ Amounts are raw integer strings. Divide by token decimals and name the token.
 
 ### Message search
 
-Filters: `sender`, `receiver`, `sourceChainSelector`, `destChainSelector`, `sourceTransactionHash`, `sourceTokenAddress`, `readyForManualExecOnly`, `q`, `environment`, `limit` (default 100, max 1000), `cursor`.
+Filters: `sender`, `receiver`, `sourceChainSelector`, `destChainSelector`, `sourceTransactionHash`, `sourceTokenAddress`, `readyForManualExecOnly`, `q`, `status` (`PENDING`, `SUCCESS`, or `FAILED`), `sentAfter` (ISO 8601; source-chain send time at or after), `environment`, `limit` (default 100, max 1000), `cursor`.
 
 `receiver` matches the message receiver or the token receiver. `sourceTransactionHash` format depends on the source family. `q` is a comma-separated list, and every term must match. It can match a value in a role other than the one you expect, and it can be combined with named filters. Use named filters when the role matters.
 
@@ -106,7 +106,7 @@ Request this route only while diagnosing a confirmed failed message that is read
 
 ### Lanes
 
-`GET /v2/lanes` accepts `sourceChainSelector`, `destChainSelector`, and `environment`. A cross-environment selector pair is `400`. An unknown selector is `404`. Each lane has `sourceChainSelector`, `destChainSelector`, `onRampAddress`, `offRampAddress`, `version`, and `status`. Documented status values are `OPERATIONAL` and `MAINTENANCE`.
+`GET /v2/lanes` accepts `sourceChainSelector`, `destChainSelector`, `environment`, `sortBy` (`volumeUsd`, `messageCount`, or `userCount`; requires `environment`, entries without data sort last), and `sortOrder` (`asc` or `desc`, default `desc`). A cross-environment selector pair is `400`. An unknown selector is `404`. Each lane has `sourceChainSelector`, `destChainSelector`, `onRampAddress`, `offRampAddress`, `version`, and `status`. Documented status values are `OPERATIONAL` and `MAINTENANCE`.
 
 ```json
 {"lanes":[{"sourceChainSelector":"…","destChainSelector":"…","onRampAddress":"…","offRampAddress":"…","version":"2.0.0","status":"OPERATIONAL"}]}
@@ -116,7 +116,7 @@ Latency requires both selectors. Omitted selectors are `400`. Optional `numOfBlo
 
 ### Chains
 
-`GET /v2/chains` accepts `environment`. `GET /v2/chains/{selector}` returns `chain`, family-discriminated `chainConfig`, and `chainMetadata`.
+`GET /v2/chains` accepts `environment`, `sortBy` (`volumeUsd`, `messageCount`, or `userCount`; requires `environment`, entries without data sort last), and `sortOrder` (`asc` or `desc`, default `desc`). `GET /v2/chains/{selector}` returns `chain`, family-discriminated `chainConfig`, and `chainMetadata`.
 
 `chain` includes `name`, `displayName`, `chainSelector`, `chainId`, `chainFamily`, `environment`, `isPrivate`, and `deprecated`. `chainConfig.chainFamily` selects the shape. Contract entries use `address`, `type`, `version`, and `isActive`. Several entries for one contract are common. Use only the active entry.
 
@@ -135,7 +135,7 @@ Latency requires both selectors. Omitted selectors are `400`. Optional `numOfBlo
 
 These routes return indexed cross-chain token records. A yes or no answer about whether a send route or token is supported still follows [discovery](ccip-discovery.md). The Directory remains that authority.
 
-`GET /v2/tokens` uses the same cursor rules as message search. Filters: `chainSelector`, `remoteChainSelector`, `groupId`, `symbol`, `address`, `admin`, `environment`, `reviewedOnly`, `expand`, `limit`, `cursor`. `reviewedOnly` defaults to `true`, so an omitted flag returns only tokens whose projects Chainlink Labs has reviewed. Pass `reviewedOnly=false` to include the rest. `expand` defaults to `false`. A collapsed `remoteChains` entry has only `remoteChainSelector`. With `expand=true` it also has `status` and `remoteTokenAddress`. `limit` defaults to 100 and maxes at 1000. The body is `data` plus `pagination`.
+`GET /v2/tokens` uses the same cursor rules as message search. Filters: `chainSelector`, `remoteChainSelector`, `groupId`, `symbol`, `nameContains` (case-insensitive match on the start of any word in the name; falls back to a typo-tolerant match when nothing matches), `address`, `admin`, `environment`, `sortBy` (`volumeUsd`, `messageCount`, or `userCount`; requires `environment`, entries without data sort last), `sortOrder` (`asc` or `desc`, default `desc`), `reviewedOnly`, `expand`, `limit`, `cursor`. `reviewedOnly` defaults to `true`, so an omitted flag returns only tokens whose projects Chainlink Labs has reviewed. Pass `reviewedOnly=false` to include the rest. `expand` defaults to `false`. A collapsed `remoteChains` entry has only `remoteChainSelector`. With `expand=true` it also has `status` and `remoteTokenAddress`. `limit` defaults to 100 and maxes at 1000. The body is `data` plus `pagination`.
 
 Each summary has `chainSelector`, `address`, `symbol`, `name`, `decimals`, `isReviewed`, `groupId`, and `remoteChains`.
 
@@ -181,7 +181,7 @@ The JSON error body is `{ "error", "message" }`. The `message` names the paramet
 
 | Code | Response |
 |---|---|
-| `400` | `BAD_REQUEST` for a malformed or missing parameter, a bad `environment`, or a cross-environment selector pair. `INVALID_PARAMETER_COMBINATION` when a cursor filter conflicts. `INSUFFICIENT_DATA` when latency history is missing. Fix the request. Do not repeat it unchanged |
+| `400` | `BAD_REQUEST` for a malformed or missing parameter, a bad `environment`, or a cross-environment selector pair. `INVALID_PARAMETER_COMBINATION` when a cursor filter conflicts. `INSUFFICIENT_DATA` when latency history is missing. An invalid `sortBy` or `sortOrder`, or `sortBy` without `environment`, is also `400`. Fix the request. Do not repeat it unchanged |
 | `401` | Intent key missing or invalid, as JSON. Do not read an HTML `403` as this case |
 | `404` | `NOT_FOUND`, including a missing `/v2`, the singular `/message` path, an unknown chain, a missing lane, or a missing message or intent. Token misses use `TOKEN_NOT_FOUND` and `TOKEN_GROUP_NOT_FOUND` |
 | `409` | Execution inputs are not ready. Retry later |
