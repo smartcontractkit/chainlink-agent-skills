@@ -26,7 +26,7 @@ Exact API map for `@chainlink/cre-sdk` and `github.com/smartcontractkit/cre-sdk-
 | `runInNodeMode(fn,aggregation,unwrapOptions?)` | returns an argument-taking function whose result is lazy |
 | `report(input)` | lazy signed `Report`; use `prepareReportRequest(encoded)` |
 
-`getSecret` never takes a string or returns `undefined`; `.result()` throws `SecretsError`/`SecretsBatchError`. `namespace` defaults to `main`. `NodeRuntime` lacks secrets; closing over DON runtime while in node mode yields `DonModeError`. `TeeRuntime` shares the secrets provider.
+`getSecret` never takes a string or returns `undefined`; `.result()` throws `SecretsError`/`SecretsBatchError`. `namespace` defaults to `main`. A `getSecrets` batch must not repeat an ID; `SecretsBatchError` aggregates all failed messages. `NodeRuntime` lacks secrets; closing over DON runtime while in node mode yields `DonModeError`. `TeeRuntime` shares the secrets provider.
 
 ```typescript
 handler(trigger: TriggerDefinition, callback: HandlerCallback): HandlerDefinition

@@ -1,0 +1,38 @@
+Please review this CRE TypeScript workflow handler. It works, but executions are slow and I don't know why.
+
+```typescript
+const onCron = (runtime: Runtime<Config>): string => {
+  const network = getNetwork({ chainFamily: 'evm', chainSelectorName: runtime.config.chainSelectorName })
+  if (!network) throw new Error('unknown chain')
+  const client = new EVMClient(network.chainSelector.selector)
+
+  const readUint = (fn: string): bigint => {
+    const reply = client.callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: runtime.config.vault as Address,
+        data: encodeFunctionData({ abi, functionName: fn }),
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    }).result()
+    return decodeFunctionResult({ abi, functionName: fn, data: bytesToHex(reply.data) }) as bigint
+  }
+
+  const totalAssets = readUint('totalAssets')
+  const totalShares = readUint('totalShares')
+  const feeBps = readUint('feeBps')
+
+  const secretIds = ['API_KEY', 'API_SECRET', 'SIGNING_KEY']
+  const secrets: string[] = []
+  for (const id of secretIds) {
+    secrets.push(runtime.getSecret({ id }).result().value)
+  }
+
+  return JSON.stringify({
+    totalAssets: totalAssets.toString(),
+    totalShares: totalShares.toString(),
+    feeBps: feeBps.toString(),
+    keys: secrets.length,
+  })
+}
+```

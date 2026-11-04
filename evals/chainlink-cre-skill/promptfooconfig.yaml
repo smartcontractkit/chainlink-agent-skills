@@ -161,6 +161,109 @@ tests:
       smoke: true
     assert: *functional_asserts
 
+  # ── Functional: Parallel Capability Calls ───────────────────────────
+  - vars:
+      case_file: cases/functional/parallel-calls-01.txt
+      reference_files:
+        - references/project-scaffolding.md
+        - references/evm-client.md
+        - references/workflow-patterns.md
+        - references/http-client.md
+      workflow: workflow-generation
+      requires_live_source: "no"
+    metadata:
+      workflow: parallel-calls
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the TypeScript handler initiates all five independent
+          contract reads (every client.callContract(...) handle) before calling
+          .result() on any of them, and fetches the three secrets with one
+          batched runtime.getSecrets([...]).result() call using unique IDs
+          instead of getSecret per secret or in a loop. Fail if any
+          .result() is called directly after each read, if getSecret is
+          called three times or in a loop, if await/Promise.all is used for
+          SDK capabilities, or if secrets are fetched inside node mode.
+
+  - vars:
+      case_file: cases/functional/parallel-calls-02.txt
+      reference_files:
+        - references/evm-client.md
+        - references/workflow-patterns.md
+      workflow: workflow-generation
+      requires_live_source: "no"
+    metadata:
+      workflow: parallel-calls
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the review flags both issues: (1) the three
+          independent contract reads each call .result() immediately inside
+          readUint, with a fix that initiates all reads first and then calls
+          .result() on each; and (2) getSecret called in a loop, with a fix
+          using one batched runtime.getSecrets([...]).result() call. The fixed
+          code must stay valid TypeScript for CRE (no await, no Promise.all),
+          and the impact must be described qualitatively (fewer sequential
+          round trips) without invented timings. Fail if either issue is
+          missed, if either fix is wrong, or if the answer claims
+          numeric latency savings it cannot know.
+
+  - vars:
+      case_file: cases/functional/parallel-calls-03.txt
+      reference_files:
+        - references/evm-client.md
+        - references/workflow-patterns.md
+      workflow: evm-client
+      requires_live_source: "no"
+    metadata:
+      workflow: parallel-calls
+      category: functional
+      smoke: true
+    assert:
+      - type: llm-rubric
+        value: file://rubrics/correctness.txt
+      - type: llm-rubric
+        value: file://rubrics/completeness.txt
+      - type: llm-rubric
+        value: file://rubrics/safety.txt
+      - type: llm-rubric
+        value: file://rubrics/freshness.txt
+      - type: llm-rubric
+        value: file://rubrics/clarification.txt
+      - type: llm-rubric
+        value: |
+          PASS only if the three reads stay strictly sequential, each
+          .result() resolved before the next read is built, because the
+          second read needs the pool address from the first and the third
+          needs both earlier results. It must say they are dependent and
+          therefore not parallelized. Fail if the code initiates a dependent
+          read before the value it needs is available, wraps them in
+          Promise.all or await, or presents them as parallel.
+
   # ── Functional: Project Scaffolding ──────────────────────────────────
   - vars:
       case_file: cases/functional/project-scaffolding-01.txt

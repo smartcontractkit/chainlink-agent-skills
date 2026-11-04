@@ -24,6 +24,7 @@ Workflow-specific must-pass checks:
 - **evm-client**: Uses `viem` for ABI encoding/decoding in TypeScript; uses `bigint` for block numbers and integer values
 - **triggers**: Correct trigger capability class and configuration; handler callback signature matches trigger type
 - **secrets**: Uses `runtime.getSecret()`/`runtime.GetSecret()`; references `secrets.yaml` configuration
+- **parallel-calls**: In TypeScript, independent capability calls are all initiated before any `.result()`; two or more secrets use batched `getSecrets` (Go `GetSecrets`) with unique IDs; dependent calls stay sequential; no `await`/`Promise.all` for SDK capabilities; no Go parallelism invented beyond documented SDK APIs
 - **getting-started**: Includes `cre init` and `cre workflow simulate` commands; correct project structure
 - **operations**: Correct lifecycle order (deploy -> activate); mentions simulation before deployment
 - **concepts**: Accurately describes consensus model; correct execution mode distinctions (DON vs Node)

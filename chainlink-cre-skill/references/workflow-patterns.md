@@ -174,6 +174,8 @@ const value = runtime.getSecret({ id: 'MY_API_KEY' }).result().value
 const values = runtime.getSecrets([{ id: 'KEY_A' }, { id: 'KEY_B' }]).result()
 ```
 
+When a workflow needs two or more secrets, use the single batched `getSecrets` call instead of `getSecret` in a loop or repeated; read each value as `values['KEY_A'].value`. Request IDs in one batch must be unique (duplicates are not allowed). If any secret fails, `.result()` throws a `SecretsBatchError` that aggregates the messages from all failed secrets.
+
 Never `await` or pass a bare string. Missing or unauthorized secret resolution fails; catch it only when the workflow has a real fallback. `TeeRuntime` has the same API. `NodeRuntime` has no secret provider; fetch in DON mode and pass the value as an argument to `runInNodeMode`.
 
 Go:
@@ -182,7 +184,7 @@ Go:
 secret, err := runtime.GetSecret(&cre.SecretRequest{Id: "MY_API_KEY"}).Await()
 ```
 
-`secret.Value` is the value. Batch with `GetSecrets([]*cre.SecretRequest{...}).Await()`. When a secret feeds an external HTTP call, resolve the secret in DON mode *before* entering node mode (`NodeRuntime`/Go node context has no secret provider) and pass the resolved value as an argument into `runInNodeMode`/`RunInNodeMode`, which itself must carry a consensus aggregator — never skip aggregation because the call is secret-backed; see [http-client.md](http-client.md).
+`secret.Value` is the value. For two or more secrets, make one `GetSecrets([]*cre.SecretRequest{...}).Await()` call instead of repeated `GetSecret`; results come back in request order, and one error aggregates every failed secret. When a secret feeds an external HTTP call, resolve the secret in DON mode *before* entering node mode (`NodeRuntime`/Go node context has no secret provider) and pass the resolved value as an argument into `runInNodeMode`/`RunInNodeMode`, which itself must carry a consensus aggregator — never skip aggregation because the call is secret-backed; see [http-client.md](http-client.md).
 
 An end-to-end API-key example must actually pass the resolved value into an authenticated capability request; retrieval followed only by a comment or unused value is incomplete. A requested full deployed-secret lifecycle must include list, create, update, and delete, plus the Early Access, login, linked-funded-wallet, uploaded-secret, simulation, permanence, and confirmation requirements owned by [operations.md](operations.md).
 
@@ -223,6 +225,28 @@ const report = runtime.report(prepareReportRequest(encoded)).result()
 
 Go capability calls return `cre.Promise[T]`; `.Await()` returns `(T, error)` and drives the single-threaded event loop.
 
+### Independent capability calls (TypeScript)
+
+`.result()` blocks until the host answers, so calling it right after each call serializes work that does not depend on each other. Initiate every independent call first, then resolve them:
+
+```typescript
+// Slow: each read waits for the previous one.
+const a = client.callContract(runtime, callA).result()
+const b = client.callContract(runtime, callB).result()
+
+// Fast: initiate all reads, then collect.
+const pendingA = client.callContract(runtime, callA)
+const pendingB = client.callContract(runtime, callB)
+const pendingC = client.callContract(runtime, callC)
+const [a, b, c] = [pendingA.result(), pendingB.result(), pendingC.result()]
+```
+
+- `async`/`await` and `Promise.all` do not apply to SDK capabilities: WASM execution is synchronous, and a capability call returns a lazy handle that `.result()` resolves.
+- The same pattern covers `callContract`, `headerByNumber`, `filterLogs`, `httpClient.sendRequest(runtime, ...)`, and `runtime.runInNodeMode(fn, aggregation)(args)`. Each HTTP fetch keeps its own aggregation.
+- Keep a call sequential when its input comes from an earlier result, such as a read whose address or argument is returned by a previous read. Parallelize only independent calls.
+- Resolve secrets before node mode; fetch two or more with one `getSecrets` (see Secret APIs), never `getSecret` in a loop.
+- This section is TypeScript-only; do not carry it over to Go.
+
 For TypeScript config validation, pass a Standard Schema such as Zod to `Runner.newRunner({ configSchema })`.
 
 ## Generation checks
@@ -241,5 +265,7 @@ For TypeScript config validation, pass a Standard Schema such as Zod to `Runner.
 
 - https://docs.chain.link/cre/reference/project-configuration-ts.md
 - https://docs.chain.link/cre/guides/workflow/secrets.md
+- https://docs.chain.link/cre/reference/sdk/core-ts.md (Preparing multiple operations, `getSecrets`)
+- https://docs.chain.link/cre/reference/sdk/core-go.md (`GetSecrets`)
 - https://docs.chain.link/cre/guides/workflow/time-in-workflows-ts.md
 - https://docs.chain.link/cre/guides/workflow/using-randomness.md
