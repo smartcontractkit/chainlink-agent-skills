@@ -146,7 +146,7 @@ This mirrors the promptfoo setup where Anthropic generates and OpenAI grades. Th
 
 ## Differences from Promptfoo
 
-- **Models**: Generation uses the parent conversation's model; grading uses a fast model. Promptfoo uses specific model versions (Claude Sonnet 4 + GPT-5 mini).
+- **Models**: Generation uses the parent conversation's model; grading uses a fast model. Promptfoo uses specific model versions (Claude Sonnet 5.5, effort medium + GPT 6.1 Sol, reasoning effort medium; see `evals/README.md`).
 - **No baseline comparison**: Promptfoo runs both a baseline (no skill) and with-skill provider. This runbook only runs the with-skill path. Use `evals/run-agent-ab-test.md` for no-API baseline-vs-skill comparisons.
 - **No persistent storage**: Results are displayed in chat, not stored in a database. Copy the summary table to a file manually if you want to track over time.
 - **Rubric variable interpolation**: Some rubrics use `{{workflow}}` placeholders. The grading subagent should substitute the workflow value from the case metadata.

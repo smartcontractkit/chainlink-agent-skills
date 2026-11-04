@@ -2,50 +2,74 @@ description: Promptfoo eval suite for chainlink-confidential-ai-attester-skill
 commandLineOptions:
   maxConcurrency: 2
 providers:
-  - id: '{{ env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+  - id: '{{ env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-5-5" }}'
     label: baseline
     prompts:
       - baseline_prompt
     config:
-      temperature: 0
+      effort: medium
       max_tokens: 4096
-  - id: '{{ env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-4-20250514" }}'
+  - id: '{{ env.PROMPTFOO_WITH_SKILL_PROVIDER or env.PROMPTFOO_BASELINE_PROVIDER or "anthropic:messages:claude-sonnet-5-5" }}'
     label: with-skill
     prompts:
       - with_skill_prompt
     config:
-      temperature: 0
+      effort: medium
       max_tokens: 4096
 
 defaultTest:
   assert:
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: must-pass
       value: file://rubrics/must-pass.txt
 
 x-assertions:
   trigger_positive_asserts: &trigger_positive_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: triggering
       value: file://rubrics/triggering-positive.txt
   trigger_negative_asserts: &trigger_negative_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: triggering
       value: file://rubrics/triggering-negative.txt
   functional_asserts: &functional_asserts
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: correctness
       value: file://rubrics/correctness.txt
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: completeness
       value: file://rubrics/completeness.txt
     - type: llm-rubric
-      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-4o-mini" }}'
+      provider:
+        id: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-6.1-sol" }}'
+        config:
+          reasoning:
+            effort: medium
       metric: safety
       value: file://rubrics/safety.txt
 
