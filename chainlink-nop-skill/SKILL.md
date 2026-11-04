@@ -5,7 +5,7 @@ license: MIT
 allowed-tools: Read WebFetch Write Edit Bash(python3:*)
 metadata:
   purpose: Read-only Chainlink node operator diagnosis
-  version: "0.0.3"
+  version: "0.0.4"
 ---
 
 # Chainlink Node Operator Skill
@@ -63,7 +63,7 @@ python3 scripts/node_api.py [--config PATH] [--env-file PATH] get /v2/jobs [--al
 
 The default is `<skill-root>/config.yaml`; the parser accepts only the committed schema. `--env-file` overlays the environment. If config is absent, it can provide `CHAINLINK_API_URL`, `CHAINLINK_API_KEY`, and `CHAINLINK_API_SECRET` directly. Never print or quote that file.
 
-The client emits sanitized JSON to stdout and errors to stderr with a nonzero exit. It recursively redacts credential-like keys and secret-like TOML assignments. Report only relevant fields.
+The client emits sanitized JSON to stdout and errors to stderr with a nonzero exit. It recursively redacts credential-like keys, including seed and mnemonic fields, quoted and multiline secret TOML values, URL user information, and credential query parameters. Report only relevant fields.
 
 Start with `snapshot` for compact statuses/counts across broad useful reads. Use `get` when a specific endpoint body is needed; paths must be root-relative. Add `--all-pages` only when all pages matter. Pagination follows same-origin next links, has no arbitrary overall page budget, and stops on an absent or repeated cursor.
 

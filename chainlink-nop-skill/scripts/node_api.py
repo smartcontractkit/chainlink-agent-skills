@@ -20,7 +20,10 @@ DEFAULT_CONFIG = Path(__file__).resolve().parent.parent / "config.yaml"
 REDACTED = "[REDACTED]"
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 YAML_LINE = re.compile(r"^( *)([A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]*(.*))?$")
-TOML_ASSIGNMENT = re.compile(r"^(\s*)([A-Za-z0-9_.-]+)(\s*=\s*)(.*)$")
+TOML_KEY = r"""(?:"(?:\\.|[^"\\])*"|'(?:[^']|'')*'|[A-Za-z0-9_.-]+)"""
+TOML_ASSIGNMENT = re.compile(rf"^(\s*)({TOML_KEY})(\s*=\s*)(.*)$")
+URL_USERINFO = re.compile(r"([A-Za-z][A-Za-z0-9+.-]*://)([^\s/@?#]+)@")
+QUERY_PARAMETER = re.compile(r"([?&])([A-Za-z0-9._~%-]+)=([^&#\s]*)")
 
 SNAPSHOT_PATHS = (
     "/health",
@@ -336,6 +339,8 @@ def _sensitive_key(key: Any) -> bool:
     normalized = re.sub(r"[^a-z0-9]", "", str(key).lower())
     if "publickey" in normalized:
         return False
+    if normalized == "seed":
+        return True
     return any(
         marker in normalized
         for marker in (
@@ -350,24 +355,64 @@ def _sensitive_key(key: Any) -> bool:
             "authorization",
             "cookie",
             "connectionstring",
+            "seedphrase",
+            "mnemonic",
         )
     )
 
 
+def _toml_key_name(raw_key: str) -> str:
+    if len(raw_key) >= 2 and raw_key[0] == raw_key[-1] == '"':
+        return raw_key[1:-1]
+    if len(raw_key) >= 2 and raw_key[0] == raw_key[-1] == "'":
+        return raw_key[1:-1].replace("''", "'")
+    return raw_key.split(".")[-1]
+
+
+def _unclosed_multiline_delimiter(value: str) -> str | None:
+    stripped = value.strip()
+    for delimiter in ('"""', "'''"):
+        if stripped.startswith(delimiter) and delimiter not in stripped[len(delimiter) :]:
+            return delimiter
+    return None
+
+
+def _split_line_ending(line: str) -> tuple[str, str]:
+    if line.endswith("\r\n"):
+        return line[:-2], "\r\n"
+    if line.endswith(("\n", "\r")):
+        return line[:-1], line[-1]
+    return line, ""
+
+
+def _redact_query_parameter(match: re.Match[str]) -> str:
+    name = urllib.parse.unquote_plus(match.group(2))
+    if not _sensitive_key(name):
+        return match.group(0)
+    return f"{match.group(1)}{match.group(2)}={REDACTED}"
+
+
+def redact_urls(text: str) -> str:
+    without_userinfo = URL_USERINFO.sub(rf"\1{REDACTED}@", text)
+    return QUERY_PARAMETER.sub(_redact_query_parameter, without_userinfo)
+
+
 def redact_toml(text: str) -> str:
     lines: list[str] = []
+    pending_delimiter: str | None = None
     for line in text.splitlines(keepends=True):
-        ending = ""
-        content = line
-        if content.endswith("\r\n"):
-            content, ending = content[:-2], "\r\n"
-        elif content.endswith(("\n", "\r")):
-            content, ending = content[:-1], content[-1]
+        content, ending = _split_line_ending(line)
+        if pending_delimiter is not None:
+            if pending_delimiter in content:
+                pending_delimiter = None
+            lines.append(ending)
+            continue
         match = TOML_ASSIGNMENT.fullmatch(content)
-        if match and _sensitive_key(match.group(2).split(".")[-1]):
+        if match and _sensitive_key(_toml_key_name(match.group(2))):
+            pending_delimiter = _unclosed_multiline_delimiter(match.group(4))
             content = "".join(match.groups()[:3]) + '"' + REDACTED + '"'
         lines.append(content + ending)
-    return "".join(lines)
+    return redact_urls("".join(lines))
 
 
 def sanitize(value: Any) -> Any:
