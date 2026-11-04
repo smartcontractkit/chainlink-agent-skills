@@ -5,8 +5,7 @@ Promptfoo-based evaluation suite for the `chainlink-cre-skill`.
 ## Running
 
 ```bash
-cd evals/chainlink-cre-skill
-npx promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-cre-skill --tier full
 npx promptfoo view
 ```
 

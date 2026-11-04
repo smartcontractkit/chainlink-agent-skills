@@ -65,10 +65,9 @@ If `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` are set in `.env`:
 
 ```
 source .env
-cd evals/<skill-name>
-npx promptfoo eval --filter-metadata "smoke=true"   # smoke tier
-npx promptfoo eval                                    # full suite
-npx promptfoo view
+node evals/run-promptfoo.cjs --skill <skill-name>              # smoke tier
+node evals/run-promptfoo.cjs --skill <skill-name> --tier full  # full suite
+# Run from the repository root. Preflight prints counts and rejects empty sets.
 ```
 
 ### When to run evals

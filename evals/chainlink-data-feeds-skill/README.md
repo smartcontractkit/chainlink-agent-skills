@@ -4,17 +4,17 @@ Promptfoo-based evaluation framework for the `chainlink-data-feeds-skill`.
 
 ## Running
 
-```bash
-cd evals/chainlink-data-feeds-skill
+Run from the repository root:
 
+```bash
 # Full suite
-npx promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-data-feeds-skill --tier full
 
 # View results
 npx promptfoo view
 
 # Single test
-npx promptfoo eval --filter-pattern "reading-price-feeds-01"
+node evals/run-promptfoo.cjs --skill chainlink-data-feeds-skill --tier full --case cases/functional/reading-price-feeds-01.txt
 ```
 
 ## Environment Variables
