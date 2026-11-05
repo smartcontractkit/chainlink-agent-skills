@@ -1,0 +1,1 @@
+I am integrating the Chainlink 24/5 US equities Data Streams for a weekday trading dashboard. Which v11 fields should I read, and how should I interpret marketStatus?

@@ -1,0 +1,1 @@
+My protocol reads a Chainlink 24/7 Smoothed Tokenized Equity Feed for AAPL. How do I know the market is closed?
