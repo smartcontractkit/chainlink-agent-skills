@@ -1,10 +1,10 @@
 ---
 name: chainlink-data-feeds-skill
-description: "Helps developers read Chainlink price feeds with AggregatorV3Interface and latestRoundData. This is not a Data Streams report. REST and WebSocket report streams go to chainlink-data-streams-skill. It applies to price feed integration, feed address lookup, consumer contracts, multi-chain feeds, MVR bundle feeds, SVR and OEV feeds, feed monitoring, historical data, L2 sequencer checks, rates and volatility feeds, and SmartData and RWA feeds."
+description: "Helps developers read Chainlink price feeds with AggregatorV3Interface and latestRoundData. This is not a Data Streams report. REST and WebSocket report streams go to chainlink-data-streams-skill. It applies to price feed integration, feed address lookup, consumer contracts, multi-chain feeds, MVR bundle feeds, SVR and OEV feeds, feed monitoring, historical data, L2 sequencer checks, rates and volatility feeds, SmartData and RWA feeds, and Chainlink 24/7 Smoothed Tokenized Equity Feeds for lending (24/7, weekend pricing, off-hours, market closed price, tokenized equity collateral weekend). Perp mark price equities and up/down prediction market equities on 24/7 go to chainlink-data-streams-skill. Plain 24/5 tokenized equity feed questions keep the existing 24/5 guidance and get no 24/7-only advice."
 license: MIT
 allowed-tools: Read WebFetch Write Edit
 metadata:
-  version: "0.0.9"
+  version: "0.0.10"
 ---
 
 # Chainlink Data Feeds Skill
@@ -18,9 +18,12 @@ metadata:
 | Multiple-Variable Response, multi-variable feed, `BundleAggregatorProxy` | [MVR](references/mvr-feeds.md) |
 | Smart Value Recapture, OEV/MEV recapture, searcher onboarding | [SVR](references/svr-feeds.md) |
 | Feed categories/selection, SmartData/RWA, rates/volatility, tokenized equity | [types](references/feed-types.md) |
+| 24/7, weekend pricing, off-hours, market closed price, tokenized equity collateral/lending on weekends, 24/7 Smoothed Tokenized Equity Feeds | [24/7 tokenized equity](references/tokenized-equity-24-7.md) |
 | Solana, StarkNet, Aptos, Tron, Move, Cairo, Anchor, TronBox | [multi-chain](references/multi-chain.md) |
 | L2 sequencer, deprecation, monitoring, registry, responsibilities, data sources, self-managed feeds | [operations](references/feed-operations.md) |
 | Live addresses/schedules/parameters; interface/signature mismatch, proxy/aggregator source, GitHub example | [official sources](references/official-sources.md), then [docs index](assets/data-feeds-docs-index.md) for facts the curated references do not have |
+
+Chainlink 24/7 routing (details in [24/7 tokenized equity](references/tokenized-equity-24-7.md)): lending/collateral/liquidations/borrow limits → Data Feeds "24/7 Smoothed Tokenized Equity Feeds" (this skill; slow Oracle Price onchain via `latestRoundData()`); perpetual futures mark/index → Data Streams "24/7 for Perpetual Markets" (v11) and short-duration prediction markets such as up/down → Data Streams "24/7 TWAP" (v2), both handed to `chainlink-data-streams-skill`. One feed or stream per asset per product; never build session-switching logic. All developers must contact `chainlink_data_feeds@smartcontract.com` before integrating 24/7 feeds; never tell integrators they no longer need to pause or protect weekend markets.
 
 Do not load references speculatively. Default EVM requests to price feeds; ask only when routing depends on missing context.
 Do not assume this skill is the only capability available.
