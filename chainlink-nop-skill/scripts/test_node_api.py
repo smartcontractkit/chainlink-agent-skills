@@ -458,6 +458,34 @@ class NodeApiTest(unittest.TestCase):
         self.assertIn('PublicKey = "0xpublic-keep"', redacted)
         self.assertIn('seedNodes = "public-seed.example"', redacted)
 
+    def test_query_redaction_stops_at_quotes_and_preserves_structure(self) -> None:
+        source = "\n".join(
+            (
+                'HTTPURL = "https://rpc.example/v1?api_key=canary-quoted-secret"',
+                'URLS = ["https://x.example?token=canary-array-secret", "b"]',
+                "ENDPOINT = 'https://y.example?secret=canary-literal-secret'",
+                "",
+            )
+        )
+        redacted = node_api.redact_toml(source)
+        for canary in (
+            "canary-quoted-secret",
+            "canary-array-secret",
+            "canary-literal-secret",
+        ):
+            self.assertNotIn(canary, redacted)
+        self.assertIn(
+            'HTTPURL = "https://rpc.example/v1?api_key=[REDACTED]"', redacted
+        )
+        self.assertIn(
+            'URLS = ["https://x.example?token=[REDACTED]", "b"]', redacted
+        )
+        self.assertIn(
+            "ENDPOINT = 'https://y.example?secret=[REDACTED]'", redacted
+        )
+        self.assertEqual(redacted.count('"'), source.count('"'))
+        self.assertEqual(redacted.count("'"), source.count("'"))
+
     def test_nested_json_seed_fields_and_url_values_are_redacted(self) -> None:
         sanitized = node_api.sanitize(
             {

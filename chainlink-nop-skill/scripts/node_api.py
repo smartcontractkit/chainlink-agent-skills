@@ -23,7 +23,7 @@ YAML_LINE = re.compile(r"^( *)([A-Za-z_][A-Za-z0-9_-]*):(?:[ \t]*(.*))?$")
 TOML_KEY = r"""(?:"(?:\\.|[^"\\])*"|'(?:[^']|'')*'|[A-Za-z0-9_.-]+)"""
 TOML_ASSIGNMENT = re.compile(rf"^(\s*)({TOML_KEY})(\s*=\s*)(.*)$")
 URL_USERINFO = re.compile(r"([A-Za-z][A-Za-z0-9+.-]*://)([^\s/@?#]+)@")
-QUERY_PARAMETER = re.compile(r"([?&])([A-Za-z0-9._~%-]+)=([^&#\s]*)")
+QUERY_PARAMETER = re.compile(r"""([?&])([A-Za-z0-9._~%-]+)=([^&#\s"']*)""")
 
 SNAPSHOT_PATHS = (
     "/health",
