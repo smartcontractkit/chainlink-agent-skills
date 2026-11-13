@@ -5,15 +5,15 @@ prompts:
   - file://prompts/with-skill.js
 
 providers:
-  - id: "anthropic:messages:${PROMPTFOO_BASELINE_PROVIDER:-claude-sonnet-4-20250514}"
+  - id: "anthropic:messages:${PROMPTFOO_BASELINE_PROVIDER:-claude-sonnet-5-5}"
     label: baseline
     config:
-      temperature: 0
+      effort: medium
       max_tokens: 4096
-  - id: "anthropic:messages:${PROMPTFOO_WITH_SKILL_PROVIDER:-claude-sonnet-4-20250514}"
+  - id: "anthropic:messages:${PROMPTFOO_WITH_SKILL_PROVIDER:-claude-sonnet-5-5}"
     label: with-skill
     config:
-      temperature: 0
+      effort: medium
       max_tokens: 4096
 
 commandLineOptions:
@@ -21,7 +21,11 @@ commandLineOptions:
 
 defaultTest:
   options:
-    provider: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-5-mini}"
+    provider:
+      id: "${PROMPTFOO_GRADER_PROVIDER:-openai:gpt-6.1-sol}"
+      config:
+        reasoning:
+          effort: medium
   assert:
     - type: llm-rubric
       value: file://rubrics/must-pass.txt
