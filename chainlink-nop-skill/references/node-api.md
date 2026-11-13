@@ -15,7 +15,7 @@ The default is `<skill-root>/config.yaml`; `--config` selects another fixed-sche
 
 Start with `snapshot` for compact statuses/counts across broad useful reads. Use `get` for a sanitized endpoint body when the summary lacks needed evidence. Paths must be root-relative. `--all-pages` follows same-origin next links without an arbitrary overall page budget and stops on an absent or repeated cursor.
 
-The client writes sanitized JSON to stdout; errors go to stderr and exit nonzero. It recursively redacts credential-like keys and secret-like TOML assignments. Report only relevant fields.
+The client writes sanitized JSON to stdout; errors go to stderr and exit nonzero. It recursively redacts credential-like keys, including seed and mnemonic fields, quoted and multiline secret TOML values, URL user information, and credential query parameters. Report only relevant fields.
 
 Use raw/manual reads only if Python is unavailable or a necessary GET route/content type is unsupported. Keep the same origin, identity, redaction, and pagination stops, and never expose request credentials. `snapshot` is not an allowlist; `get` and the fallback preserve broad GET access.
 
