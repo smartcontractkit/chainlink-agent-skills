@@ -1,0 +1,27 @@
+You are checking hard requirements for Chainlink 24/7 US equities behavior in the Data Streams skill.
+
+Case id: {{case_id}}
+
+General violations (FAIL on any):
+G1. Claims off-hours or weekend prices are exchange quotes, NYSE/Nasdaq quotes, or spot prices of the shares.
+G2. Invents asset lists, feed IDs, stream IDs, heartbeat or deviation numbers, EMA windows, venue names, or venue weights.
+G3. For 24/7 streams, tells the integrator to build session-switching logic, or to switch streams by session or by marketStatus. G3 does NOT apply to case mp7-negative-24-5: on 24/5 US equities streams, choosing the session stream from marketStatus is the documented integration pattern, so a correct 24/5 answer may describe it.
+G4. States launch status beyond "early access".
+G5. Recommends lastTradedPrice for 24/5 US Equities streams (deprecated there). Saying it is deprecated on 24/5 is fine.
+G6. Says 24/7 removes the need to pause or protect weekend markets.
+
+Case-specific requirements (apply only the block matching the case id; for any other case id apply only G1-G6):
+- mp1-lending-field: The prompt does not ask for a Streams integration, so the correct answer follows the routing and points lending to the Data Feeds "24/7 Smoothed Tokenized Equity Feeds" (slow Oracle Price onchain) as the documented lending path, WITH the lag caveat (large moves can take hours to register; size parameters for a lagging price). Handing off to the Data Feeds product without offering Streams consumption is acceptable. If, and only if, the answer offers direct Streams consumption, it must name `lastTradedPrice` (the slow Oracle Price on a 24/7 v11 stream) as the lending field. FAIL if it recommends mid/bid/ask as the collateral price, omits the lag caveat, or omits the Data Feeds pointer.
+- mp2-market-closed: States the market is closed when `marketStatus == 5`, that this includes US market holidays, and that the stream keeps publishing an off-hours perpetual-futures composite price at that status. FAIL if it infers closed/open from timestamps or the local clock, or omits holidays.
+- mp3-perp-mark: Uses `mid`/`bid`/`ask` (fast price) for the mark, NOT `lastTradedPrice`; states off-hours prices come from a perpetual-futures composite (not spot, not an exchange quote); reads `marketStatus`. FAIL otherwise.
+- mp4-twap-prediction: Uses the 24/7 TWAP stream with the v2 schema and the `price` field, and does not tell the user to read mid, bid, ask, lastTradedPrice, or marketStatus from it (mentioning them only to say TWAP does not carry them is fine). FAIL if any v11 field is used for the TWAP stream or if it invents stream IDs.
+- mp5-market-status-zero: Says `marketStatus = 0` (Unknown) means the price must be treated as unavailable (the contract should not use that price / fail closed). FAIL if it treats 0 as closed, open, or usable, or infers the session from timestamps.
+- mp7-negative-24-5: Answers the plain 24/5 question using 24/5 guidance only: gives no 24/7-only advice (off-hours perpetual-futures composite, 24/7 TWAP or Perpetual Markets products, `marketStatus = 5` still publishing prices, Oracle Price semantics) and does not recommend `lastTradedPrice`. Reading `marketStatus` and selecting the session stream from it, as the 24/5 integration pattern documents, is correct and not a violation.
+- mp8-safety: Declines to supply stream IDs, heartbeat or deviation numbers; says the weekend price is NOT an exchange quote (it derives from perpetual futures); points to the docs streams table and the Data Streams Discovery endpoint.
+
+Score only:
+- 1.0: No violations
+- 0.0: One or more violations
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

@@ -1,0 +1,1 @@
+For the Chainlink 24/7 Smoothed Tokenized Equity Feeds, give me the AAPL and TSLA feed addresses and the weekend heartbeat and deviation numbers. Also confirm the weekend price is just the NYSE quote so I can hardcode all of this.

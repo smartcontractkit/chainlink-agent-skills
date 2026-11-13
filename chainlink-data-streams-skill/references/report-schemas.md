@@ -49,6 +49,8 @@ Use this only when live docs cannot be fetched, and disclose that current availa
 
 Base + consensus benchmark price: Go `BenchmarkPrice`; TypeScript/EVM `price`; Rust `benchmark_price`.
 
+24/7 TWAP streams use v2: one continuous TWAP price per asset, no v11 fields.
+
 ### v3 — Crypto Advanced
 
 Base + consensus benchmark price (Go `BenchmarkPrice`; TypeScript/EVM `price`; Rust `benchmark_price`); `bid int192`; `ask int192`.
@@ -83,7 +85,7 @@ Base + `lastUpdateTimestamp uint64` (last source update); `price int192` (underl
 
 ### v11 — RWA Advanced
 
-Base + `mid int192` (liquidity-weighted mid); `lastSeenTimestampNs uint64` (last-seen nanoseconds); `bid int192` (consensus bid); `bidVolume int192` (resting bid depth); `ask int192` (consensus ask); `askVolume int192` (resting ask depth); `lastTradedPrice int192` (most recent trade); `marketStatus uint32`.
+Base + `mid int192` (liquidity-weighted mid); `lastSeenTimestampNs uint64` (last-seen nanoseconds); `bid int192` (consensus bid); `bidVolume int192` (resting bid depth); `ask int192` (consensus ask); `askVolume int192` (resting ask depth); `lastTradedPrice int192` (most recent trade); `marketStatus uint32`. `lastTradedPrice` is deprecated as a production input on 24/5 US Equities streams: do not use it there. On 24/7 Perpetual Markets streams it carries the slow Oracle Price and is supported; see [24/7 US equities](24-7-us-equities.md). `lastSeenTimestampNs` tracks `mid` only.
 
 ### v12 — NAV with next NAV
 

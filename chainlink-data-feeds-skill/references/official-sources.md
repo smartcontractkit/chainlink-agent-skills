@@ -11,6 +11,7 @@ Use live sources only when embedded references lack a current address, deprecati
 | SmartData and MVR addresses/schemas | `https://docs.chain.link/data-feeds/smartdata/addresses.md` | Proxy and exact **MVR Bundle Info** field order/types |
 | Rate/volatility addresses | `https://docs.chain.link/data-feeds/rates-feeds/addresses.md` | Current network availability and parameters |
 | U.S. government macro addresses | `https://docs.chain.link/data-feeds/us-government-macroeconomic/addresses.md` | Current macro feed directory |
+| 24/7 Smoothed Tokenized Equity Feeds | `https://docs.chain.link/data-feeds/tokenized-equity-feeds/24-7.md` | Behavior, risks, feed table; heartbeat/deviation come from the feed page, never memory |
 | Deprecations | `https://docs.chain.link/data-feeds/deprecating-feeds.md` | Dates, networks, replacement guidance |
 | Registry | `https://docs.chain.link/data-feeds/contract-registry.md` | Network `IFlags` address and active official proxies |
 | Broad fallback | `https://docs.chain.link/data-feeds/llms-full.txt` | Last resort only; prefer the smallest page above |

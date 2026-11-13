@@ -1,0 +1,1 @@
+marketStatus is 0 on my Chainlink 24/7 US equities v11 stream. What should my contract do?

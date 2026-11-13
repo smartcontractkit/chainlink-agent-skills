@@ -1,12 +1,12 @@
 ---
 name: chainlink-data-streams-skill
-description: "Helps developers retrieve Chainlink Data Streams reports over REST and WebSocket, including report schemas. A price-feed consumer that uses AggregatorV3Interface or latestRoundData goes to chainlink-data-feeds-skill. Reports, REST, WebSocket, and report schemas stay here. It also applies to credentials, report decoding, official Go, Rust, and TypeScript SDKs, high-availability streaming, on-chain report verification, and timestamp lookback."
+description: "Helps developers retrieve Chainlink Data Streams reports over REST and WebSocket, including report schemas and the Chainlink 24/7 US equities streams (24/7 TWAP on v2, 24/7 for Perpetual Markets on v11): weekend pricing, off-hours and market closed price, perp mark price equities, up/down prediction market equities. A price-feed consumer that uses AggregatorV3Interface or latestRoundData goes to chainlink-data-feeds-skill, including 24/7 lending and tokenized equity collateral weekend pricing. Plain 24/5 US equities stream questions keep the existing 24/5 guidance and get no 24/7-only advice. Reports, REST, WebSocket, and report schemas stay here. It also applies to credentials, report decoding, official Go, Rust, and TypeScript SDKs, high-availability streaming, on-chain report verification, and timestamp lookback."
 license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit Bash(npm:*)
 metadata:
   purpose: Chainlink Data Streams developer assistance and reference
-  version: "0.0.7"
+  version: "0.0.8"
   mcp-server: "@upstash/context7-mcp"
 ---
 
@@ -20,6 +20,7 @@ Read only the matching row; never speculatively load references. Other skills ow
 |---|---|
 | Access/onboarding/get credentials; API key/secret or client/user ID/secret; HMAC; configure SDK/API auth; debug auth failures | [credentials/auth](references/credentials-and-auth.md) |
 | Report schema versions/fields/availability/deprecation; decoding/decoder; feed-ID mapping | [schemas](references/report-schemas.md) |
+| 24/7, 24/7 TWAP, weekend pricing, off-hours, market closed price, `marketStatus` on 24/7 streams, perp mark/index price on equities, up/down prediction market on equities, 24/7 tokenized equity collateral | [24/7 US equities](references/24-7-us-equities.md) |
 | REST Go/Rust/TypeScript: latest, UNIX-timestamp/lookback, bulk, pagination/history/backfill | [REST](references/rest-sdk.md) |
 | WebSocket Go/Rust/TypeScript: real-time/low-latency market data, reconnect/gaps/metrics/dedup, HA | [WebSocket](references/websocket-sdk.md) |
 | EVM/Solidity, Solana/Rust, Stellar/Soroban verification/review/debug; Chainlink Local mocks | [onchain](references/onchain-verification.md) |
@@ -27,6 +28,8 @@ Read only the matching row; never speculatively load references. Other skills ow
 | Real-time frontend/chart/candlesticks/backend proxy; local report/price history; SQLite | [frontend/storage](references/frontend-and-storage.md) |
 | Public REST/WS/candlestick URLs; verifier address/contract, Solana program ID, Stellar contract, networks/offline defaults | [endpoints/addresses](references/public-endpoints-and-addresses.md) |
 | Current endpoints, feeds, schema/deprecation, SDK versions/methods, verifier deployments, networks | [official sources](references/official-sources.md) |
+
+Chainlink 24/7 routing (early access; details in [24/7 US equities](references/24-7-us-equities.md)): lending/collateral/liquidations/borrow limits → Data Feeds "24/7 Smoothed Tokenized Equity Feeds" (hand off to `chainlink-data-feeds-skill`); perpetual futures mark/index → Streams "24/7 for Perpetual Markets" (v11: `mid`/`bid`/`ask`, read `marketStatus`, `marketStatus = 0` means price unavailable); short-duration prediction markets → Streams "24/7 TWAP" (v2: `price` only, no v11 fields). One stream per asset per product; never build session-switching logic or switch streams by session or `marketStatus`. On 24/5 US equities streams `lastTradedPrice` is deprecated: never recommend it there, and apply no 24/7-only advice to plain 24/5 questions.
 
 Do not assume this skill is the only capability available.
 

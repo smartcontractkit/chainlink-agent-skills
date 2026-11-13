@@ -27,5 +27,7 @@ This suite is intentionally small:
 5. positive triggering for WebSocket High Availability streaming
 6. negative triggering for Chainlink Data Feeds
 7. negative triggering for CCIP bridging
+8. Chainlink 24/7 US equities (`rwa-24-7`): lending field, market closed, perp mark price, 24/7 TWAP prediction market, `marketStatus = 0`, and a safety case, scored by the `must-pass-24-7` rubric (per-case hard requirements keyed by `vars.case_id`, all must pass at 100%)
+9. positive triggering for weekend/off-hours pricing, and a negative trigger where a plain 24/5 US equities question must get no 24/7-only advice and no `lastTradedPrice` recommendation
 
 Keep this as smoke coverage until the eval approach is more mature.
