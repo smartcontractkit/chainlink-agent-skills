@@ -38,6 +38,15 @@ Use for stream categories, fields/meanings, current schema availability, and dep
 
 Use for `marketStatus` mappings, session behavior, and stream coverage. Never list stream IDs or covered assets from memory. Local 24/7 summary: [24-7-us-equities.md](24-7-us-equities.md).
 
+### Futures (v14)
+
+- Futures streams: `https://docs.chain.link/data-streams/rwa-streams/futures.md` (the "Available Streams" table is empty in the `.md` form; open the HTML page for it)
+- v14 schema: `https://docs.chain.link/data-streams/reference/report-schema-v14.md`
+- `marketStatus` mapping: `https://docs.chain.link/data-streams/market-hours.md` (section "Futures (v14)")
+- Stream ID lookup: `https://docs.chain.link/data-streams/reference/data-streams-api/discovery-endpoint.md`
+
+Use for Futures coverage, rotation/roll behavior, v14 fields, and `marketStatus` (`0`/`1`/`2`). Never list stream IDs, contract months, or expiry dates from memory. Not the 24/7 perpetual-futures product. Local summary: [futures-v14.md](futures-v14.md).
+
 ### REST and WebSocket APIs
 
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api.md`

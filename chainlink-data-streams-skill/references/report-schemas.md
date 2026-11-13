@@ -6,9 +6,10 @@
 - Local Catalog
 - Decoding Rules
 
-Use this for schema choice, fields, decoding, or deprecation. Published schemas are stable, but availability changes. This offline catalog comes from `github.com/smartcontractkit/data-streams-sdk/go@v1.2.4` (decoders v1–v13); language SDK support may differ, so check current package docs before claiming automatic decoding. Re-check current availability, deprecation, package versions, and entitlements at:
+Use this for schema choice, fields, decoding, or deprecation. Published schemas are stable, but availability changes. This offline catalog comes from `github.com/smartcontractkit/data-streams-sdk/go@v1.2.4` (decoders v1–v13), plus a v14 entry from the v14 schema page and the SDK repo (v14 decoders first appear in Go `go/v2.1.0`, TypeScript `1.3.0`, Rust `1.3.0`; Go v1.2.4 has none); language SDK support may differ, so check current package docs before claiming automatic decoding. Re-check current availability, deprecation, package versions, and entitlements at:
 
 - `https://docs.chain.link/data-streams/reference/report-schema-overview.md`
+- `https://docs.chain.link/data-streams/reference/report-schema-v14.md`
 - `https://docs.chain.link/data-streams/deprecating-streams.md`
 - `https://github.com/smartcontractkit/data-streams-sdk`
 
@@ -16,7 +17,7 @@ Use this for schema choice, fields, decoding, or deprecation. Published schemas 
 
 Do not pass `int192`/`uint192` fixed-point or integer values through floating point.
 
-For v2–v13, **Base** is this ordered typed declaration:
+For v2–v14, **Base** is this ordered typed declaration:
 
 ```text
 feedId bytes32; validFromTimestamp uint32; observationsTimestamp uint32;
@@ -94,6 +95,24 @@ Base + `navPerShare int192` (current NAV per share); `nextNavPerShare int192` (n
 ### v13 — best bid/ask
 
 Base + `bestAsk int192` (best ask); `bestBid int192` (best bid); `askVolume uint64` (best-ask volume); `bidVolume uint64` (best-bid volume); `lastTradedPrice int192` (most recent trade).
+
+### v14 — Futures
+
+Base + `midPrice int192` (DON consensus mid); `bidPrice int192` (consensus bid); `askPrice int192` (consensus ask); `expiryTime uint64` (contract expiration, Unix seconds); `firstDayOfNotice uint64` (first day of notice for the tracked contract, Unix seconds); `lastSeenTimestampNs uint64` (last update from the data provider, nanoseconds; staleness only); `marketStatus uint32`; `contractMonth uint32` (1 Jan – 12 Dec); `goldmanRollPrice int192` (Goldman Roll, GSCI methodology: 20% shifted per business day over business days 5–9); `currentBusinessDay uint32` (business day of the month, determines the Goldman window); `interpolatedGoldmanRollPrice int192` (the 20% daily shift smoothed over each business day in the window). Prices are 18-decimal fixed point. Per the v14 page `nativeFee`/`linkFee` are legacy verification-fee fields (`linkFee` is not used for subscription billing).
+
+`marketStatus` (v14): `0` Unknown, `1` Closed, `2` Open. Always read it; never infer open/closed from timestamps. This is not the v11 mapping (`5` = Closed) and not the 24/7 mapping. The v14 schema page says the mapping "varies by feed" while the Futures and Market Hours pages give this one mapping for every v14 futures feed; use it and confirm against Market Hours. Treat `0` as not open. Detail: [Futures (v14)](futures-v14.md).
+
+SDK names (decoder first appears in Go `go/v2.1.0`, TypeScript `1.3.0`, Rust `1.3.0`; the feed ID encodes the version):
+
+| Docs field | Go (`go/v2`, `report/v14`, `v14.Data`) | TypeScript (`decodeReport`, `version: "V14"`) | Rust (`ReportDataV14`) |
+|---|---|---|---|
+| `midPrice`, `bidPrice`, `askPrice` | `MidPrice`, `BidPrice`, `AskPrice` (`*big.Int`) | same names, `bigint` | `mid_price`, `bid_price`, `ask_price` (`BigInt`) |
+| `expiryTime`, `firstDayOfNotice` | `ExpiryTime`, `FirstDayOfNotice` (`time.Time`; use `.Unix()`) | same names, `bigint` | `expiry_time`, `first_day_of_notice` (`u64`) |
+| `lastSeenTimestampNs` | `LastSeenTimestampNs` (`time.Time`; use `.UnixNano()`) | same name, `bigint` | `last_seen_timestamp_ns` (`u64`) |
+| `marketStatus`, `contractMonth`, `currentBusinessDay` | `MarketStatus`, `ContractMonth`, `CurrentBusinessDay` (`uint32`) | same names, `number` | `market_status`, `contract_month`, `current_business_day` (`u32`) |
+| `goldmanRollPrice`, `interpolatedGoldmanRollPrice` | `GoldmanRollPrice`, `InterpolatedGoldmanRollPrice` (`*big.Int`) | same names, `bigint` | `goldman_roll_price`, `interpolated_goldman_roll_price` (`BigInt`) |
+
+Base fields keep the usual per-language names (Go also turns the three base timestamps into `time.Time`). The Go and TypeScript ABI declare the three base timestamps (`validFromTimestamp`, `observationsTimestamp`, `expiresAt`) as `uint64` while the docs and Rust declare `uint32`: decode with the official SDK rather than a hand-written struct. Go constants `MarketStatusUnknown/Closed/Open` and the TypeScript `MarketStatus` enum (`UNKNOWN`, `INACTIVE`, `ACTIVE`) map to 0/1/2.
 
 ## Decoding Rules
 

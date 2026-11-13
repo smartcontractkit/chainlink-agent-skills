@@ -1,0 +1,1 @@
+I am building a perpetual futures DEX and need a weekend mark price for TSLA from Chainlink Data Streams. Which stream product, schema and fields should I read?
