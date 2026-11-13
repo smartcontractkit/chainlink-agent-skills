@@ -1,0 +1,1 @@
+I saw goldmanRollPrice and interpolatedGoldmanRollPrice in a Chainlink Data Streams report. What are they, and when would I use them instead of midPrice?

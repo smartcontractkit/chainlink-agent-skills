@@ -1,0 +1,1 @@
+I am pulling a Chainlink Data Streams futures report (the v14 schema) for a natural gas futures stream and have the full_report hex. Show me how to decode it in TypeScript with the official SDK and explain each decoded field.

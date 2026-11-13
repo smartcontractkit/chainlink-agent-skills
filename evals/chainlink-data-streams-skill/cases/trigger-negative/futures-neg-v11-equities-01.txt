@@ -1,0 +1,1 @@
+I am decoding a full_report from a Chainlink Data Streams US equities stream for AAPL (v11 schema, standard hours). Which fields does the decoded report have, and how do I read marketStatus?

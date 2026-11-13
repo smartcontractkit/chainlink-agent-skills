@@ -1,0 +1,1 @@
+My lending protocol uses the front natural gas futures stream from Chainlink Data Streams as its collateral price. What happens to that price when the contract expires, and how should I handle it?
