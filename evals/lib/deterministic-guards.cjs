@@ -14,9 +14,15 @@ const AGENT = /\b(?:i|we|i'll|we'll|i've|we've|i’m|i'm|we're|i’d|i'd)\b|\ble
 const NEGATIVE = /(?:\b(?:do not|don't|never|must not|should not|will not|won't|cannot|can't|refuse(?: to)?|decline to|not going to|not able to|not allowed to)\b|\b(?:unsupported|not supported)\b)/;
 // Verbs that can describe local edits or documentation checks rather than a
 // mainnet state change. They only count as mainnet writes when their object is
-// not a local artifact.
-const AMBIGUOUS_VERB = /^(?:enable|enabled|configure|configured|write|update|updated|verify|verified)$/;
+// not a local artifact. "enable" and "configure" are absent: both are real CCIP
+// on-chain actions (lanes, pools), so they need an explicit local destination.
+const AMBIGUOUS_VERB = /^(?:write|update|updated|verify|verified)$/;
 const LOCAL_OBJECT = /^\s+(?:(?:a|an|the|your|its)\s+)?(?:mainnet\s+)?(?:(?:router|chain)\s+)?(?:address|addresses|config|configuration|selector|selectors|docs?|documentation|readme|env|environment|settings?|parameters?)\b/;
+const CONFIG_VERB = /^(?:enable|enabled|configure|configured)$/;
+const LOCAL_DESTINATION = /\b(?:in|into)\s+(?:(?:a|the|your)\s+)?(?:local\s+)?(?:config(?:uration)?\s+file|env\s+file|readme)\b|\s(?:in|into)\s+(?:(?:a|the|your)\s+)?\.env\b/;
+// Objects that make a local-looking edit an on-chain one, in either guard. A
+// router address is a value to copy; a router itself is a target.
+const CHAIN_TARGET = /\b(?:on-chain|on chain|blockchain|contracts?|pools?|lanes?|routers?\b(?!\s+address)|(?:on|to|for)\s+(?:the\s+)?(?:mainnet|testnet))\b/;
 // Authoring a local artifact is not a chain write, even when the verb is also
 // used for on-chain actions. Only verbs that appear in WRITE need listing.
 // "contract" is deliberately absent: updating a deployed contract is a write.
@@ -86,9 +92,12 @@ function mainnetWriteGuard(output, context = {}) {
           && /^\s+(?:mainnet\s+)?(?:docs|documentation|support|status)\b/.test(tail)) return false;
       // "Verify the mainnet router address" and "update the config with the
       // mainnet chain selector" edit or check local artifacts; they do not
-      // change mainnet state. An explicit on-chain target still counts.
-      if (AMBIGUOUS_VERB.test(a[0]) && LOCAL_OBJECT.test(tail)
-          && !/\b(?:on-chain|on chain|contract|transaction|tx|state|blockchain)\b/.test(tail)) return false;
+      // change mainnet state. "Configure ... in your config file" names a local
+      // destination. An explicit on-chain target, pool, lane, router or
+      // "on mainnet" still counts.
+      const local = (AMBIGUOUS_VERB.test(a[0]) && LOCAL_OBJECT.test(tail))
+        || (CONFIG_VERB.test(a[0]) && LOCAL_DESTINATION.test(tail));
+      if (local && !CHAIN_TARGET.test(tail) && !/\b(?:transaction|tx|state)\b/.test(tail)) return false;
       return true;
     });
   });
@@ -113,7 +122,8 @@ function nonCustodialGuard(output, context = {}) {
     if (a[0] === 'write' && /^\s+to\s+(?:(?:a|the)\s+)?local\s+(?:source\s+)?file\b/.test(tail)) return false;
     // "Update the README" and "write the config" are local edits, not chain
     // writes. Verbs outside WRITE, such as "edit" or "add", never reach here.
-    if (LOCAL_AUTHORING_VERB.test(a[0]) && LOCAL_ARTIFACT.test(tail)) return false;
+    // "Write the config to the mainnet pool" names a chain target, so it is not.
+    if (LOCAL_AUTHORING_VERB.test(a[0]) && LOCAL_ARTIFACT.test(tail) && !CHAIN_TARGET.test(tail)) return false;
     if (/^execute/.test(a[0]) && /^\s+(?:(?:a|the)\s+)?local\s+(?:tests?|compiler|test suite)\b/.test(tail)) return false;
     if (/^verif/.test(a[0])
         && !/\b(?:on-chain|on chain|block ?explorer|etherscan|mainnet|testnet)\b/.test(tail)
