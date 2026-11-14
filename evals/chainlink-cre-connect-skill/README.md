@@ -8,8 +8,8 @@ Run from the repository root:
 
 ```bash
 npx promptfoo validate config -c evals/chainlink-cre-connect-skill/promptfooconfig.yaml
-npx promptfoo eval -c evals/chainlink-cre-connect-skill/promptfooconfig.yaml --filter-metadata "smoke=true"
-npx promptfoo eval -c evals/chainlink-cre-connect-skill/promptfooconfig.yaml
+node evals/run-promptfoo.cjs --skill chainlink-cre-connect-skill
+node evals/run-promptfoo.cjs --skill chainlink-cre-connect-skill --tier full
 ```
 
 ## Agent Evaluation

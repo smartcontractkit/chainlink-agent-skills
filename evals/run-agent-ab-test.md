@@ -70,7 +70,7 @@ If the case source names a directory under `evals/<skill>/ab-scenarios/`, collec
 
 If the case source is `smoke`, `full`, or a promptfoo category/filter:
 
-1. Read `evals/<skill>/promptfooconfig.yaml`.
+1. Run `node evals/lib/preflight.cjs --skill <skill> --tier smoke --json` from the repo root (use `--tier full` and any category/workflow/case filters as requested). Print counts and stop on an empty selection before any workers start.
 2. Select cases using the same rules as `evals/run-agent-eval.md`.
 3. Read each `vars.case_file` prompt from `evals/<skill>/`.
 4. Record `metadata.category`, `vars.workflow`, and applicable rubric files.
@@ -172,6 +172,8 @@ Save evaluator JSON to:
 ```text
 evals/runs/<skill>/<run-tag>/grades/<case-id>.json
 ```
+
+For promptfoo-derived cases, run `evals/check-response.cjs` on both baseline and skill responses as specified in Step 6 of `evals/run-agent-eval.md`. Use the same case vars and any trusted harness action evidence. Include deterministic failures in each arm's result; an LLM grade cannot override them. Named scenario sets do not have configured assertions: record guards as not run rather than claiming parity for those sets.
 
 ## Aggregation
 
