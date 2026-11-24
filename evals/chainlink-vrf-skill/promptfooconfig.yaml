@@ -127,6 +127,10 @@ tests:
       case_file: cases/functional/starter-kit-01.txt
       workflow: starter-kit
       requires_live_source: "no"
+      reference_files:
+        - references/subscription.md
+        - references/security-and-best-practices.md
+        - references/supported-networks.md
     metadata:
       workflow: starter-kit
       category: functional
@@ -137,6 +141,10 @@ tests:
       case_file: cases/functional/starter-kit-02.txt
       workflow: starter-kit
       requires_live_source: "no"
+      reference_files:
+        - references/subscription.md
+        - references/security-and-best-practices.md
+        - references/supported-networks.md
     metadata:
       workflow: starter-kit
       category: functional
@@ -146,6 +154,10 @@ tests:
       case_file: cases/functional/starter-kit-03.txt
       workflow: starter-kit
       requires_live_source: "no"
+      reference_files:
+        - references/subscription.md
+        - references/security-and-best-practices.md
+        - references/supported-networks.md
     metadata:
       workflow: starter-kit
       category: functional
@@ -182,6 +194,10 @@ tests:
       case_file: cases/trigger-positive/starter-kit-01.txt
       workflow: starter-kit
       expected_trigger: "yes"
+      reference_files:
+        - references/subscription.md
+        - references/security-and-best-practices.md
+        - references/supported-networks.md
     metadata:
       workflow: starter-kit
       category: trigger-positive

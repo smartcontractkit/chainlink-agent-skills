@@ -4,17 +4,17 @@ Promptfoo-based evaluation framework for the `chainlink-ace-skill`.
 
 ## Running
 
-```bash
-cd evals/chainlink-ace-skill
+Run from the repository root:
 
+```bash
 # Full suite
-npx promptfoo eval
+node evals/run-promptfoo.cjs --skill chainlink-ace-skill --tier full
 
 # View results
 npx promptfoo view
 
 # Single test
-npx promptfoo eval --filter-pattern "policy-chain-01"
+node evals/run-promptfoo.cjs --skill chainlink-ace-skill --tier full --case cases/functional/policy-chain-01.txt
 ```
 
 ## Environment Variables

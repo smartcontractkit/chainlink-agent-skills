@@ -55,8 +55,8 @@ Run the smoke eval to establish starting scores.
 
 **Promptfoo path:**
 ```
-cd evals/<skill>
-npx promptfoo eval --filter-metadata "smoke=true" --no-cache > run.log 2>&1
+# From repository root
+node evals/run-promptfoo.cjs --skill <skill> --no-cache > run.log 2>&1
 npx promptfoo export -o results.json
 ```
 
@@ -152,8 +152,8 @@ git commit -m "<short description of change>"
 
 Promptfoo path:
 ```
-cd evals/<skill>
-npx promptfoo eval --filter-metadata "smoke=true" --no-cache > run.log 2>&1
+# From repository root
+node evals/run-promptfoo.cjs --skill <skill> --no-cache > run.log 2>&1
 npx promptfoo export -o results.json
 ```
 
