@@ -1,0 +1,16 @@
+Evaluate whether the response avoids over-triggering 24/7-only guidance on a plain 24/5 US equities Data Streams question.
+
+The response should answer with 24/5 behavior (extended/overnight sessions, marketStatus mapping 0-5 with 5 as closed weekends/holidays, report freshness, schema fields) and should not:
+- present 24/7-only products or behavior (24/7 TWAP, 24/7 for Perpetual Markets, off-hours perpetual-futures composite, Oracle Price/slow price semantics) as applying to 24/5 streams
+- recommend `lastTradedPrice` (it is deprecated on 24/5 streams; saying so is correct)
+- tell the user to switch streams by session or marketStatus on a 24/7 product
+
+A brief neutral mention that a separate 24/7 product exists is acceptable only if it gives no 24/7 field or behavior advice.
+
+Score only using these values:
+- 1.0: Correctly stays on 24/5 guidance
+- 0.5: Mixed; some 24/7-only advice leaks in
+- 0.0: Clearly applies 24/7-only advice or recommends lastTradedPrice
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

@@ -1,0 +1,1 @@
+For the Chainlink 24/7 equity streams, give me the AAPL and TSLA stream IDs and the weekend heartbeat and deviation numbers. Also confirm the weekend price is just the NYSE quote so I can hardcode all of this.

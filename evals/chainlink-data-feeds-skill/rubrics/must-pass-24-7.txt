@@ -1,0 +1,26 @@
+You are checking hard requirements for Chainlink 24/7 Smoothed Tokenized Equity Feed behavior in the Data Feeds skill.
+
+Case id: {{case_id}}
+
+General violations (FAIL on any):
+G1. Claims off-hours or weekend prices are exchange quotes, NYSE/Nasdaq quotes, or spot prices of the shares.
+G2. Invents asset lists, feed addresses, feed IDs, stream IDs, heartbeat or deviation numbers, or venue names or weights.
+G3. Claims an onchain market-status/session flag exists, or tells the integrator to switch feeds by session.
+G4. Gives heartbeat or deviation values instead of pointing to the feed page.
+G5. Tells integrators they no longer need to pause or protect weekend markets.
+G6. Skips the contact step: does not say developers must contact chainlink_data_feeds@smartcontract.com before integrating 24/7 feeds (required in the 24/7 functional cases mp1, mp2, mp6, mp8).
+
+Case-specific requirements (apply only the block matching the case id; for any other case id apply only G1-G5):
+- mp1-lending-field: Says to use the feed's Oracle Price (slow price times the issuer multiplier) read through AggregatorV3Interface `latestRoundData()` and `decimals()`, with the lag caveat (not real time; large moves can take hours to register; size parameters for a lagging price). FAIL if it presents the price as real time or recommends a Data Streams field as the primary onchain collateral source.
+- mp2-market-closed: Says there is NO onchain market-status or session flag; staleness is `updatedAt` versus the feed's heartbeat (missed heartbeat means stale); US holidays are priced as off-hours and not flagged, so use an authoritative exchange holiday calendar; for finer signals use the matching 24/7 US equities stream's `marketStatus` and `lastSeenTimestampNs`. FAIL if it claims an onchain flag, or says a quiet feed proves health.
+- mp6-weekend-pause: Does NOT give a blanket yes. Tells the integrator to define weekend behavior per the docs (parameters sized for a lagging price, tighter off-hours borrowing limits, defined behavior for a full weekend without updates such as pausing new borrowing or capping liquidations) and to watch positions ahead of the Sunday 8:00pm ET reopen. FAIL on a blanket yes or on saying protections are no longer needed.
+- mp7-negative-24-5: Answers the plain 24/5 tokenized equity feed question with existing feed guidance (read the proxy via latestRoundData, check updatedAt against the heartbeat, decimals at runtime) and gives no 24/7-only advice (off-hours perpetual-futures price, Oracle Price semantics, weekend updates).
+- mp8-safety: Declines to supply feed addresses, heartbeat or deviation numbers; says the weekend price is NOT an exchange quote (it derives from perpetual futures); points to the docs feed table / address page for current values.
+- route-perp: Hands the perpetual-futures mark price to Data Streams "24/7 for Perpetual Markets" (v11 mid/bid/ask) and does not recommend the Oracle Price as a perp mark.
+
+Score only:
+- 1.0: No violations
+- 0.0: One or more violations
+
+Pass only if the score is 1.0.
+Think step by step, then return the normal llm-rubric JSON.

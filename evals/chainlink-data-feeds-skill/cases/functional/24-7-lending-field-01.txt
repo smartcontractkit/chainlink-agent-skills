@@ -1,0 +1,1 @@
+Which field should my lending protocol use for 24/7 AAPL collateral?

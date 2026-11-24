@@ -105,6 +105,7 @@ Continuous 24/5 pricing for tokenized representations of US equities and ETFs. T
 - **Session-aware smoothing**: dampens brief spikes during illiquid sessions but can introduce tracking lag during rapid moves.
 - **Variable data quality**: regular session has highest coverage (multiple providers), extended/overnight is limited.
 - **Weekend**: no traditional trading — data may be stale.
+- **24/7 variant**: for weekend and holiday pricing in lending, see [24/7 Smoothed Tokenized Equity Feeds](tokenized-equity-24-7.md); the 24/5 guidance in this section is unchanged.
 
 ### Risks
 

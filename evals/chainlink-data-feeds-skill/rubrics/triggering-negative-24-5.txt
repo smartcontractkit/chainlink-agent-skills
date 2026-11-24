@@ -1,0 +1,8 @@
+You are evaluating whether the response avoids over-triggering 24/7-only guidance on a plain 24/5 tokenized equity feed question.
+
+The response should use the existing 24/5 Tokenized Equity Feed guidance (read the proxy, check updatedAt against the heartbeat, runtime decimals, session-aware smoothing, corporate-action pauses) and should not present 24/7-only behavior (Oracle Price slow price, off-hours perpetual-futures price, weekend updates, 24/7 product routing) as applying to 24/5 feeds.
+
+Score:
+- 1.0: Correctly stays on 24/5 guidance (PASS)
+- 0.5: Mixed; some 24/7-only advice leaks in (FAIL)
+- 0.0: Clearly applies 24/7-only advice (FAIL)

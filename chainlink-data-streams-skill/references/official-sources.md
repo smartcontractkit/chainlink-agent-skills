@@ -28,6 +28,16 @@ Use for access requests and REST/WebSocket HMAC only when not using an SDK. Loca
 
 Use for stream categories, fields/meanings, current schema availability, and deprecation. Then check the language SDK decoder; local catalog: [report-schemas.md](report-schemas.md).
 
+### Market hours and US equities (24/5 and 24/7)
+
+- 24/7 US equities (TWAP v2, Perpetual Markets v11): `https://docs.chain.link/data-streams/rwa-streams/24-7-us-equities.md`
+- `https://docs.chain.link/data-streams/reference/report-schema-v11.md`
+- `https://docs.chain.link/data-streams/market-hours.md`
+- 24/5 US equities: `https://docs.chain.link/data-streams/rwa-streams/24-5-us-equities-user-guide.md`
+- Stream ID lookup: `https://docs.chain.link/data-streams/reference/data-streams-api/discovery-endpoint.md`
+
+Use for `marketStatus` mappings, session behavior, and stream coverage. Never list stream IDs or covered assets from memory. Local 24/7 summary: [24-7-us-equities.md](24-7-us-equities.md).
+
 ### REST and WebSocket APIs
 
 - `https://docs.chain.link/data-streams/reference/data-streams-api/interface-api.md`

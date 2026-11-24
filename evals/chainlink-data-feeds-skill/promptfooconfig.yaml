@@ -61,6 +61,30 @@ starter_kit_asserts: &starter_kit_asserts
   - type: llm-rubric
     value: file://rubrics/starter-kit.txt
 
+functional_24_7_asserts: &functional_24_7_asserts
+  - type: llm-rubric
+    value: file://rubrics/correctness.txt
+  - type: llm-rubric
+    value: file://rubrics/completeness.txt
+  - type: llm-rubric
+    value: file://rubrics/safety.txt
+  - type: llm-rubric
+    value: file://rubrics/freshness.txt
+  - type: llm-rubric
+    value: file://rubrics/must-pass-24-7.txt
+
+trigger_negative_24_5_asserts: &trigger_negative_24_5_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-negative-24-5.txt
+  - type: llm-rubric
+    value: file://rubrics/must-pass-24-7.txt
+
+trigger_negative_perp_asserts: &trigger_negative_perp_asserts
+  - type: llm-rubric
+    value: file://rubrics/triggering-negative.txt
+  - type: llm-rubric
+    value: file://rubrics/must-pass-24-7.txt
+
 tests:
   # ── Functional: Reading Price Feeds ──────────────────────────────────
   - vars:
@@ -378,3 +402,92 @@ tests:
       workflow: none
       expected_trigger: "no"
     assert: *trigger_negative_asserts
+
+  # ── 24/7 Smoothed Tokenized Equity Feeds ─────────────────────────────
+  - vars:
+      case_file: cases/functional/24-7-lending-field-01.txt
+      reference_files:
+        - references/tokenized-equity-24-7.md
+        - references/feed-types.md
+        - references/official-sources.md
+      workflow: tokenized-equity-24-7
+      case_id: mp1-lending-field
+      requires_live_source: "yes"
+    metadata:
+      workflow: tokenized-equity-24-7
+      category: functional
+      smoke: true
+    assert: *functional_24_7_asserts
+
+  - vars:
+      case_file: cases/functional/24-7-market-closed-01.txt
+      reference_files:
+        - references/tokenized-equity-24-7.md
+        - references/feed-types.md
+        - references/official-sources.md
+      workflow: tokenized-equity-24-7
+      case_id: mp2-market-closed
+      requires_live_source: "yes"
+    metadata:
+      workflow: tokenized-equity-24-7
+      category: functional
+      smoke: true
+    assert: *functional_24_7_asserts
+
+  - vars:
+      case_file: cases/functional/24-7-weekend-pause-01.txt
+      reference_files:
+        - references/tokenized-equity-24-7.md
+        - references/feed-types.md
+        - references/official-sources.md
+      workflow: tokenized-equity-24-7
+      case_id: mp6-weekend-pause
+      requires_live_source: "yes"
+    metadata:
+      workflow: tokenized-equity-24-7
+      category: functional
+      smoke: true
+    assert: *functional_24_7_asserts
+
+  - vars:
+      case_file: cases/functional/24-7-safety-01.txt
+      reference_files:
+        - references/tokenized-equity-24-7.md
+        - references/feed-types.md
+        - references/official-sources.md
+      workflow: tokenized-equity-24-7
+      case_id: mp8-safety
+      requires_live_source: "yes"
+    metadata:
+      workflow: tokenized-equity-24-7
+      category: functional
+      smoke: true
+    assert: *functional_24_7_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/24-5-tokenized-equity-01.txt
+      reference_files:
+        - references/reading-price-feeds.md
+        - references/feed-types.md
+      workflow: feed-types
+      case_id: mp7-negative-24-5
+      requires_live_source: "yes"
+      expected_trigger: "yes"
+    metadata:
+      workflow: feed-types
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_24_5_asserts
+
+  - vars:
+      case_file: cases/trigger-negative/24-7-perp-streams-01.txt
+      reference_files: []
+      workflow: none
+      case_id: route-perp
+      requires_live_source: "yes"
+      expected_trigger: "no"
+    metadata:
+      workflow: none
+      category: trigger-negative
+      smoke: true
+    assert: *trigger_negative_perp_asserts

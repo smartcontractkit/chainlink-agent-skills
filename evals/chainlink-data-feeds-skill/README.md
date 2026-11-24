@@ -28,9 +28,11 @@ npx promptfoo eval --filter-pattern "reading-price-feeds-01"
 
 ## Test Categories
 
-- **Functional** (14 cases): End-to-end workflow tests covering reading-price-feeds, mvr-feeds, svr-feeds, feed-types, multi-chain, feed-operations, and starter-kit scaffolding
+- **Functional** (18 cases): End-to-end workflow tests covering reading-price-feeds, mvr-feeds, svr-feeds, feed-types, multi-chain, feed-operations, and starter-kit scaffolding
 - **Trigger Positive** (9 cases): Verify the skill activates for data-feeds-specific prompts
-- **Trigger Negative** (6 cases): Verify the skill does not over-trigger for CCIP, VRF, Automation, Data Streams, Functions, or generic Solidity requests
+- **Trigger Negative** (8 cases): Verify the skill does not over-trigger for CCIP, VRF, Automation, Data Streams, Functions, or generic Solidity requests, and that plain 24/5 tokenized equity questions get no 24/7-only advice
+
+24/7 cases use the `must-pass-24-7` rubric, which carries per-case hard requirements keyed by `vars.case_id` (`mp1`, `mp2`, `mp6`, `mp7`, `mp8`, plus a perp routing case). All must pass at 100%.
 
 ## Rubrics
 

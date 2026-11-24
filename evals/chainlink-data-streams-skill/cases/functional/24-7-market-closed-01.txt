@@ -1,0 +1,1 @@
+I consume the Chainlink 24/7 US equities v11 stream for AAPL. How do I know the market is closed?

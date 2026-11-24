@@ -136,6 +136,13 @@ Sources: [tokenized equity](https://docs.chain.link/data-feeds/tokenized-equity-
 - A corporate-action pause is scheduled at least 24 hours in advance; at pause time the feed freezes at its last known good token price until alignment is confirmed and the feed is unpaused. The configured minimum pause duration is at least 10 minutes.
 - The provider directory records provider, feed type, calculation, corporate-action handling, documentation, and issuer contact. Provider behavior is not interchangeable. Contact `datafeeds@chain.link` and set protocol risk parameters before integration.
 
+## 24/7 tokenized equity deltas
+
+Source: [24/7 Smoothed Tokenized Equity Feeds](https://docs.chain.link/data-feeds/tokenized-equity-feeds/24-7.md). Curated reference: `references/tokenized-equity-24-7.md`.
+
+- Publishes the slow Oracle Price times the issuer multiplier, read with `latestRoundData()`/`decimals()`; updates on deviation or heartbeat, including weekends. No onchain session flag; holidays are priced as off-hours and not flagged.
+- Staleness is `updatedAt` versus the feed's heartbeat. Contact `chainlink_data_feeds@smartcontract.com` before integrating.
+
 ## Tron deltas
 
 Source: [Tron guide](https://docs.chain.link/data-feeds/tron.md).
