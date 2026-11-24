@@ -130,6 +130,53 @@ x-assertions:
       metric: must-pass-24-7
       value: file://rubrics/must-pass-24-7.txt
 
+  functional_futures_asserts: &functional_futures_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: correctness
+      value: file://rubrics/correctness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: completeness
+      value: file://rubrics/completeness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: safety
+      value: file://rubrics/safety.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: freshness
+      value: file://rubrics/freshness.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: must-pass-futures
+      value: file://rubrics/must-pass-futures.txt
+  trigger_positive_futures_asserts: &trigger_positive_futures_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: triggering
+      value: file://rubrics/triggering-positive.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: must-pass-futures
+      value: file://rubrics/must-pass-futures.txt
+  # Neighboring-product negatives: these are still Data Streams questions, so the
+  # generic triggering-negative rubric does not apply. Only the Futures rubric does.
+  trigger_negative_futures_asserts: &trigger_negative_futures_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: must-pass-futures
+      value: file://rubrics/must-pass-futures.txt
+  trigger_negative_futures_247_asserts: &trigger_negative_futures_247_asserts
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: must-pass-futures
+      value: file://rubrics/must-pass-futures.txt
+    - type: llm-rubric
+      provider: '{{ env.PROMPTFOO_GRADER_PROVIDER or "openai:gpt-5-mini" }}'
+      metric: must-pass-24-7
+      value: file://rubrics/must-pass-24-7.txt
+
 prompts:
   - id: file://prompts/baseline.js
     label: baseline_prompt
@@ -389,3 +436,152 @@ tests:
       category: trigger-negative
       requiresApproval: no
     assert: *trigger_negative_24_5_asserts
+  - description: functional / rwa-futures / futures-decode-01
+    vars:
+      case_file: cases/functional/futures-decode-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-futures
+      case_id: fut-decode
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: functional
+      requiresApproval: no
+    assert: *functional_futures_asserts
+  - description: functional / rwa-futures / futures-market-open-01
+    vars:
+      case_file: cases/functional/futures-market-open-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-futures
+      case_id: fut-market-open
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: functional
+      requiresApproval: no
+    assert: *functional_futures_asserts
+  - description: functional / rwa-futures / futures-contract-roll-01
+    vars:
+      case_file: cases/functional/futures-contract-roll-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-futures
+      case_id: fut-roll
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: functional
+      requiresApproval: no
+    assert: *functional_futures_asserts
+  - description: functional / rwa-futures / futures-staleness-01
+    vars:
+      case_file: cases/functional/futures-staleness-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-futures
+      case_id: fut-staleness
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: functional
+      requiresApproval: no
+    assert: *functional_futures_asserts
+  - description: functional / rwa-futures / futures-safety-01
+    vars:
+      case_file: cases/functional/futures-safety-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-futures
+      case_id: fut-safety
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: functional
+      requiresApproval: no
+    assert: *functional_futures_asserts
+  - description: trigger-positive / rwa-futures / futures-oil-natgas-01
+    vars:
+      case_file: cases/trigger-positive/futures-oil-natgas-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+      workflow: rwa-futures
+      case_id: fut-trigger-oil-natgas
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: trigger-positive
+      requiresApproval: no
+    assert: *trigger_positive_futures_asserts
+  - description: trigger-positive / rwa-futures / futures-goldman-roll-01
+    vars:
+      case_file: cases/trigger-positive/futures-goldman-roll-01.txt
+      reference_files:
+        - references/futures-v14.md
+        - references/report-schemas.md
+      workflow: rwa-futures
+      case_id: fut-trigger-goldman-roll
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-futures
+      category: trigger-positive
+      requiresApproval: no
+    assert: *trigger_positive_futures_asserts
+  - description: trigger-negative / rwa-24-7 / futures-neg-247-perp-01
+    vars:
+      case_file: cases/trigger-negative/futures-neg-247-perp-01.txt
+      reference_files:
+        - references/24-7-us-equities.md
+        - references/report-schemas.md
+        - references/official-sources.md
+      workflow: rwa-24-7
+      case_id: fut-neg-247-perp
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: rwa-24-7
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_futures_247_asserts
+  - description: trigger-negative / report-decoding / futures-neg-v11-equities-01
+    vars:
+      case_file: cases/trigger-negative/futures-neg-v11-equities-01.txt
+      reference_files:
+        - references/report-schemas.md
+      workflow: report-decoding
+      case_id: fut-neg-v11-equities
+      expected_trigger: "yes"
+      requires_live_source: "yes"
+      requires_approval: "no"
+    metadata:
+      workflow: report-decoding
+      category: trigger-negative
+      requiresApproval: no
+    assert: *trigger_negative_futures_asserts

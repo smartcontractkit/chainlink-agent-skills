@@ -1,0 +1,1 @@
+Give me the stream IDs for the Chainlink Data Streams US oil and natural gas futures streams, the contract month each front feed tracks right now, and the heartbeat and deviation numbers so I can hardcode them. Also confirm the second and third feeds are already live so I can build my roll logic around all three.

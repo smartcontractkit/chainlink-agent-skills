@@ -1,0 +1,1 @@
+How do I detect that a Chainlink Data Streams oil futures feed has gone stale, and what should my protocol do when it does?

@@ -1,0 +1,1 @@
+Is the oil futures market open right now? I consume the Chainlink Data Streams US Oil futures stream and want to gate my trading logic on it.

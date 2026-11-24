@@ -1,0 +1,1 @@
+I want to build an onchain market on crude oil and natural gas futures prices. Does Chainlink Data Streams have a product for commodity futures, and which report schema does it use?
