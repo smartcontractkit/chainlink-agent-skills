@@ -22,9 +22,9 @@ The `mixed-chainlink` scenario set lives in `ab-scenarios/mixed-chainlink/` and 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PROMPTFOO_BASELINE_PROVIDER` | `claude-sonnet-4-20250514` | Model for baseline (no skill) runs |
-| `PROMPTFOO_WITH_SKILL_PROVIDER` | `claude-sonnet-4-20250514` | Model for with-skill runs |
-| `PROMPTFOO_GRADER_PROVIDER` | `openai:gpt-5-mini` | Model for rubric grading |
+| `PROMPTFOO_BASELINE_PROVIDER` | `claude-sonnet-5-5` | Model for baseline (no skill) runs |
+| `PROMPTFOO_WITH_SKILL_PROVIDER` | `claude-sonnet-5-5` | Model for with-skill runs |
+| `PROMPTFOO_GRADER_PROVIDER` | `openai:gpt-6.1-sol` | Model for rubric grading |
 
 ## Test Categories
 

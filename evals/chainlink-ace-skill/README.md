@@ -21,9 +21,9 @@ npx promptfoo eval --filter-pattern "policy-chain-01"
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `PROMPTFOO_BASELINE_PROVIDER` | `claude-sonnet-4-20250514` | Model for baseline runs |
-| `PROMPTFOO_WITH_SKILL_PROVIDER` | `claude-sonnet-4-20250514` | Model for with-skill runs |
-| `PROMPTFOO_GRADER_PROVIDER` | `openai:gpt-5-mini` | Model for rubric grading |
+| `PROMPTFOO_BASELINE_PROVIDER` | `claude-sonnet-5-5` | Model for baseline runs |
+| `PROMPTFOO_WITH_SKILL_PROVIDER` | `claude-sonnet-5-5` | Model for with-skill runs |
+| `PROMPTFOO_GRADER_PROVIDER` | `openai:gpt-6.1-sol` | Model for rubric grading |
 
 Set the API keys required by whichever providers you choose. The GitHub workflow can still resolve and filter ACE evals by metadata without requiring provider keys to exist at config-load time.
 
