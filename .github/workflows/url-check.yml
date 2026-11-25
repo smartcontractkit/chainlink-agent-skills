@@ -2,7 +2,7 @@ name: URL Check
 
 # The job fails when check-urls.sh reports a broken URL.
 # HTTP 401, 403, 405, and 429 stay warnings: the host answered.
-# To block a merge, the repository rules must require this check.
+# This check is informational. A red result does not block a merge.
 
 on:
   pull_request:
@@ -26,6 +26,7 @@ jobs:
 
       - name: Check URLs in skill docs
         id: urlcheck
+        shell: bash
         run: bash .github/scripts/check-urls.sh | tee "$RUNNER_TEMP/url-report.txt"
 
       - name: Publish report to job summary
