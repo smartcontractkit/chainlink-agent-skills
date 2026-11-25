@@ -43,6 +43,17 @@ npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-confide
 npx skills add smartcontractkit/chainlink-agent-skills --skill chainlink-vrf-skill -g
 ```
 
+## Update
+
+Re-run the install command to pull the latest skills (add `-g` for global installs):
+
+```bash
+npx skills add smartcontractkit/chainlink-agent-skills
+npx skills add smartcontractkit/chainlink-agent-skills -g
+```
+
+`npx skills update` also updates installed skills (`-g` for global only, `-p` for project only, `-y` to skip the scope prompt).
+
 ## Use
 
 When your agent supports Agent Skills, it will discover and activate these skills based on the task. **However** we recommend that you explicitly invoke the skill in your agent chat sessions as follows:

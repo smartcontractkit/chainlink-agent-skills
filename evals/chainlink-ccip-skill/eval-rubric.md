@@ -48,7 +48,7 @@ A run fails overall if any of these happen:
 
 1. The repo stays in its established framework when one already exists.
 2. No-fork simulation is preferred first.
-3. Fork tests use the CCIP Directory as the source of truth when simulator network details differ.
+3. Fork tests use the CCIP API as the source of truth when simulator network details differ.
 
 ### Monitoring and Status
 
@@ -58,7 +58,7 @@ A run fails overall if any of these happen:
 
 ### Route and Token Discovery
 
-1. The CCIP Directory is treated as the primary source of truth.
+1. The CCIP API is treated as the primary source of truth (Directory only as fallback).
 2. Mainnet vs testnet is answered explicitly when relevant.
 3. Route existence is not conflated with lane performance.
 

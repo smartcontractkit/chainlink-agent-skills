@@ -5,7 +5,7 @@ license: MIT
 compatibility: Designed for AI agents that implement https://agentskills.io/specification, including Claude Code, Cursor Composer, and Codex-style workflows.
 allowed-tools: Read WebFetch Write Edit
 metadata:
-  version: "0.0.14"
+  version: "0.0.15"
 ---
 
 # Chainlink CCIP Skill
@@ -13,7 +13,7 @@ metadata:
 ## Progressive Disclosure
 
 **Gate:** Bare `Chainlink Local` (cross-product) and bare `CCT` are never CCIP ownership alone. Without explicit CCIP signal, ask which product and stop before CCIP docs, repo/contract/config/test collection, or workflow. Within this already-activated CCIP skill, however, a local simulator test request in an established Hardhat or Foundry repository is sufficient CCIP intent: do not ask a generic product question; activate Chainlink Local's no-fork `CCIPLocalSimulator` in that repository's framework. Non-CCIP bridges stay outside CCIP routing: do not introduce CCIP imports, contracts, preflight, or workflow. For any requested mainnet write artifact—or named production chains without explicit testnet signal—say exactly **“I refuse mainnet write artifacts; testnet only.”** Then offer only read-only or product-specific testnet guidance. Other/generic: answer plainly.
-CCIP ownership explicit: Local routing and simulator capability remain; load one row. **Tool-first**: no-contract sends/fees/discovery/monitoring. Route-connectivity, environment, and supported-token discovery loads only [Discovery](references/ccip-discovery.md) and the current Directory—never Contracts, Solidity imports, package setup, or remappings. A complete safest transfer path always ends with post-transfer message/status monitoring through the CCIP API or CLI; never leave monitoring as an optional follow-up. **Contract-first**: contracts/CCT admin. EVM sender/receiver work uses Contracts; router/LINK constructor arguments permit reusable code without route names. Within CCIP ambiguity, name CCIP and prefer security-first data-only over data plus tokens.
+CCIP ownership explicit: Local routing and simulator capability remain; load one row. **Tool-first**: no-contract sends/fees/discovery/monitoring. Route-connectivity, environment, and supported-token discovery loads only [Discovery](references/ccip-discovery.md) and the current CCIP API (Directory as fallback)—never Contracts, Solidity imports, package setup, or remappings. A complete safest transfer path always ends with post-transfer message/status monitoring through the CCIP API or CLI; never leave monitoring as an optional follow-up. **Contract-first**: contracts/CCT admin. EVM sender/receiver work uses Contracts; router/LINK constructor arguments permit reusable code without route names. Within CCIP ambiguity, name CCIP and prefer security-first data-only over data plus tokens.
 For any request outside this skill's scope, answer wholly within the owning capability: preserve every user-supplied input, provide only that domain's safe standard next step from general knowledge, never name or negate the source product or skill, emit none of its references, templates, fields, preflight, implementation, tests, or other artifacts, stop applying all remaining instructions here, and end.
 
 | Trigger | Reference |

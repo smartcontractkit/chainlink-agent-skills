@@ -156,12 +156,12 @@ Full runnable starter: `https://github.com/smartcontractkit/ccip-starter-kit-har
 
 ## Fork and scope
 
-Use a fork only when no-fork is insufficient—for realistic chain state or current deployed contracts. Keep it narrow; compare `ccipLocalSimulatorFork.getNetworkDetails(block.chainid)` to the CCIP Directory, which wins on conflicts; repair missing/stale details with `setNetworkDetails(...)`. Do not add fork complexity when no-fork answers the question.
+Use a fork only when no-fork is insufficient—for realistic chain state or current deployed contracts. Keep it narrow; compare `ccipLocalSimulatorFork.getNetworkDetails(block.chainid)` to the CCIP API (`/v2/chains/{selector}`), which wins on conflicts; repair missing/stale details with `setNetworkDetails(...)`. Do not add fork complexity when no-fork answers the question.
 
 Fork (V3 `CCIPLocalSimulatorFork`), with `evm_version = "cancun"`:
 
 - `vm.makePersistent(address(simulator))` after deploying it; fork with RPC URLs from env placeholders, never hard-coded endpoints.
-- A 2.0 lane can use a different router than `getNetworkDetails(...).routerAddress`: send through `getCCIPV2RouterAddress(block.chainid)`; if it returns `address(0)`, set the lane's router from the Directory/API with `setCCIPV2RouterAddress(chainId, router)`. Deploy receivers with the destination's 2.0 router.
+- A 2.0 lane can use a different router than `getNetworkDetails(...).routerAddress`: send through `getCCIPV2RouterAddress(block.chainid)`; if it returns `address(0)`, set the lane's router from the API (Directory as fallback) with `setCCIPV2RouterAddress(chainId, router)`. Deploy receivers with the destination's 2.0 router.
 - `switchChainAndRouteMessage(forkId)` runs the real OffRamp with simulated CCV attestations. Failures (receiver revert, finality or CCV rejection) are logged, not reverted, so assert destination state (for example the received message ID) rather than `expectRevert`.
 - Pool finality floors are enforced on a fork; read the live pool's `getAllowedFinalityConfig()` instead of hard-coding it.
 - Hardhat 3 JS: `getCCIPMessages(connection, receipt)` then `routeMessage(connection, routerAddresses, sent)`, which throws on failure; the caller supplies all addresses.
