@@ -4,7 +4,7 @@ Default for EVM contract work: `@chainlink/contracts-ccip` 2.0 (Foundry tag `con
 
 ## Router and lane version
 
-- Take the router (and LINK) as constructor/config parameters; never hard-code an address, selector, or lane. Resolve them per lane from the [CCIP API](ccip-api.md) or [CCIP Directory](https://docs.chain.link/ccip/directory/testnet) as a fallback.
+- Take the router (and LINK) as constructor/config parameters; never hard-code an address, selector, or lane. Resolve them per lane from the [CCIP API](ccip-api.md), with the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet) as a fallback.
 - Pre-2.0 lanes (fallback): no V3 extraArgs, no Fast Transfers. Use `Client._argsToBytes(Client.GenericExtraArgsV2({gasLimit: ..., allowOutOfOrderExecution: true}))`; 1.x docs: `https://docs.chain.link/ccip/v1.md`. Contracts that must serve both accept `bytes extraArgs` built offchain per lane (docs best practice: keep extraArgs mutable).
 
 ## extraArgs V3

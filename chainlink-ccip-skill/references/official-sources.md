@@ -8,9 +8,9 @@ Use only for facts that change. Never hardcode route/token/network/lane counts, 
 |---|---|---|
 | CCIP Docs | concepts/architecture; EVM/Solana/Aptos tutorials; interfaces/best practices; CCT; limits/billing/security | live messages, routes, tokens |
 | CCIP tools docs | current CLI/API/SDK surfaces, selectors, starters | contract interfaces, live inventory/status |
-| CCIP API | messages/search, lanes/latency, chains/active contracts, verifiers | concepts/contracts, route-token availability |
-| CCIP Directory | mainnet/testnet route and token availability | live execution status, contract patterns |
-| CCIP Explorer | interactive message/lane/activity views | authoring and tool APIs |
+| CCIP API | messages/search, routes/lanes, tokens, chains/active contracts and routers, verifiers, latency | concepts/contracts |
+| CCIP Directory (being deprecated; merged into Explorer) | fallback for route and token availability while the pages exist | live execution status, contract patterns |
+| CCIP Explorer | human-facing interactive views, never a data source | authoring, tool APIs, data reads |
 | SDK examples repo | working EVM/Solana/Aptos scripts/apps and Hardhat integration | contract architecture, live data |
 
 ### URLs
@@ -25,8 +25,10 @@ SDK: `https://docs.chain.link/ccip/tools/sdk/`. Guide slugs: `fee-estimation`, `
 
 HTTPS base: `api.ccip.chain.link/v2` (`/v2` required; `llms.txt` omits it), OpenAPI `https://api.ccip.chain.link/docs`; see [ccip-api.md](ccip-api.md). Public reads need no auth.
 
-Directory: `https://docs.chain.link/ccip/directory/mainnet`, `/testnet`. Explorer: `https://ccip.chain.link/`. Packages: `@chainlink/ccip-cli`, `@chainlink/ccip-sdk`. Examples: `https://github.com/smartcontractkit/ccip-sdk-examples`.
+Directory (fallback): `https://docs.chain.link/ccip/directory/mainnet`, `/testnet`. Explorer: `https://ccip.chain.link/`.
+
+Explorer pages, human-facing links only: `https://ccip.chain.link/mainnet/networks`, `/mainnet/tokens`, `/mainnet/verifiers` and the `/testnet` equivalents. They are client-side rendered and return no usable data to a plain fetch (an app shell, not a listing). Never use them as a data source; use the API. Packages: `@chainlink/ccip-cli`, `@chainlink/ccip-sdk`. Examples: `https://github.com/smartcontractkit/ccip-sdk-examples`.
 
 ## Selection
 
-Concepts/contracts → Docs; user-run command templates → CLI docs; status/search/lanes → API; integrations → SDK docs; runnable SDK samples → examples repo; route/tokens → Directory; interactive lookup → Explorer; non-EVM tutorials → family Docs. Use the smallest set that fully answers the request.
+Concepts/contracts → Docs; user-run command templates → CLI docs; status/search/lanes → API; integrations → SDK docs; runnable SDK samples → examples repo; route/tokens/verifiers → API (Directory as fallback); human browsing → Explorer links; non-EVM tutorials → family Docs. Use the smallest set that fully answers the request.

@@ -1201,7 +1201,7 @@ tests:
         - references/ccip-contracts.md
         - references/ccip-v2.md
         - references/ccip-solidity-examples.md
-      v2_expectations: "Complete Foundry token-plus-data sender using ExtraArgsCodec V3 with a 5-block Fast Transfers request (not GenericExtraArgsV2), router and LINK as constructor parameters, getFee before ccipSend, isChainSupported check, LINK fees; states the pool, CCVs, executor, and destination receiver must also allow the depth; points to the Directory for router/selector values."
+      v2_expectations: "Complete Foundry token-plus-data sender using ExtraArgsCodec V3 with a 5-block Fast Transfers request (not GenericExtraArgsV2), router and LINK as constructor parameters, getFee before ccipSend, isChainSupported check, LINK fees; states the pool, CCVs, executor, and destination receiver must also allow the depth; points to the CCIP API for router/selector values."
     metadata:
       workflow: contract-first
       category: functional
@@ -1255,7 +1255,7 @@ tests:
         - references/chainlink-local.md
         - references/ccip-v2.md
         - references/ccip-solidity-examples.md
-      v2_expectations: "Runnable Foundry fork test with Chainlink Local V3 CCIPLocalSimulatorFork: sets evm_version to cancun and explains paris fails with EvmError: NotActivated; makePersistent; router from getCCIPV2RouterAddress or set from the Directory/API; asserts destination state after switchChainAndRouteMessage; RPC URLs via env placeholders; no broadcast."
+      v2_expectations: "Runnable Foundry fork test with Chainlink Local V3 CCIPLocalSimulatorFork: sets evm_version to cancun and explains paris fails with EvmError: NotActivated; makePersistent; router from getCCIPV2RouterAddress or set from the API (Directory as fallback); asserts destination state after switchChainAndRouteMessage; RPC URLs via env placeholders; no broadcast."
     metadata:
       workflow: chainlink-local
       category: functional
@@ -1273,7 +1273,7 @@ tests:
         - references/ccip-contracts.md
         - references/ccip-v2.md
         - references/ccip-solidity-examples.md
-      v2_expectations: "Removes the hard-coded router and selector, takes the router as a constructor parameter, and explains a CCIP 2.0 lane can use a different router than older lanes on the same chain so it must be resolved per lane from the Directory/API; replaces GenericExtraArgsV2 with ExtraArgsCodec V3 and an opt-in block-confirmation request; notes the receiver and lane must allow Fast Transfers."
+      v2_expectations: "Removes the hard-coded router and selector, takes the router as a constructor parameter, and explains a CCIP 2.0 lane can use a different router than older lanes on the same chain so it must be resolved per lane from the API (Directory as fallback); replaces GenericExtraArgsV2 with ExtraArgsCodec V3 and an opt-in block-confirmation request; notes the receiver and lane must allow Fast Transfers."
     metadata:
       workflow: contract-first
       category: functional

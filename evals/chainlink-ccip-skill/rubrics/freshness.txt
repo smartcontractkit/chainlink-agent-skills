@@ -4,7 +4,7 @@ Check for:
 1. When the prompt depends on live route, token, lane, or message data, the response should reference or recommend checking official current sources
 2. The response should not confidently invent current route or token support from memory
 3. The response should use the correct source owner:
-   - CCIP Directory for routes and tokens
+   - CCIP API for routes, tokens, and verifiers (Directory only as fallback)
    - CCIP API or CLI for monitoring and status
    - CCIP Docs for contract and concept guidance
 

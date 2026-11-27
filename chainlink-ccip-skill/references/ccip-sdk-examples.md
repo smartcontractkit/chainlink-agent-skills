@@ -43,7 +43,7 @@ const families = {
     Chain: EVMChain,
     rpc: "https://ethereum-sepolia-rpc.publicnode.com",
     sender: "0xYourWalletAddress",
-    router: "<router-for-this-lane-from-the-CCIP-Directory>",
+    router: "<active-router-from-GET-/v2/chains/{sourceChainSelector}>",
     receiver: "0xYourReceiverAddress",
     token: "0xTokenAddress",
   },
@@ -133,7 +133,7 @@ Status names, and which names belong to lane version 1.x or 2.0+, are owned by [
 import { EVMChain, networkInfo } from "@chainlink/ccip-sdk";
 
 const source = await EVMChain.fromUrl("https://ethereum-sepolia-rpc.publicnode.com");
-const router = "<router-for-this-lane-from-the-CCIP-Directory>";
+const router = "<active-router-from-GET-/v2/chains/{sourceChainSelector}>";
 const registry = await source.getTokenAdminRegistryFor(router);
 for (const token of await source.getSupportedTokens(registry)) {
   const info = await source.getTokenInfo(token);
